@@ -1,0 +1,18 @@
+{
+  "name": "mega-knights",
+  "version": "1.0.0",
+  "description": "Mega Knights - 100-Day Knight Progression Minecraft Bedrock Add-on",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "deploy": "bash tools/build.sh"
+  },
+  "keywords": ["minecraft", "bedrock", "addon"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@minecraft/server": "^2.3.0",
+    "@minecraft/server-ui": "^2.0.0",
+    "typescript": "^5.9.3"
+  }
+}

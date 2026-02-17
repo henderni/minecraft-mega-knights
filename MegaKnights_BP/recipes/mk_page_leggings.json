@@ -1,0 +1,20 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "mk:mk_page_leggings"
+    },
+    "tags": ["crafting_table"],
+    "pattern": [
+      "LLL",
+      "L L",
+      "L L"
+    ],
+    "key": {
+      "L": { "item": "minecraft:leather" }
+    },
+    "result": {
+      "item": "mk:mk_page_leggings"
+    }
+  }
+}

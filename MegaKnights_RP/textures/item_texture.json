@@ -1,0 +1,18 @@
+{
+  "resource_pack_name": "MegaKnights_RP",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "mk_page_helmet": {
+      "textures": "textures/items/mk_page_helmet"
+    },
+    "mk_page_chestplate": {
+      "textures": "textures/items/mk_page_chestplate"
+    },
+    "mk_page_leggings": {
+      "textures": "textures/items/mk_page_leggings"
+    },
+    "mk_page_boots": {
+      "textures": "textures/items/mk_page_boots"
+    }
+  }
+}

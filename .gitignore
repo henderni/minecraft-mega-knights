@@ -1,0 +1,4 @@
+node_modules/
+MegaKnights_BP/scripts/
+*.js.map
+.DS_Store

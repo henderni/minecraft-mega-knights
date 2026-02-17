@@ -1,0 +1,52 @@
+pack.name=Mega Knights
+pack.description=100-Day Knight Progression - Castle, Army, and Siege!
+
+## Page Armor (Tier 1)
+item.mk:mk_page_helmet.name=Page Helmet
+item.mk:mk_page_chestplate.name=Page Chestplate
+item.mk:mk_page_leggings.name=Page Leggings
+item.mk:mk_page_boots.name=Page Boots
+
+## Squire Armor (Tier 2)
+item.mk:mk_squire_helmet.name=Squire Helmet
+item.mk:mk_squire_chestplate.name=Squire Chestplate
+item.mk:mk_squire_leggings.name=Squire Leggings
+item.mk:mk_squire_boots.name=Squire Boots
+
+## Knight Armor (Tier 3)
+item.mk:mk_knight_helmet.name=Knight Helmet
+item.mk:mk_knight_chestplate.name=Knight Chestplate
+item.mk:mk_knight_leggings.name=Knight Leggings
+item.mk:mk_knight_boots.name=Knight Boots
+
+## Champion Armor (Tier 4)
+item.mk:mk_champion_helmet.name=Champion Helmet
+item.mk:mk_champion_chestplate.name=Champion Chestplate
+item.mk:mk_champion_leggings.name=Champion Leggings
+item.mk:mk_champion_boots.name=Champion Boots
+
+## Mega Knight Armor (Tier 5)
+item.mk:mk_mega_knight_helmet.name=Mega Knight Helmet
+item.mk:mk_mega_knight_chestplate.name=Mega Knight Chestplate
+item.mk:mk_mega_knight_leggings.name=Mega Knight Leggings
+item.mk:mk_mega_knight_boots.name=Mega Knight Boots
+
+## Blueprint Items
+item.mk:mk_blueprint_small_tower.name=Small Tower Blueprint
+item.mk:mk_blueprint_gatehouse.name=Gatehouse Blueprint
+item.mk:mk_blueprint_great_hall.name=Great Hall Blueprint
+
+## Unlock Tokens
+item.mk:mk_squire_token.name=Squire's Commission
+item.mk:mk_knight_token.name=Knight's Oath
+item.mk:mk_champion_token.name=Champion's Medal
+item.mk:mk_mega_knight_token.name=Mega Knight's Crest
+
+## Entities
+entity.mk:mk_enemy_knight.name=Enemy Knight
+entity.mk:mk_enemy_archer.name=Enemy Archer
+entity.mk:mk_enemy_wizard.name=Dark Wizard
+entity.mk:mk_enemy_dark_knight.name=Dark Knight
+entity.mk:mk_ally_knight.name=Allied Knight
+entity.mk:mk_ally_archer.name=Allied Archer
+entity.mk:mk_boss_siege_lord.name=The Siege Lord

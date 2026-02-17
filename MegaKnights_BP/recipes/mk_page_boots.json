@@ -1,0 +1,19 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "mk:mk_page_boots"
+    },
+    "tags": ["crafting_table"],
+    "pattern": [
+      "L L",
+      "L L"
+    ],
+    "key": {
+      "L": { "item": "minecraft:leather" }
+    },
+    "result": {
+      "item": "mk:mk_page_boots"
+    }
+  }
+}
