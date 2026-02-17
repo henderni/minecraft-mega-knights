@@ -1,20 +1,10 @@
-import { world, system, Player } from "@minecraft/server";
-import { DayCounterSystem } from "./DayCounterSystem";
-import { ArmySystem } from "./ArmySystem";
+import { world } from "@minecraft/server";
 import { WAVE_DEFINITIONS } from "../data/WaveDefinitions";
 
 export class SiegeSystem {
-  private dayCounter: DayCounterSystem;
-  private army: ArmySystem;
   private siegeActive = false;
   private currentWave = 0;
   private ticksSinceWave = 0;
-  private bossDefeated = false;
-
-  constructor(dayCounter: DayCounterSystem, army: ArmySystem) {
-    this.dayCounter = dayCounter;
-    this.army = army;
-  }
 
   startSiege(): void {
     if (this.siegeActive) return;
@@ -22,7 +12,6 @@ export class SiegeSystem {
     this.siegeActive = true;
     this.currentWave = 0;
     this.ticksSinceWave = 0;
-    this.bossDefeated = false;
 
     world.sendMessage("§4§l=== THE SIEGE HAS BEGUN! ===");
     world.sendMessage("§cDefend your castle! Waves of enemies approach!");
@@ -86,19 +75,27 @@ export class SiegeSystem {
   }
 
   private checkVictory(): void {
-    // Count remaining siege mobs
+    // Check all dimensions that players are in for remaining siege mobs
+    const checkedDimensions = new Set<string>();
+    let totalSiegeMobs = 0;
+
     for (const player of world.getAllPlayers()) {
+      const dimId = player.dimension.id;
+      if (checkedDimensions.has(dimId)) continue;
+      checkedDimensions.add(dimId);
+
       try {
         const siegeMobs = player.dimension.getEntities({
           tags: ["mk_siege_mob"],
         });
-        if (siegeMobs.length === 0) {
-          this.endSiege(true);
-          return;
-        }
+        totalSiegeMobs += siegeMobs.length;
       } catch {
         // Skip if dimension query fails
       }
+    }
+
+    if (totalSiegeMobs === 0) {
+      this.endSiege(true);
     }
   }
 
@@ -111,7 +108,6 @@ export class SiegeSystem {
       world.sendMessage("§dYou are a TRUE Mega Knight!");
 
       for (const player of world.getAllPlayers()) {
-        // Title display
         player.onScreenDisplay.setTitle("§6§lVICTORY!", {
           subtitle: "§eThe kingdom is saved!",
           fadeInDuration: 20,

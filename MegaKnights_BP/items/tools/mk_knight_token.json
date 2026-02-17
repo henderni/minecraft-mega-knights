@@ -1,0 +1,18 @@
+{
+  "format_version": "1.21.40",
+  "minecraft:item": {
+    "description": {
+      "identifier": "mk:mk_knight_token",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": "mk_knight_token",
+      "minecraft:display_name": {
+        "value": "item.mk:mk_knight_token.name"
+      },
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

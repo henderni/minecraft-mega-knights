@@ -1,0 +1,30 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "mk:mk_ally_dark_knight",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/mk_ally_dark_knight"
+      },
+      "geometry": {
+        "default": "geometry.humanoid.custom"
+      },
+      "animations": {
+        "walk": "animation.humanoid.move",
+        "look_at_target": "animation.humanoid.look_at_target.default",
+        "attack": "animation.humanoid.attack.rotations"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look_at_target",
+          { "attack": "q.is_delayed_attacking" }
+        ]
+      },
+      "render_controllers": ["controller.render.mk_entity"]
+    }
+  }
+}

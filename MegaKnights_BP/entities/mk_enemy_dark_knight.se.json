@@ -1,0 +1,106 @@
+{
+  "format_version": "1.21.40",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "mk:mk_enemy_dark_knight",
+      "is_summonable": true,
+      "is_spawnable": true,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "mk:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": ["mk_enemy", "monster", "mob"]
+      },
+      "minecraft:health": {
+        "value": 50,
+        "max": 50
+      },
+      "minecraft:attack": {
+        "damage": 8
+      },
+      "minecraft:movement": {
+        "value": 0.32
+      },
+      "minecraft:collision_box": {
+        "width": 0.6,
+        "height": 1.9
+      },
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": true,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:navigation.walk": {
+        "can_walk": true,
+        "avoid_water": true,
+        "can_pass_doors": true,
+        "can_open_doors": true,
+        "can_break_doors": true
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:follow_range": {
+        "value": 40
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.melee_attack": {
+        "priority": 3,
+        "speed_multiplier": 1.3,
+        "track_target": true,
+        "reach_multiplier": 1.5
+      },
+      "minecraft:behavior.random_stroll": {
+        "priority": 6,
+        "speed_multiplier": 0.8
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 7,
+        "look_distance": 12.0
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 8
+      },
+      "minecraft:behavior.hurt_by_target": {
+        "priority": 1
+      },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 2,
+        "entity_types": [
+          {
+            "filters": {
+              "any_of": [
+                { "test": "is_family", "subject": "other", "value": "player" },
+                { "test": "is_family", "subject": "other", "value": "mk_ally" }
+              ]
+            },
+            "max_dist": 32
+          }
+        ],
+        "must_see": true,
+        "must_see_forget_duration": 25.0
+      },
+      "minecraft:experience_reward": {
+        "on_death": "q.last_hit_by_player ? 20 : 0"
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/mk_enemy_dark_knight.json"
+      },
+      "minecraft:knockback_resistance": {
+        "value": 0.5
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {},
+      "mk:despawn": {
+        "add": { "component_groups": ["mk:despawn"] }
+      }
+    }
+  }
+}

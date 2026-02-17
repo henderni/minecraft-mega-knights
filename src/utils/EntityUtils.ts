@@ -1,4 +1,4 @@
-import { Entity, Vector3 } from "@minecraft/server";
+import { Entity, EntityHealthComponent, Vector3 } from "@minecraft/server";
 
 export function distanceBetween(a: Vector3, b: Vector3): number {
   const dx = a.x - b.x;
@@ -23,8 +23,10 @@ export function randomPositionAround(
 
 export function isAlive(entity: Entity): boolean {
   try {
-    const health = entity.getComponent("minecraft:health");
-    return health !== undefined && (health as any).currentValue > 0;
+    const health = entity.getComponent(
+      "minecraft:health"
+    ) as EntityHealthComponent | undefined;
+    return health !== undefined && health.currentValue > 0;
   } catch {
     return false;
   }

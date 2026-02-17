@@ -16,8 +16,10 @@ export class CombatSystem {
     // Only process if a player killed a recruitable enemy
     if (!killer || !(killer instanceof Player)) return;
     if (!dead.typeId.startsWith("mk:mk_enemy_")) return;
+    // Boss entities are not recruitable
+    if (dead.typeId.includes("boss")) return;
 
-    const player = killer as Player;
+    const player = killer;
 
     // Track kill count
     const kills =

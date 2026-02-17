@@ -1,0 +1,21 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "mk:mk_mega_knight_chestplate"
+    },
+    "tags": ["crafting_table"],
+    "pattern": [
+      "MTM",
+      "MMM",
+      "MMM"
+    ],
+    "key": {
+      "M": { "item": "minecraft:diamond" },
+      "T": { "item": "mk:mk_mega_knight_token" }
+    },
+    "result": {
+      "item": "mk:mk_mega_knight_chestplate"
+    }
+  }
+}

@@ -7,11 +7,18 @@ import { CastleSystem } from "./systems/CastleSystem";
 import { SiegeSystem } from "./systems/SiegeSystem";
 
 const dayCounter = new DayCounterSystem();
-const armorTier = new ArmorTierSystem(dayCounter);
+const armorTier = new ArmorTierSystem();
 const army = new ArmySystem();
 const combat = new CombatSystem(army);
-const castle = new CastleSystem();
-const siege = new SiegeSystem(dayCounter, army);
+const castle = new CastleSystem(army);
+const siege = new SiegeSystem();
+
+// Auto-trigger siege on Day 100
+dayCounter.onDayChanged((day) => {
+  if (day >= 100) {
+    siege.startSiege();
+  }
+});
 
 // Main game tick (every 20 ticks = 1 second)
 system.runInterval(() => {
@@ -66,9 +73,8 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     siege.startSiege();
   } else if (event.id === "mk:army") {
     const count = parseInt(event.message);
-    if (!isNaN(count) && event.sourceEntity) {
-      const player = event.sourceEntity;
-      army.debugSpawnAllies(player, count);
+    if (!isNaN(count) && event.sourceEntity && event.sourceEntity.typeId === "minecraft:player") {
+      army.debugSpawnAllies(event.sourceEntity as import("@minecraft/server").Player, count);
     }
   }
 });

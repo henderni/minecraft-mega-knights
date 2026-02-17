@@ -4,11 +4,35 @@ import {
   Entity,
   Dimension,
   Vector3,
+  EntityHealthComponent,
   PlayerInteractWithEntityAfterEvent,
 } from "@minecraft/server";
 
 export class ArmySystem {
-  private static readonly MAX_ARMY_SIZE = 20;
+  private static readonly BASE_ARMY_SIZE = 20;
+
+  /** Derive a display name from an ally type ID like "mk:mk_ally_dark_knight" -> "Dark Knight" */
+  private static allyDisplayName(allyTypeId: string): string {
+    const raw = allyTypeId.replace("mk:mk_ally_", "").replace(/_/g, " ");
+    return raw
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+
+  /** Get the current max army size for a player (base + castle bonuses) */
+  getMaxArmySize(player: Player): number {
+    const bonus =
+      (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+    return ArmySystem.BASE_ARMY_SIZE + bonus;
+  }
+
+  /** Add troop capacity from placing a castle structure */
+  addTroopBonus(player: Player, bonus: number): void {
+    const current =
+      (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+    player.setDynamicProperty("mk:army_bonus", current + bonus);
+  }
 
   recruitAlly(
     player: Player,
@@ -18,23 +42,25 @@ export class ArmySystem {
   ): void {
     const armySize =
       (player.getDynamicProperty("mk:army_size") as number) ?? 0;
-    if (armySize >= ArmySystem.MAX_ARMY_SIZE) {
+    const maxSize = this.getMaxArmySize(player);
+    if (armySize >= maxSize) {
       player.sendMessage("§cYour army is at maximum capacity!");
       return;
     }
 
     // Map enemy type to ally type
     const allyTypeId = enemyTypeId.replace("_enemy_", "_ally_");
+    const displayName = ArmySystem.allyDisplayName(allyTypeId);
 
     try {
       const ally = dimension.spawnEntity(allyTypeId, location);
       ally.addTag("mk_army");
       ally.addTag(`mk_owner_${player.name}`);
       ally.setDynamicProperty("mk:owner_name", player.name);
-      ally.nameTag = `§a${player.name}'s Knight`;
+      ally.nameTag = `§a${player.name}'s ${displayName}`;
 
       player.setDynamicProperty("mk:army_size", armySize + 1);
-      player.sendMessage("§a+ A warrior has joined your army!");
+      player.sendMessage(`§a+ A ${displayName} has joined your army!`);
     } catch (e) {
       console.warn(`[MegaKnights] Failed to spawn ally: ${e}`);
     }
@@ -66,9 +92,11 @@ export class ArmySystem {
     }
 
     // Show ally info
-    const hp = entity.getComponent("minecraft:health");
-    const healthValue = hp ? (hp as any).currentValue : "?";
-    const healthMax = hp ? (hp as any).effectiveMax : "?";
+    const hp = entity.getComponent("minecraft:health") as
+      | EntityHealthComponent
+      | undefined;
+    const healthValue = hp ? Math.floor(hp.currentValue) : "?";
+    const healthMax = hp ? Math.floor(hp.effectiveMax) : "?";
     event.player.sendMessage(
       `§b${entity.nameTag} §7- HP: ${healthValue}/${healthMax}`
     );
@@ -89,9 +117,7 @@ export class ArmySystem {
     return (player.getDynamicProperty("mk:army_size") as number) ?? 0;
   }
 
-  debugSpawnAllies(entity: Entity, count: number): void {
-    if (!(entity instanceof Player)) return;
-    const player = entity as Player;
+  debugSpawnAllies(player: Player, count: number): void {
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const dist = 3 + Math.random() * 3;

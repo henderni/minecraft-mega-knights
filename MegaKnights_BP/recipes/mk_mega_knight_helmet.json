@@ -1,0 +1,20 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "mk:mk_mega_knight_helmet"
+    },
+    "tags": ["crafting_table"],
+    "pattern": [
+      "MMM",
+      "MTM"
+    ],
+    "key": {
+      "M": { "item": "minecraft:diamond" },
+      "T": { "item": "mk:mk_mega_knight_token" }
+    },
+    "result": {
+      "item": "mk:mk_mega_knight_helmet"
+    }
+  }
+}

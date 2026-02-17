@@ -13,6 +13,75 @@
     },
     "mk_page_boots": {
       "textures": "textures/items/mk_page_boots"
+    },
+    "mk_squire_helmet": {
+      "textures": "textures/items/mk_squire_helmet"
+    },
+    "mk_squire_chestplate": {
+      "textures": "textures/items/mk_squire_chestplate"
+    },
+    "mk_squire_leggings": {
+      "textures": "textures/items/mk_squire_leggings"
+    },
+    "mk_squire_boots": {
+      "textures": "textures/items/mk_squire_boots"
+    },
+    "mk_knight_helmet": {
+      "textures": "textures/items/mk_knight_helmet"
+    },
+    "mk_knight_chestplate": {
+      "textures": "textures/items/mk_knight_chestplate"
+    },
+    "mk_knight_leggings": {
+      "textures": "textures/items/mk_knight_leggings"
+    },
+    "mk_knight_boots": {
+      "textures": "textures/items/mk_knight_boots"
+    },
+    "mk_champion_helmet": {
+      "textures": "textures/items/mk_champion_helmet"
+    },
+    "mk_champion_chestplate": {
+      "textures": "textures/items/mk_champion_chestplate"
+    },
+    "mk_champion_leggings": {
+      "textures": "textures/items/mk_champion_leggings"
+    },
+    "mk_champion_boots": {
+      "textures": "textures/items/mk_champion_boots"
+    },
+    "mk_mega_knight_helmet": {
+      "textures": "textures/items/mk_mega_knight_helmet"
+    },
+    "mk_mega_knight_chestplate": {
+      "textures": "textures/items/mk_mega_knight_chestplate"
+    },
+    "mk_mega_knight_leggings": {
+      "textures": "textures/items/mk_mega_knight_leggings"
+    },
+    "mk_mega_knight_boots": {
+      "textures": "textures/items/mk_mega_knight_boots"
+    },
+    "mk_squire_token": {
+      "textures": "textures/items/mk_squire_token"
+    },
+    "mk_knight_token": {
+      "textures": "textures/items/mk_knight_token"
+    },
+    "mk_champion_token": {
+      "textures": "textures/items/mk_champion_token"
+    },
+    "mk_mega_knight_token": {
+      "textures": "textures/items/mk_mega_knight_token"
+    },
+    "mk_blueprint_small_tower": {
+      "textures": "textures/items/mk_blueprint_small_tower"
+    },
+    "mk_blueprint_gatehouse": {
+      "textures": "textures/items/mk_blueprint_gatehouse"
+    },
+    "mk_blueprint_great_hall": {
+      "textures": "textures/items/mk_blueprint_great_hall"
     }
   }
 }

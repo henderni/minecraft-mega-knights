@@ -1,0 +1,18 @@
+{
+  "format_version": "1.21.40",
+  "minecraft:item": {
+    "description": {
+      "identifier": "mk:mk_blueprint_great_hall",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": "mk_blueprint_great_hall",
+      "minecraft:display_name": {
+        "value": "item.mk:mk_blueprint_great_hall.name"
+      },
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

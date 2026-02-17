@@ -1,14 +1,7 @@
 import { Player, world } from "@minecraft/server";
-import { DayCounterSystem } from "./DayCounterSystem";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
 
 export class ArmorTierSystem {
-  private dayCounter: DayCounterSystem;
-
-  constructor(dayCounter: DayCounterSystem) {
-    this.dayCounter = dayCounter;
-  }
-
   initializePlayer(player: Player): void {
     const hasStarted = player.getDynamicProperty("mk:has_started") as boolean;
     if (!hasStarted) {

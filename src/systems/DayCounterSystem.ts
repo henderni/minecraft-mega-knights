@@ -8,6 +8,13 @@ export class DayCounterSystem {
   private static readonly KEY_TICK = "mk:day_tick_counter";
   private static readonly KEY_ACTIVE = "mk:quest_active";
 
+  private onDayChangeCallbacks: ((day: number) => void)[] = [];
+
+  /** Register a callback that fires whenever the day changes */
+  onDayChanged(callback: (day: number) => void): void {
+    this.onDayChangeCallbacks.push(callback);
+  }
+
   getCurrentDay(): number {
     return (world.getDynamicProperty(DayCounterSystem.KEY_DAY) as number) ?? 0;
   }
@@ -31,9 +38,12 @@ export class DayCounterSystem {
     if (!this.isActive()) {
       world.setDynamicProperty(DayCounterSystem.KEY_ACTIVE, true);
     }
-    // Fire any milestones between previous and new day
+    // Fire any milestones and callbacks between previous and new day
     for (let d = previousDay + 1; d <= day; d++) {
       this.fireMilestone(d);
+      for (const cb of this.onDayChangeCallbacks) {
+        cb(d);
+      }
     }
   }
 
@@ -103,6 +113,9 @@ export class DayCounterSystem {
   private onDayChange(day: number): void {
     world.sendMessage(`§6=== Day ${day} of 100 ===`);
     this.fireMilestone(day);
+    for (const cb of this.onDayChangeCallbacks) {
+      cb(day);
+    }
   }
 
   private fireMilestone(day: number): void {
