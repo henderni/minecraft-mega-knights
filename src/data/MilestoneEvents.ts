@@ -98,7 +98,7 @@ function giveBlueprintToPlayers(blueprintItem: string): void {
   for (const player of world.getAllPlayers()) {
     if (!player.isValid) continue;
     try {
-      player.dimension.runCommand(`give "${player.name}" ${blueprintItem}`);
+      player.runCommand(`give @s ${blueprintItem}`);
     } catch {
       // Player may have disconnected
     }

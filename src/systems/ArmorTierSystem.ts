@@ -7,10 +7,10 @@ export class ArmorTierSystem {
     const hasStarted = player.getDynamicProperty("mk:has_started") as boolean;
     if (!hasStarted) {
       // Give starting Page armor
-      player.dimension.runCommand(`give "${player.name}" mk:mk_page_helmet`);
-      player.dimension.runCommand(`give "${player.name}" mk:mk_page_chestplate`);
-      player.dimension.runCommand(`give "${player.name}" mk:mk_page_leggings`);
-      player.dimension.runCommand(`give "${player.name}" mk:mk_page_boots`);
+      player.runCommand(`give @s mk:mk_page_helmet`);
+      player.runCommand(`give @s mk:mk_page_chestplate`);
+      player.runCommand(`give @s mk:mk_page_leggings`);
+      player.runCommand(`give @s mk:mk_page_boots`);
       player.sendMessage(ARMOR_GIVEN);
     }
   }
@@ -27,7 +27,7 @@ export class ArmorTierSystem {
 
         // Give the unlock token item
         if (tier.tokenItem) {
-          player.dimension.runCommand(`give "${player.name}" ${tier.tokenItem}`);
+          player.runCommand(`give @s ${tier.tokenItem}`);
         }
 
         player.sendMessage(TIER_UNLOCKED(tier.name));

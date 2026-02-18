@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "You are a Nintendo Switch performance reviewer for a Minecraft Bedrock add-on. Review this file change for performance red flags. FAIL if you see: getAllPlayers()/getEntities() in tick/interval callbacks without caching, follow_range or max_dist above 24 for non-boss entities, missing scan_interval on nearest_attackable_target, synchronous entity spawning in loops (not using system.runJob), dynamic property reads (getDynamicProperty) inside runInterval/tick callbacks that should be cached, entity_alphatest material where opaque would work, missing density_limit on spawn rules, missing despawn component on enemies. PASS if the change looks fine or is unrelated to performance. $ARGUMENTS",
+            "model": "haiku",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/build-check.sh",
+            "timeout": 30,
+            "statusMessage": "Verifying TypeScript build..."
+          },
+          {
+            "type": "agent",
+            "prompt": "You are a Nintendo Switch performance auditor for a Minecraft Bedrock add-on (Mega Knights). The Switch has a Tegra X1 (ARM), 4GB shared RAM, and a Maxwell GPU. The target is smooth 30 FPS.\n\nReview ALL files that were modified in this session. Read each changed source file in src/ and any modified entity JSON in MegaKnights_BP/entities/.\n\nCheck for these Switch performance constraints:\n1. Entity budget: total custom entities must stay under 40 normal play, 60 during siege\n2. follow_range and nearest_attackable_target.max_dist must be ≤16 for basic mobs, ≤24 for elites, ≤32 only for bosses\n3. All nearest_attackable_target must have scan_interval ≥10\n4. All spawn rules must have minecraft:density_limit\n5. All enemies must have minecraft:despawn component\n6. No getAllPlayers() or getEntities() in hot paths (runInterval, tick callbacks, HUD updates) without caching\n7. No dynamic property reads (getDynamicProperty/world.getDynamicProperty) in hot paths — must cache on load\n8. Bulk spawns must use system.runJob() generator, max 1-2 entities per tick\n9. Prefer opaque entity materials over entity_alphatest\n10. No should_darken_sky during high entity scenes\n11. HUD strings must be cached and compared before calling setActionBar\n12. Combined spawn weights should stay low to avoid crowding the monster pool\n\nReturn {\"ok\": true} if everything passes. Return {\"ok\": false, \"reason\": \"detailed list of violations\"} if any issues found.\n\n$ARGUMENTS",
+            "timeout": 120
+          },
+          {
+            "type": "agent",
+            "prompt": "You are a Minecraft Bedrock development best practices reviewer for the Mega Knights add-on. Review ALL files modified in this session for Bedrock-specific correctness.\n\nRead each changed source file in src/ and entity JSON in MegaKnights_BP/.\n\nCheck for:\n1. World mutations (entity spawn/modify/remove) must be deferred with system.run(() => {...}) inside event handlers\n2. Entity access (.dimension, .location, .getComponent()) must be wrapped in try-catch for unloaded/despawned entities\n3. Dynamic properties must be flat primitives, not serialized JSON\n4. Logging must use console.warn() not console.log()\n5. Staggered spawns: max 1-2 entities per tick, use system.runJob for bulk\n6. JSON behaviors preferred over script-driven AI where possible\n7. All custom entities/items use mk: namespace prefix\n8. Entity tags follow convention: mk_army, mk_owner_[name], mk_siege_mob\n9. No editing of compiled JS in MegaKnights_BP/scripts/ directly\n10. Structure placement uses world.structureManager.place() with fallback\n\nReturn {\"ok\": true} if everything passes. Return {\"ok\": false, \"reason\": \"detailed list of issues\"} if any problems found.\n\n$ARGUMENTS",
+            "timeout": 120
+          },
+          {
+            "type": "agent",
+            "prompt": "You are a security and anti-cheat reviewer for a Minecraft Bedrock add-on (Mega Knights). Review ALL files modified in this session for exploit vectors.\n\nRead each changed source file in src/ and entity/item JSON in MegaKnights_BP/.\n\nCheck for these security concerns:\n1. COMMAND INJECTION: Any use of player.name or user-provided strings in runCommand() calls. Must use @s/@p selectors or sanitize the name. Raw string interpolation like `give \"${player.name}\"` is exploitable if name contains quotes.\n2. INPUT VALIDATION: All /scriptevent handlers (mk:setday, mk:army, mk:start, mk:reset, mk:siege) must validate and bound-check inputs. Numeric inputs must have reasonable maximums (e.g., army count ≤ 50).\n3. ENTITY FLOOD PREVENTION: All spawn functions must check entity caps before spawning. No path should allow unbounded entity creation.\n4. DYNAMIC PROPERTY TRUST: Game-critical state (army_size, kills, current_tier) should be validated via recounts rather than blindly trusted. A player modifying NBT/memory could inflate these values.\n5. RESOURCE EXHAUSTION: No unbounded arrays, Maps, or queues that grow without cleanup. Caches must have eviction. Event listeners must not accumulate.\n6. MULTIPLAYER ISOLATION: Player-scoped dynamic properties and tags must not leak between players. Army ownership must be verified before operations.\n7. TAG SANITIZATION: Player names used in entity tags must be sanitized (strip special characters). Verify sanitizePlayerTag is used consistently.\n8. RATE LIMITING: Debug commands (scriptevent) should not be spammable in ways that crash the server.\n\nReturn {\"ok\": true} if no security issues. Return {\"ok\": false, \"reason\": \"detailed list of vulnerabilities with file:line references\"} if issues found.\n\n$ARGUMENTS",
+            "timeout": 120
+          },
+          {
+            "type": "agent",
+            "prompt": "You are a playability and game design reviewer for a Minecraft Bedrock add-on (Mega Knights). This is a 100-day quest where players progress through 5 armor tiers, build an army, construct castles, and face a final 5-wave siege.\n\nReview ALL files modified in this session for gameplay quality impacts.\n\nCheck for:\n1. BALANCE: Do changes affect armor progression pacing (should feel gradual across 100 days)? Do siege waves scale fairly (winnable with full army, challenging without)? Is army capacity growth meaningful (base 20, max 50 with all structures)?\n2. PLAYER FEEDBACK: Do new features/changes provide clear HUD feedback? Are milestone events communicated? Does the player know what happened and what to do next? Are error states (army full, can't place structure, invalid command) communicated clearly?\n3. EDGE CASES: What happens if the player dies during siege? What if army is empty? What if day counter is manually set past 100? What if structures are placed in invalid locations? Are all paths handled gracefully without softlocks?\n4. DIFFICULTY CURVE: Early game (days 1-20) should be safe exploration. Mid game (days 20-60) introduces threats and progression. Late game (days 60-100) builds tension. Siege should be climactic but fair.\n5. MULTIPLAYER: Is per-player state handled correctly? Do army counts show correctly for each player? Are milestone rewards per-player or shared appropriately?\n6. FUN FACTOR: Do changes make the game more or less enjoyable? Is there clear reward for effort? Does the progression feel satisfying?\n\nReturn {\"ok\": true} if gameplay quality is maintained or improved. Return {\"ok\": false, \"reason\": \"list of gameplay concerns\"} if changes hurt the player experience.\n\n$ARGUMENTS",
+            "timeout": 120
+          },
+          {
+            "type": "agent",
+            "prompt": "You are a feature completeness auditor for a Minecraft Bedrock add-on (Mega Knights). Review the codebase for missing or incomplete features after changes.\n\nCheck these areas by reading relevant files:\n1. ARMOR TIERS: All 5 tiers (Page, Squire, Knight, Champion, Mega Knight) must have: 4 armor pieces each (helmet, chestplate, leggings, boots) in MegaKnights_BP/items/armor/, crafting recipes in MegaKnights_BP/recipes/, resource pack attachables in MegaKnights_RP/attachables/, and localization entries in MegaKnights_RP/texts/en_US.lang.\n2. ENTITIES: All 9 entity types must have behavior JSON: ally_knight, ally_archer, ally_wizard, ally_dark_knight, enemy_knight, enemy_archer, enemy_wizard, enemy_dark_knight, siege_lord. Each needs spawn rules where appropriate.\n3. CASTLE STRUCTURES: 3 blueprints (small_tower, gatehouse, great_hall) need blueprint items, placement logic, and ideally .mcstructure files (flag if missing — currently uses command fallback).\n4. SPAWN RULES: All enemy types that naturally spawn need spawn rules with density_limit. Currently only enemy_knight and enemy_archer have them — flag missing ones.\n5. TODO/FIXME: Search for any TODO, FIXME, HACK, XXX, or TEMP comments in source code. Flag them.\n6. PLACEHOLDER VALUES: Look for hardcoded test values, magic numbers without constants, or placeholder strings that should be localized.\n7. DEAD CODE: Flag unused imports, unreachable code paths, or commented-out code blocks.\n8. LOCALIZATION: Check en_US.lang has entries for all item names, entity names, HUD strings, and milestone messages.\n\nReturn {\"ok\": true} if everything is complete. Return {\"ok\": false, \"reason\": \"list of missing/incomplete items with file paths\"} if gaps found.\n\n$ARGUMENTS",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

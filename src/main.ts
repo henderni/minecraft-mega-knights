@@ -83,7 +83,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     siege.startSiege();
   } else if (event.id === "mk:army") {
     const count = parseInt(event.message);
-    if (!isNaN(count) && event.sourceEntity && event.sourceEntity.typeId === "minecraft:player") {
+    if (!isNaN(count) && count > 0 && count <= 50 && event.sourceEntity && event.sourceEntity.typeId === "minecraft:player") {
       army.debugSpawnAllies(event.sourceEntity as import("@minecraft/server").Player, count);
     }
   }
