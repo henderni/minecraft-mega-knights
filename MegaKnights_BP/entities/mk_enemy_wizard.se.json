@@ -14,7 +14,11 @@
     },
     "components": {
       "minecraft:type_family": {
-        "family": ["mk_enemy", "monster", "mob"]
+        "family": [
+          "mk_enemy",
+          "monster",
+          "mob"
+        ]
       },
       "minecraft:health": {
         "value": 25,
@@ -73,8 +77,16 @@
           {
             "filters": {
               "any_of": [
-                { "test": "is_family", "subject": "other", "value": "player" },
-                { "test": "is_family", "subject": "other", "value": "mk_ally" }
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "player"
+                },
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "mk_ally"
+                }
               ]
             },
             "max_dist": 24
@@ -93,7 +105,7 @@
         "add_effects": [
           {
             "effect": "speed",
-            "duration": 999999,
+            "duration": 6000,
             "amplifier": 0,
             "visible": false
           }
@@ -103,7 +115,11 @@
     "events": {
       "minecraft:entity_spawned": {},
       "mk:despawn": {
-        "add": { "component_groups": ["mk:despawn"] }
+        "add": {
+          "component_groups": [
+            "mk:despawn"
+          ]
+        }
       }
     }
   }

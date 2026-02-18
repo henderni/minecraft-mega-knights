@@ -1,5 +1,6 @@
 import { Player, world } from "@minecraft/server";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
+import { ARMOR_GIVEN, TIER_UNLOCKED } from "../data/Strings";
 
 export class ArmorTierSystem {
   initializePlayer(player: Player): void {
@@ -10,7 +11,7 @@ export class ArmorTierSystem {
       player.dimension.runCommand(`give "${player.name}" mk:mk_page_chestplate`);
       player.dimension.runCommand(`give "${player.name}" mk:mk_page_leggings`);
       player.dimension.runCommand(`give "${player.name}" mk:mk_page_boots`);
-      player.sendMessage("§aYou have been given your Page armor. Your journey begins!");
+      player.sendMessage(ARMOR_GIVEN);
     }
   }
 
@@ -19,14 +20,20 @@ export class ArmorTierSystem {
     if (!tier) return;
 
     for (const player of world.getAllPlayers()) {
-      player.setDynamicProperty(`mk:tier_unlocked_${tierIndex}`, true);
+      if (!player.isValid) continue;
 
-      // Give the unlock token item
-      if (tier.tokenItem) {
-        player.dimension.runCommand(`give "${player.name}" ${tier.tokenItem}`);
+      try {
+        player.setDynamicProperty(`mk:tier_unlocked_${tierIndex}`, true);
+
+        // Give the unlock token item
+        if (tier.tokenItem) {
+          player.dimension.runCommand(`give "${player.name}" ${tier.tokenItem}`);
+        }
+
+        player.sendMessage(TIER_UNLOCKED(tier.name));
+      } catch {
+        // Player may have disconnected mid-iteration
       }
-
-      player.sendMessage(`§6${tier.name} armor is now available!`);
     }
   }
 

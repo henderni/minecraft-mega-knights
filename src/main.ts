@@ -5,6 +5,7 @@ import { ArmySystem } from "./systems/ArmySystem";
 import { CombatSystem } from "./systems/CombatSystem";
 import { CastleSystem } from "./systems/CastleSystem";
 import { SiegeSystem } from "./systems/SiegeSystem";
+import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET } from "./data/Strings";
 
 const dayCounter = new DayCounterSystem();
 const armorTier = new ArmorTierSystem();
@@ -12,6 +13,9 @@ const army = new ArmySystem();
 const combat = new CombatSystem(army);
 const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
+
+// Wire up event-driven army death tracking (instant recount on ally death)
+army.setupDeathListener();
 
 // Auto-trigger siege on Day 100
 dayCounter.onDayChanged((day) => {
@@ -23,14 +27,19 @@ dayCounter.onDayChanged((day) => {
 // Main game tick (every 20 ticks = 1 second)
 system.runInterval(() => {
   dayCounter.tick();
-  army.tick();
   siege.tick();
 }, 20);
 
-// HUD update (every 2 ticks for smooth display)
+// Army recount correction pass (every 100 ticks = 5 seconds)
+// Death events handle most updates; this is a safety net for edge cases
+system.runInterval(() => {
+  army.tick();
+}, 100);
+
+// HUD update (every 4 ticks — slightly less frequent for Switch perf, still smooth)
 system.runInterval(() => {
   dayCounter.updateHUD();
-}, 2);
+}, 4);
 
 // Player spawn
 world.afterEvents.playerSpawn.subscribe((event) => {
@@ -61,14 +70,14 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     const day = parseInt(event.message);
     if (!isNaN(day) && day >= 0 && day <= 100) {
       dayCounter.setDay(day);
-      world.sendMessage(`§e[Debug] Day set to ${day}`);
+      world.sendMessage(DEBUG_DAY_SET(day));
     }
   } else if (event.id === "mk:start") {
     dayCounter.startQuest();
-    world.sendMessage("§a[Debug] Quest started!");
+    world.sendMessage(DEBUG_QUEST_STARTED);
   } else if (event.id === "mk:reset") {
     dayCounter.reset();
-    world.sendMessage("§c[Debug] Quest reset!");
+    world.sendMessage(DEBUG_QUEST_RESET);
   } else if (event.id === "mk:siege") {
     siege.startSiege();
   } else if (event.id === "mk:army") {

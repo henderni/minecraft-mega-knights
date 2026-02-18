@@ -14,7 +14,12 @@
     },
     "components": {
       "minecraft:type_family": {
-        "family": ["mk_enemy", "monster", "mob", "mk_boss"]
+        "family": [
+          "mk_enemy",
+          "monster",
+          "mob",
+          "mk_boss"
+        ]
       },
       "minecraft:health": {
         "value": 200,
@@ -48,7 +53,7 @@
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
       "minecraft:follow_range": {
-        "value": 48
+        "value": 32
       },
       "minecraft:behavior.float": {
         "priority": 0
@@ -65,7 +70,7 @@
       },
       "minecraft:behavior.look_at_player": {
         "priority": 7,
-        "look_distance": 16.0
+        "look_distance": 8.0
       },
       "minecraft:behavior.random_look_around": {
         "priority": 8
@@ -79,11 +84,19 @@
           {
             "filters": {
               "any_of": [
-                { "test": "is_family", "subject": "other", "value": "player" },
-                { "test": "is_family", "subject": "other", "value": "mk_ally" }
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "player"
+                },
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "mk_ally"
+                }
               ]
             },
-            "max_dist": 48
+            "max_dist": 32
           }
         ],
         "must_see": true,
@@ -113,7 +126,11 @@
     "events": {
       "minecraft:entity_spawned": {},
       "mk:despawn": {
-        "add": { "component_groups": ["mk:despawn"] }
+        "add": {
+          "component_groups": [
+            "mk:despawn"
+          ]
+        }
       }
     }
   }

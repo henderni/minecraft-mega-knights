@@ -1,5 +1,6 @@
 import {
   world,
+  system,
   Player,
   Entity,
   Dimension,
@@ -7,6 +8,21 @@ import {
   EntityHealthComponent,
   PlayerInteractWithEntityAfterEvent,
 } from "@minecraft/server";
+import {
+  ARMY_FULL,
+  ALLY_RECRUITED,
+  ALLY_NOT_YOURS,
+  ALLY_INFO,
+  DEBUG_ALLIES_SPAWNED,
+} from "../data/Strings";
+
+/** Max castle troop bonus a player can accumulate (+30 = all 3 structures) */
+const MAX_ARMY_BONUS = 30;
+
+/** Sanitize player name for use in entity tags (only alphanum, underscore, hyphen allowed) */
+function sanitizePlayerTag(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_\-]/g, "_");
+}
 
 export class ArmySystem {
   private static readonly BASE_ARMY_SIZE = 20;
@@ -27,11 +43,12 @@ export class ArmySystem {
     return ArmySystem.BASE_ARMY_SIZE + bonus;
   }
 
-  /** Add troop capacity from placing a castle structure */
+  /** Add troop capacity from placing a castle structure (capped) */
   addTroopBonus(player: Player, bonus: number): void {
     const current =
       (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
-    player.setDynamicProperty("mk:army_bonus", current + bonus);
+    const capped = Math.min(current + bonus, MAX_ARMY_BONUS);
+    player.setDynamicProperty("mk:army_bonus", capped);
   }
 
   recruitAlly(
@@ -40,36 +57,71 @@ export class ArmySystem {
     location: Vector3,
     dimension: Dimension
   ): void {
+    if (!player.isValid) return;
+
     const armySize =
       (player.getDynamicProperty("mk:army_size") as number) ?? 0;
     const maxSize = this.getMaxArmySize(player);
     if (armySize >= maxSize) {
-      player.sendMessage("§cYour army is at maximum capacity!");
+      player.sendMessage(ARMY_FULL);
       return;
     }
 
     // Map enemy type to ally type
     const allyTypeId = enemyTypeId.replace("_enemy_", "_ally_");
     const displayName = ArmySystem.allyDisplayName(allyTypeId);
+    const safeTag = sanitizePlayerTag(player.name);
 
     try {
       const ally = dimension.spawnEntity(allyTypeId, location);
       ally.addTag("mk_army");
-      ally.addTag(`mk_owner_${player.name}`);
+      ally.addTag(`mk_owner_${safeTag}`);
       ally.setDynamicProperty("mk:owner_name", player.name);
       ally.nameTag = `§a${player.name}'s ${displayName}`;
 
       player.setDynamicProperty("mk:army_size", armySize + 1);
-      player.sendMessage(`§a+ A ${displayName} has joined your army!`);
+      player.sendMessage(ALLY_RECRUITED(displayName));
     } catch (e) {
       console.warn(`[MegaKnights] Failed to spawn ally: ${e}`);
     }
   }
 
+  /**
+   * Subscribe to entity death events so we can decrement army count
+   * immediately instead of waiting for the next tick recount.
+   */
+  setupDeathListener(): void {
+    world.afterEvents.entityDie.subscribe((event) => {
+      const dead = event.deadEntity;
+      if (!dead.hasTag("mk_army")) return;
+
+      const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
+      if (!ownerName) return;
+
+      // Find the owner player and decrement army size
+      for (const player of world.getAllPlayers()) {
+        if (player.name === ownerName && player.isValid) {
+          const current =
+            (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+          if (current > 0) {
+            player.setDynamicProperty("mk:army_size", current - 1);
+          }
+          break;
+        }
+      }
+    });
+  }
+
+  /**
+   * Periodic recount — runs less frequently now since death events handle
+   * most updates. Acts as a correction pass for edge cases (unloaded chunks, etc).
+   */
   tick(): void {
-    // Periodically recount alive allies for each player
     for (const player of world.getAllPlayers()) {
-      const ownerTag = `mk_owner_${player.name}`;
+      if (!player.isValid) continue;
+
+      const safeTag = sanitizePlayerTag(player.name);
+      const ownerTag = `mk_owner_${safeTag}`;
       try {
         const allies = player.dimension.getEntities({
           tags: ["mk_army", ownerTag],
@@ -87,7 +139,7 @@ export class ArmySystem {
 
     const ownerName = entity.getDynamicProperty("mk:owner_name") as string;
     if (ownerName !== event.player.name) {
-      event.player.sendMessage(`§7This warrior serves ${ownerName}.`);
+      event.player.sendMessage(ALLY_NOT_YOURS(ownerName));
       return;
     }
 
@@ -97,13 +149,12 @@ export class ArmySystem {
       | undefined;
     const healthValue = hp ? Math.floor(hp.currentValue) : "?";
     const healthMax = hp ? Math.floor(hp.effectiveMax) : "?";
-    event.player.sendMessage(
-      `§b${entity.nameTag} §7- HP: ${healthValue}/${healthMax}`
-    );
+    event.player.sendMessage(ALLY_INFO(entity.nameTag, healthValue, healthMax));
   }
 
   getArmyEntities(player: Player): Entity[] {
-    const ownerTag = `mk_owner_${player.name}`;
+    const safeTag = sanitizePlayerTag(player.name);
+    const ownerTag = `mk_owner_${safeTag}`;
     try {
       return player.dimension.getEntities({
         tags: ["mk_army", ownerTag],
@@ -118,6 +169,7 @@ export class ArmySystem {
   }
 
   debugSpawnAllies(player: Player, count: number): void {
+    const safeTag = sanitizePlayerTag(player.name);
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const dist = 3 + Math.random() * 3;
@@ -129,13 +181,13 @@ export class ArmySystem {
       try {
         const ally = player.dimension.spawnEntity("mk:mk_ally_knight", loc);
         ally.addTag("mk_army");
-        ally.addTag(`mk_owner_${player.name}`);
+        ally.addTag(`mk_owner_${safeTag}`);
         ally.setDynamicProperty("mk:owner_name", player.name);
         ally.nameTag = `§a${player.name}'s Knight`;
       } catch (e) {
         console.warn(`[MegaKnights] Failed to spawn debug ally: ${e}`);
       }
     }
-    player.sendMessage(`§e[Debug] Spawned ${count} allies`);
+    player.sendMessage(DEBUG_ALLIES_SPAWNED(count));
   }
 }

@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { world, system, Player } from "@minecraft/server";
 import { ArmorTierSystem } from "../systems/ArmorTierSystem";
 
 export interface Milestone {
@@ -8,28 +8,64 @@ export interface Milestone {
   execute: () => void;
 }
 
+/** How many entities to spawn per tick during staggered milestone spawning */
+const SPAWNS_PER_TICK = 2;
+
+/**
+ * Stagger-spawns enemies near all players using system.runJob.
+ * Re-fetches players by name inside the generator to handle disconnects safely.
+ */
 function spawnEnemiesNearPlayers(entityId: string, count: number): void {
-  for (const player of world.getAllPlayers()) {
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 15 + Math.random() * 20;
-      const loc = {
-        x: player.location.x + Math.cos(angle) * dist,
-        y: player.location.y,
-        z: player.location.z + Math.sin(angle) * dist,
-      };
-      try {
-        player.dimension.spawnEntity(entityId, loc);
-      } catch {
-        // Chunk may not be loaded
+  // Capture player names at call time — generator re-fetches live player refs
+  const playerNames = world.getAllPlayers().map((p) => p.name);
+
+  system.runJob(
+    (function* () {
+      let spawned = 0;
+      for (const name of playerNames) {
+        for (let i = 0; i < count; i++) {
+          // Re-fetch player each iteration — safe if they disconnect mid-spawn
+          let player: Player | undefined;
+          for (const p of world.getAllPlayers()) {
+            if (p.name === name && p.isValid) {
+              player = p;
+              break;
+            }
+          }
+          if (!player) break; // Player gone, skip remaining spawns for them
+
+          try {
+            const loc = player.location;
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 15 + Math.random() * 20;
+            const spawnLoc = {
+              x: loc.x + Math.cos(angle) * dist,
+              y: loc.y,
+              z: loc.z + Math.sin(angle) * dist,
+            };
+            player.dimension.spawnEntity(entityId, spawnLoc);
+          } catch {
+            // Chunk not loaded or entity limit reached
+          }
+
+          spawned++;
+          if (spawned % SPAWNS_PER_TICK === 0) {
+            yield;
+          }
+        }
       }
-    }
-  }
+    })()
+  );
 }
 
 function giveBlueprintToPlayers(blueprintItem: string): void {
   for (const player of world.getAllPlayers()) {
-    player.dimension.runCommand(`give "${player.name}" ${blueprintItem}`);
+    if (!player.isValid) continue;
+    try {
+      player.dimension.runCommand(`give "${player.name}" ${blueprintItem}`);
+    } catch {
+      // Player may have disconnected
+    }
   }
 }
 

@@ -18,13 +18,22 @@
           "max_size": 1
         },
         "minecraft:weight": {
-          "default": 20
+          "default": 12
         },
         "minecraft:biome_filter": {
           "any_of": [
-            { "test": "has_biome_tag", "value": "forest" },
-            { "test": "has_biome_tag", "value": "taiga" },
-            { "test": "has_biome_tag", "value": "extreme_hills" }
+            {
+              "test": "has_biome_tag",
+              "value": "forest"
+            },
+            {
+              "test": "has_biome_tag",
+              "value": "taiga"
+            },
+            {
+              "test": "has_biome_tag",
+              "value": "extreme_hills"
+            }
           ]
         }
       }

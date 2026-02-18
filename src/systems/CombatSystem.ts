@@ -1,4 +1,4 @@
-import { EntityDieAfterEvent, Player } from "@minecraft/server";
+import { EntityDieAfterEvent, Player, system } from "@minecraft/server";
 import { ArmySystem } from "./ArmySystem";
 
 export class CombatSystem {
@@ -26,14 +26,14 @@ export class CombatSystem {
       ((player.getDynamicProperty("mk:kills") as number) ?? 0) + 1;
     player.setDynamicProperty("mk:kills", kills);
 
-    // Roll for recruitment
+    // Roll for recruitment — defer to next tick to avoid mutating world during death event
     if (Math.random() < CombatSystem.RECRUIT_CHANCE) {
-      this.army.recruitAlly(
-        player,
-        dead.typeId,
-        dead.location,
-        dead.dimension
-      );
+      const typeId = dead.typeId;
+      const location = { ...dead.location };
+      const dimension = dead.dimension;
+      system.run(() => {
+        this.army.recruitAlly(player, typeId, location, dimension);
+      });
     }
   }
 }

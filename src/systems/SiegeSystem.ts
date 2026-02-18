@@ -1,10 +1,37 @@
-import { world } from "@minecraft/server";
+import { world, system, Player } from "@minecraft/server";
 import { WAVE_DEFINITIONS } from "../data/WaveDefinitions";
+import {
+  SIEGE_BEGIN,
+  SIEGE_DEFEND,
+  SIEGE_WAVE,
+  SIEGE_VICTORY_1,
+  SIEGE_VICTORY_2,
+  SIEGE_VICTORY_3,
+  SIEGE_VICTORY_TITLE,
+  SIEGE_VICTORY_SUBTITLE,
+  SIEGE_DEFEAT_1,
+  SIEGE_DEFEAT_2,
+  SIEGE_DEFEAT_3,
+} from "../data/Strings";
+
+/** How many entities to spawn per tick during staggered wave spawning */
+const SPAWNS_PER_TICK = 3;
+
+/**
+ * Max spawns per wave per player — prevents entity count explosion in multiplayer.
+ * With 4 players, each gets up to MAX_SPAWNS_PER_PLAYER entities per wave instead
+ * of the full wave count per player.
+ */
+const MAX_SPAWNS_PER_PLAYER = 24;
+
+/** Ticks between victory checks after all waves are spawned (every 3 seconds) */
+const VICTORY_CHECK_INTERVAL = 60;
 
 export class SiegeSystem {
   private siegeActive = false;
   private currentWave = 0;
   private ticksSinceWave = 0;
+  private ticksSinceVictoryCheck = 0;
 
   startSiege(): void {
     if (this.siegeActive) return;
@@ -12,9 +39,10 @@ export class SiegeSystem {
     this.siegeActive = true;
     this.currentWave = 0;
     this.ticksSinceWave = 0;
+    this.ticksSinceVictoryCheck = 0;
 
-    world.sendMessage("§4§l=== THE SIEGE HAS BEGUN! ===");
-    world.sendMessage("§cDefend your castle! Waves of enemies approach!");
+    world.sendMessage(SIEGE_BEGIN);
+    world.sendMessage(SIEGE_DEFEND);
 
     this.spawnWave();
   }
@@ -33,9 +61,13 @@ export class SiegeSystem {
       }
     }
 
-    // Check victory condition: all siege mobs dead after all waves spawned
+    // Check victory condition — throttled to every VICTORY_CHECK_INTERVAL ticks
     if (this.currentWave >= WAVE_DEFINITIONS.length) {
-      this.checkVictory();
+      this.ticksSinceVictoryCheck += 20;
+      if (this.ticksSinceVictoryCheck >= VICTORY_CHECK_INTERVAL) {
+        this.ticksSinceVictoryCheck = 0;
+        this.checkVictory();
+      }
     }
   }
 
@@ -43,43 +75,85 @@ export class SiegeSystem {
     if (this.currentWave >= WAVE_DEFINITIONS.length) return;
 
     const wave = WAVE_DEFINITIONS[this.currentWave];
-    world.sendMessage(
-      `§c--- Wave ${wave.waveNumber}/${WAVE_DEFINITIONS.length} ---`
-    );
+    world.sendMessage(SIEGE_WAVE(wave.waveNumber, WAVE_DEFINITIONS.length));
 
-    for (const player of world.getAllPlayers()) {
+    const players = world.getAllPlayers();
+    const playerCount = players.length;
+
+    // Scale spawn counts: in multiplayer, reduce per-player spawns to stay under entity limits
+    // Solo: full wave. 2 players: 75% each. 3+: 60% each. Capped at MAX_SPAWNS_PER_PLAYER.
+    const scaleFactor = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
+
+    // Build a flat spawn queue with scaled counts per player
+    const spawnQueue: { entityId: string; playerName: string }[] = [];
+
+    for (const player of players) {
+      if (!player.isValid) continue;
+      let playerSpawns = 0;
       for (const spawn of wave.spawns) {
-        for (let i = 0; i < spawn.count; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const dist = 20 + Math.random() * 15;
-          const spawnLoc = {
-            x: player.location.x + Math.cos(angle) * dist,
-            y: player.location.y,
-            z: player.location.z + Math.sin(angle) * dist,
-          };
-
-          try {
-            const entity = player.dimension.spawnEntity(
-              spawn.entityId,
-              spawnLoc
-            );
-            entity.addTag("mk_siege_mob");
-          } catch {
-            // Chunk might not be loaded
-          }
+        const scaledCount = Math.max(1, Math.round(spawn.count * scaleFactor));
+        for (let i = 0; i < scaledCount; i++) {
+          if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) break;
+          spawnQueue.push({ entityId: spawn.entityId, playerName: player.name });
+          playerSpawns++;
         }
+        if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) break;
       }
     }
+
+    // Stagger spawns across ticks using system.runJob
+    // Re-fetch player by name inside generator to handle disconnects safely
+    system.runJob(
+      (function* () {
+        let spawned = 0;
+        for (const entry of spawnQueue) {
+          // Re-fetch the player each iteration — handles disconnect/rejoin
+          let targetPlayer: Player | undefined;
+          for (const p of world.getAllPlayers()) {
+            if (p.name === entry.playerName && p.isValid) {
+              targetPlayer = p;
+              break;
+            }
+          }
+
+          if (targetPlayer) {
+            try {
+              const loc = targetPlayer.location;
+              const angle = Math.random() * Math.PI * 2;
+              const dist = 20 + Math.random() * 15;
+              const spawnLoc = {
+                x: loc.x + Math.cos(angle) * dist,
+                y: loc.y,
+                z: loc.z + Math.sin(angle) * dist,
+              };
+
+              const entity = targetPlayer.dimension.spawnEntity(
+                entry.entityId,
+                spawnLoc
+              );
+              entity.addTag("mk_siege_mob");
+            } catch {
+              // Chunk not loaded or entity limit reached
+            }
+          }
+
+          spawned++;
+          if (spawned % SPAWNS_PER_TICK === 0) {
+            yield;
+          }
+        }
+      })()
+    );
 
     this.currentWave++;
   }
 
   private checkVictory(): void {
-    // Check all dimensions that players are in for remaining siege mobs
     const checkedDimensions = new Set<string>();
     let totalSiegeMobs = 0;
 
     for (const player of world.getAllPlayers()) {
+      if (!player.isValid) continue;
       const dimId = player.dimension.id;
       if (checkedDimensions.has(dimId)) continue;
       checkedDimensions.add(dimId);
@@ -103,22 +177,23 @@ export class SiegeSystem {
     this.siegeActive = false;
 
     if (victory) {
-      world.sendMessage("§a§l=== VICTORY! ===");
-      world.sendMessage("§6The Siege Lord has been defeated!");
-      world.sendMessage("§dYou are a TRUE Mega Knight!");
+      world.sendMessage(SIEGE_VICTORY_1);
+      world.sendMessage(SIEGE_VICTORY_2);
+      world.sendMessage(SIEGE_VICTORY_3);
 
       for (const player of world.getAllPlayers()) {
-        player.onScreenDisplay.setTitle("§6§lVICTORY!", {
-          subtitle: "§eThe kingdom is saved!",
+        if (!player.isValid) continue;
+        player.onScreenDisplay.setTitle(SIEGE_VICTORY_TITLE, {
+          subtitle: SIEGE_VICTORY_SUBTITLE,
           fadeInDuration: 20,
           stayDuration: 100,
           fadeOutDuration: 20,
         });
       }
     } else {
-      world.sendMessage("§4§l=== DEFEAT ===");
-      world.sendMessage("§cThe siege has overwhelmed your defenses...");
-      world.sendMessage('§7Use "/scriptevent mk:reset" to try again.');
+      world.sendMessage(SIEGE_DEFEAT_1);
+      world.sendMessage(SIEGE_DEFEAT_2);
+      world.sendMessage(SIEGE_DEFEAT_3);
     }
   }
 }
