@@ -53,8 +53,8 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   system.runJob(
     (function* () {
       let spawned = 0;
-      // Build player map once; refresh only at yield boundaries
-      let playerMap = new Map<string, Player>();
+      // Build player map once; refresh only at yield boundaries (reuse with .clear())
+      const playerMap = new Map<string, Player>();
       for (const p of world.getAllPlayers()) {
         if (p.isValid) playerMap.set(p.name, p);
       }
@@ -80,8 +80,8 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
         spawned++;
         if (spawned % SPAWNS_PER_TICK === 0) {
           yield;
-          // Refresh player map at yield boundary
-          playerMap = new Map<string, Player>();
+          // Refresh player map at yield boundary — reuse Map with .clear()
+          playerMap.clear();
           for (const p of world.getAllPlayers()) {
             if (p.isValid) playerMap.set(p.name, p);
           }

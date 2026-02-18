@@ -43,7 +43,7 @@
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
       "minecraft:follow_range": {
-        "value": 20
+        "value": 16
       },
       "minecraft:is_tamed": {},
       "minecraft:shooter": {
@@ -70,14 +70,11 @@
       },
       "minecraft:behavior.random_stroll": {
         "priority": 6,
-        "speed_multiplier": 0.6
-      },
-      "minecraft:behavior.look_at_player": {
-        "priority": 7,
-        "look_distance": 8.0
+        "speed_multiplier": 0.6,
+        "interval": 120
       },
       "minecraft:behavior.random_look_around": {
-        "priority": 8
+        "priority": 7
       },
       "minecraft:behavior.hurt_by_target": {
         "priority": 1

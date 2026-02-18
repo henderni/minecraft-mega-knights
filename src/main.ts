@@ -14,8 +14,9 @@ const combat = new CombatSystem(army);
 const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
 
-// Wire up event-driven army death tracking (instant recount on ally death)
-army.setupDeathListener();
+// Wire up event-driven death tracking
+army.setupDeathListener();  // Instant army recount on ally death
+siege.setupDeathListener(); // Decrement siege mob counter on enemy death
 
 // Auto-trigger siege on Day 100
 dayCounter.onDayChanged((day) => {

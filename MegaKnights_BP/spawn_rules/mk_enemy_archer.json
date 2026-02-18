@@ -15,10 +15,10 @@
         },
         "minecraft:herd": {
           "min_size": 1,
-          "max_size": 2
+          "max_size": 1
         },
         "minecraft:weight": {
-          "default": 12
+          "default": 8
         },
         "minecraft:biome_filter": {
           "any_of": [
@@ -37,7 +37,7 @@
           ]
         },
         "minecraft:density_limit": {
-          "surface": 2
+          "surface": 1
         }
       }
     ]
