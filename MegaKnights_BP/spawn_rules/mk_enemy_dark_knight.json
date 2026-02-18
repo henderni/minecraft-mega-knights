@@ -41,7 +41,7 @@
           ]
         },
         "minecraft:density_limit": {
-          "surface": 2
+          "surface": 1
         }
       }
     ]

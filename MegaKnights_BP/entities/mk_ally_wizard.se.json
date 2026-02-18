@@ -91,7 +91,7 @@
               "subject": "other",
               "value": "mk_enemy"
             },
-            "max_dist": 16
+            "max_dist": 12
           }
         ],
         "scan_interval": 10,

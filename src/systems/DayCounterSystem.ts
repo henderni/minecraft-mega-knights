@@ -40,6 +40,13 @@ export class DayCounterSystem {
   /** Tick counter for throttling dynamic property persistence */
   private tickWriteCounter = 0;
 
+  /** Reusable Set for HUD prune — avoids allocation every 4s */
+  private activeNames = new Set<string>();
+
+  /** Cached player list for HUD — refreshed every 4th call (~2s) to reduce getAllPlayers calls */
+  private cachedHudPlayers: Player[] = [];
+  private hudPlayerRefreshCounter = 0;
+
   /** Register a callback that fires whenever the day changes */
   onDayChanged(callback: (day: number) => void): void {
     this.onDayChangeCallbacks.push(callback);
@@ -187,21 +194,27 @@ export class DayCounterSystem {
     // Use pre-built bar string — no allocation
     const bar = PROGRESS_BARS[filled] ?? PROGRESS_BARS[0];
 
-    const players = world.getAllPlayers();
+    // Throttle getAllPlayers — refresh every 4th HUD call (~2s) instead of every call
+    this.hudPlayerRefreshCounter++;
+    if (this.hudPlayerRefreshCounter >= 4) {
+      this.hudPlayerRefreshCounter = 0;
+      this.cachedHudPlayers = world.getAllPlayers();
+    }
+    const players = this.cachedHudPlayers;
 
     // Read per-player dynamic properties every 8th HUD call (~4s) instead of every call
     this.hudPropertyReadCounter++;
     const shouldReadProps = this.hudPropertyReadCounter >= 8;
     if (shouldReadProps) this.hudPropertyReadCounter = 0;
 
-    // Prune disconnected players from caches
+    // Prune disconnected players from caches — reuse Set to avoid allocation
     if (shouldReadProps) {
-      const activeNames = new Set<string>();
+      this.activeNames.clear();
       for (const p of players) {
-        if (p.isValid) activeNames.add(p.name);
+        if (p.isValid) this.activeNames.add(p.name);
       }
       for (const key of this.lastHudKeys.keys()) {
-        if (!activeNames.has(key)) {
+        if (!this.activeNames.has(key)) {
           this.lastHudKeys.delete(key);
           this.cachedPlayerArmySize.delete(key);
           this.cachedPlayerTier.delete(key);

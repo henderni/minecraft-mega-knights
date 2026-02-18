@@ -53,22 +53,15 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   system.runJob(
     (function* () {
       let spawned = 0;
-      let lastPlayerName = "";
-      let cachedPlayer: Player | undefined;
+      // Build player map once; refresh only at yield boundaries
+      let playerMap = new Map<string, Player>();
+      for (const p of world.getAllPlayers()) {
+        if (p.isValid) playerMap.set(p.name, p);
+      }
 
       for (const entry of queue) {
-        // Only re-fetch player when name changes or when cached ref is stale
-        if (entry.playerName !== lastPlayerName || !cachedPlayer?.isValid) {
-          lastPlayerName = entry.playerName;
-          cachedPlayer = undefined;
-          for (const p of world.getAllPlayers()) {
-            if (p.name === entry.playerName && p.isValid) {
-              cachedPlayer = p;
-              break;
-            }
-          }
-        }
-        if (!cachedPlayer) continue; // Player gone, skip
+        const cachedPlayer = playerMap.get(entry.playerName);
+        if (!cachedPlayer?.isValid) continue; // Player gone, skip
 
         try {
           const loc = cachedPlayer.location;
@@ -87,6 +80,11 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
         spawned++;
         if (spawned % SPAWNS_PER_TICK === 0) {
           yield;
+          // Refresh player map at yield boundary
+          playerMap = new Map<string, Player>();
+          for (const p of world.getAllPlayers()) {
+            if (p.isValid) playerMap.set(p.name, p);
+          }
         }
       }
     })()

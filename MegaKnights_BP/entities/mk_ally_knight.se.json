@@ -38,8 +38,7 @@
       "minecraft:navigation.walk": {
         "can_walk": true,
         "avoid_water": true,
-        "can_pass_doors": true,
-        "can_open_doors": true
+        "can_pass_doors": true
       },
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},

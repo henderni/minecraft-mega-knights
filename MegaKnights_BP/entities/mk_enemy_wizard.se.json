@@ -28,7 +28,7 @@
         "damage": 6
       },
       "minecraft:movement": {
-        "value": 0.25
+        "value": 0.30
       },
       "minecraft:collision_box": {
         "width": 0.6,
@@ -69,12 +69,8 @@
         "priority": 6,
         "speed_multiplier": 0.6
       },
-      "minecraft:behavior.look_at_player": {
-        "priority": 7,
-        "look_distance": 8.0
-      },
       "minecraft:behavior.random_look_around": {
-        "priority": 8
+        "priority": 7
       },
       "minecraft:behavior.hurt_by_target": {
         "priority": 1
@@ -98,7 +94,7 @@
                 }
               ]
             },
-            "max_dist": 16
+            "max_dist": 12
           }
         ],
         "must_see": true,
@@ -109,16 +105,6 @@
       },
       "minecraft:loot": {
         "table": "loot_tables/entities/mk_enemy_wizard.json"
-      },
-      "minecraft:spell_effects": {
-        "add_effects": [
-          {
-            "effect": "speed",
-            "duration": 300,
-            "amplifier": 0,
-            "visible": false
-          }
-        ]
       },
       "minecraft:despawn": {
         "despawn_from_distance": {

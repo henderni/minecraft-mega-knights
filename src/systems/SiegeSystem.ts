@@ -36,8 +36,9 @@ export class SiegeSystem {
   private ticksSinceWave = 0;
   private ticksSinceVictoryCheck = 0;
 
-  /** Throttle mob count checks — only recount every 3 seconds (60 ticks) */
-  private ticksSinceMobCount = 0;
+  /** Tick-based mob count cache — shared across tick(), generator, and victory check.
+   *  All callers use getCachedMobCount() which deduplicates the expensive getEntities call. */
+  private lastMobCountTick = -1;
   private lastMobCount = 0;
 
   /** Reusable Set for dimension deduplication in victory checks — avoids allocation */
@@ -66,19 +67,13 @@ export class SiegeSystem {
     if (this.currentWave < WAVE_DEFINITIONS.length) {
       const wave = WAVE_DEFINITIONS[this.currentWave];
       if (this.ticksSinceWave >= wave.delayTicks) {
-        // Throttle mob count checks to every 3 seconds (60 ticks) during siege
-        this.ticksSinceMobCount += 20;
-        if (this.ticksSinceMobCount >= 60) {
-          this.ticksSinceMobCount = 0;
-          this.lastMobCount = this.countActiveSiegeMobs();
-        }
-        if (this.lastMobCount < MAX_ACTIVE_SIEGE_MOBS) {
+        if (this.getCachedMobCount() < MAX_ACTIVE_SIEGE_MOBS) {
           this.spawnWave();
           this.ticksSinceWave = 0;
-          this.ticksSinceMobCount = 0; // Reset so next wave gets a fresh count
           this.lastMobCount = MAX_ACTIVE_SIEGE_MOBS; // Assume full until next recount
+          this.lastMobCountTick = system.currentTick; // Lock cache for 60 ticks
         }
-        // If over cap, ticksSinceWave stays high so we re-check after throttle
+        // If over cap, ticksSinceWave stays high so we re-check next tick()
       }
     }
 
@@ -90,6 +85,15 @@ export class SiegeSystem {
         this.checkVictory();
       }
     }
+  }
+
+  /** Get mob count, reusing cached value if called within 60 ticks (~3s) */
+  private getCachedMobCount(): number {
+    const now = system.currentTick;
+    if (now - this.lastMobCountTick < 60) return this.lastMobCount;
+    this.lastMobCount = this.countActiveSiegeMobs();
+    this.lastMobCountTick = now;
+    return this.lastMobCount;
   }
 
   /** Count active siege mobs across all dimensions players are in */
@@ -148,28 +152,21 @@ export class SiegeSystem {
     }
 
     // Stagger spawns across ticks using system.runJob
-    // Re-fetch player only when name changes or isValid fails (not every yield)
+    // Uses a player Map refreshed only at yield boundaries — avoids getAllPlayers per name lookup
     const siegeRef = this;
     system.runJob(
       (function* () {
         let spawned = 0;
-        let lastPlayerName = "";
-        let cachedPlayer: Player | undefined;
+        // Build player map once; refresh only at yield boundaries
+        let playerMap = new Map<string, Player>();
+        for (const p of world.getAllPlayers()) {
+          if (p.isValid) playerMap.set(p.name, p);
+        }
 
         for (const entry of spawnQueue) {
-          // Re-fetch player when name changes or when cached ref is stale
-          if (entry.playerName !== lastPlayerName || !cachedPlayer?.isValid) {
-            lastPlayerName = entry.playerName;
-            cachedPlayer = undefined;
-            for (const p of world.getAllPlayers()) {
-              if (p.name === entry.playerName && p.isValid) {
-                cachedPlayer = p;
-                break;
-              }
-            }
-          }
+          const cachedPlayer = playerMap.get(entry.playerName);
 
-          if (cachedPlayer) {
+          if (cachedPlayer?.isValid) {
             try {
               const loc = cachedPlayer.location;
               const angle = Math.random() * Math.PI * 2;
@@ -193,14 +190,23 @@ export class SiegeSystem {
           spawned++;
           if (spawned % SPAWNS_PER_TICK === 0) {
             yield;
+            // Refresh player map at yield boundary (once per tick, not per entry)
+            playerMap = new Map<string, Player>();
+            for (const p of world.getAllPlayers()) {
+              if (p.isValid) playerMap.set(p.name, p);
+            }
             // Mid-wave entity cap check: pause spawning if over budget
             if (spawned % 5 === 0) {
-              const currentCount = siegeRef.countActiveSiegeMobs();
-              if (currentCount >= MAX_ACTIVE_SIEGE_MOBS) {
+              if (siegeRef.getCachedMobCount() >= MAX_ACTIVE_SIEGE_MOBS) {
                 // Wait until mobs die before continuing to spawn
-                while (siegeRef.countActiveSiegeMobs() >= MAX_ACTIVE_SIEGE_MOBS) {
+                while (siegeRef.getCachedMobCount() >= MAX_ACTIVE_SIEGE_MOBS) {
                   // Yield 60 times (~3 seconds) before rechecking
                   for (let w = 0; w < 60; w++) yield;
+                }
+                // Refresh player map after long wait
+                playerMap = new Map<string, Player>();
+                for (const p of world.getAllPlayers()) {
+                  if (p.isValid) playerMap.set(p.name, p);
                 }
               }
             }
@@ -213,9 +219,9 @@ export class SiegeSystem {
   }
 
   private checkVictory(): void {
-    const totalSiegeMobs = this.countActiveSiegeMobs();
-
-    if (totalSiegeMobs === 0) {
+    // Victory check always needs fresh count (not cached) — force recount
+    this.lastMobCountTick = -1;
+    if (this.getCachedMobCount() === 0) {
       this.endSiege(true);
     }
   }

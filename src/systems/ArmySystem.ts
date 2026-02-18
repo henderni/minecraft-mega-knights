@@ -22,12 +22,24 @@ const MAX_ARMY_BONUS = 30;
 /** Cache for sanitized player tags — player names don't change during a session */
 const tagCache = new Map<string, string>();
 
+/** Cache for fully-built owner tags (e.g. "mk_owner_PlayerName") — avoids string concat per use */
+const ownerTagCache = new Map<string, string>();
+
 /** Sanitize player name for use in entity tags (only alphanum, underscore, hyphen allowed) */
 function sanitizePlayerTag(name: string): string {
   let cached = tagCache.get(name);
   if (cached !== undefined) return cached;
   cached = name.replace(/[^a-zA-Z0-9_\-]/g, "_");
   tagCache.set(name, cached);
+  return cached;
+}
+
+/** Get the full owner tag string for a player name — cached to avoid repeat concat */
+function getOwnerTag(name: string): string {
+  let cached = ownerTagCache.get(name);
+  if (cached !== undefined) return cached;
+  cached = `mk_owner_${sanitizePlayerTag(name)}`;
+  ownerTagCache.set(name, cached);
   return cached;
 }
 
@@ -93,12 +105,12 @@ export class ArmySystem {
     // Map enemy type to ally type
     const allyTypeId = enemyTypeId.replace("_enemy_", "_ally_");
     const displayName = ArmySystem.allyDisplayName(allyTypeId);
-    const safeTag = sanitizePlayerTag(player.name);
+    const ownerTag = getOwnerTag(player.name);
 
     try {
       const ally = dimension.spawnEntity(allyTypeId, location);
       ally.addTag("mk_army");
-      ally.addTag(`mk_owner_${safeTag}`);
+      ally.addTag(ownerTag);
       ally.setDynamicProperty("mk:owner_name", player.name);
       ally.nameTag = `§a${player.name}'s ${displayName}`;
 
@@ -145,11 +157,12 @@ export class ArmySystem {
     for (const player of this.cachedPlayers) {
       if (!player.isValid) continue;
 
-      const safeTag = sanitizePlayerTag(player.name);
-      const ownerTag = `mk_owner_${safeTag}`;
+      const ownerTag = getOwnerTag(player.name);
       try {
         const allies = player.dimension.getEntities({
           tags: ["mk_army", ownerTag],
+          location: player.location,
+          maxDistance: 128,
         });
         player.setDynamicProperty("mk:army_size", allies.length);
       } catch {
@@ -178,11 +191,12 @@ export class ArmySystem {
   }
 
   getArmyEntities(player: Player): Entity[] {
-    const safeTag = sanitizePlayerTag(player.name);
-    const ownerTag = `mk_owner_${safeTag}`;
+    const ownerTag = getOwnerTag(player.name);
     try {
       return player.dimension.getEntities({
         tags: ["mk_army", ownerTag],
+        location: player.location,
+        maxDistance: 128,
       });
     } catch {
       return [];
@@ -195,10 +209,9 @@ export class ArmySystem {
 
   /** Debug spawn allies — staggered across ticks to avoid freezing Switch */
   debugSpawnAllies(player: Player, count: number): void {
-    const safeTag = sanitizePlayerTag(player.name);
+    const ownerTag = getOwnerTag(player.name);
     const playerName = player.name;
     const dimension = player.dimension;
-    const baseLoc = { ...player.location };
 
     system.runJob(
       (function* () {
@@ -228,7 +241,7 @@ export class ArmySystem {
           try {
             const ally = dimension.spawnEntity("mk:mk_ally_knight", loc);
             ally.addTag("mk_army");
-            ally.addTag(`mk_owner_${safeTag}`);
+            ally.addTag(ownerTag);
             ally.setDynamicProperty("mk:owner_name", playerName);
             ally.nameTag = `§a${playerName}'s Knight`;
           } catch (e) {
