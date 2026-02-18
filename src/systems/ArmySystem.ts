@@ -54,8 +54,8 @@ const ALLY_DISPLAY_NAMES = new Map<string, string>([
 export class ArmySystem {
   private static readonly BASE_ARMY_SIZE = 20;
 
-  /** Cached player list — refreshed on every army recount tick (~10s) */
-  private cachedPlayers: Player[] = [];
+  /** Cached player map — refreshed on every army recount tick (~10s). Keyed by name for O(1) lookup in death listener. */
+  private cachedPlayerMap = new Map<string, Player>();
 
   /** Derive a display name from an ally type ID — uses pre-computed cache */
   private static allyDisplayName(allyTypeId: string): string {
@@ -133,15 +133,13 @@ export class ArmySystem {
       const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
       if (!ownerName) return;
 
-      // Find the owner player by name — use cached player list (refreshed every recount tick)
-      for (const player of this.cachedPlayers) {
-        if (player.name === ownerName && player.isValid) {
-          const current =
-            (player.getDynamicProperty("mk:army_size") as number) ?? 0;
-          if (current > 0) {
-            player.setDynamicProperty("mk:army_size", current - 1);
-          }
-          break;
+      // Find the owner player by name — O(1) lookup from cached Map (refreshed every recount tick)
+      const player = this.cachedPlayerMap.get(ownerName);
+      if (player?.isValid) {
+        const current =
+          (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+        if (current > 0) {
+          player.setDynamicProperty("mk:army_size", current - 1);
         }
       }
     });
@@ -152,9 +150,13 @@ export class ArmySystem {
    * Death events handle most updates; this corrects edge cases (unloaded chunks, etc).
    */
   tick(): void {
-    // Refresh cached player list (used by death listener to avoid getAllPlayers per death)
-    this.cachedPlayers = world.getAllPlayers();
-    for (const player of this.cachedPlayers) {
+    // Refresh cached player map (used by death listener for O(1) lookup)
+    this.cachedPlayerMap.clear();
+    const allPlayers = world.getAllPlayers();
+    for (const p of allPlayers) {
+      if (p.isValid) this.cachedPlayerMap.set(p.name, p);
+    }
+    for (const player of allPlayers) {
       if (!player.isValid) continue;
 
       const ownerTag = getOwnerTag(player.name);

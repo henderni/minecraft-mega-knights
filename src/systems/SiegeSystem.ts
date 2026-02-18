@@ -96,20 +96,13 @@ export class SiegeSystem {
     if (this.ticksSinceRecount >= RECOUNT_INTERVAL) {
       this.ticksSinceRecount = 0;
       try {
-        const players = world.getAllPlayers();
-        if (players.length > 0) {
-          const firstPlayer = players[0];
-          if (firstPlayer.isValid) {
-            const actual = firstPlayer.dimension.getEntities({
-              tags: ["mk_siege_mob"],
-              location: firstPlayer.location,
-              maxDistance: 128,
-            });
-            this.siegeMobCount = actual.length;
-          }
-        }
+        // Query overworld without location constraint for global accuracy
+        // Siege always happens in the overworld; no distance filter avoids missing despawned-far mobs
+        const overworld = world.getDimension("overworld");
+        const actual = overworld.getEntities({ tags: ["mk_siege_mob"] });
+        this.siegeMobCount = actual.length;
       } catch {
-        // Dimension query may fail if player is transitioning
+        // Dimension query may fail during world load
       }
     }
 
