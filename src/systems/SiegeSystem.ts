@@ -45,6 +45,11 @@ export class SiegeSystem {
    *  Incremented on successful spawn, decremented via death event subscription. */
   private siegeMobCount = 0;
 
+  /** Number of active wave spawn generators still running.
+   *  Victory check is blocked until all generators complete, preventing premature
+   *  victory if siegeMobCount briefly hits 0 mid-spawn. */
+  private activeSpawnJobs = 0;
+
   startSiege(): void {
     if (this.siegeActive) return;
 
@@ -54,6 +59,7 @@ export class SiegeSystem {
     this.ticksSinceVictoryCheck = 0;
     this.ticksSinceRecount = 0;
     this.siegeMobCount = 0;
+    this.activeSpawnJobs = 0;
 
     world.sendMessage(SIEGE_BEGIN);
     world.sendMessage(SIEGE_DEFEND);
@@ -106,8 +112,10 @@ export class SiegeSystem {
       }
     }
 
-    // Check victory condition — throttled to every VICTORY_CHECK_INTERVAL ticks
-    if (this.currentWave >= WAVE_DEFINITIONS.length) {
+    // Check victory condition — throttled to every VICTORY_CHECK_INTERVAL ticks.
+    // Requires all wave generators to have completed (activeSpawnJobs === 0)
+    // to prevent premature victory while the last wave is still spawning.
+    if (this.currentWave >= WAVE_DEFINITIONS.length && this.activeSpawnJobs === 0) {
       this.ticksSinceVictoryCheck += 20;
       if (this.ticksSinceVictoryCheck >= VICTORY_CHECK_INTERVAL) {
         this.ticksSinceVictoryCheck = 0;
@@ -152,6 +160,7 @@ export class SiegeSystem {
     const siegeRef = this;
     // Reuse the outer players array for the initial map (avoids double getAllPlayers on same tick)
     const initialPlayers = players;
+    this.activeSpawnJobs++;
     system.runJob(
       (function* () {
         let spawned = 0;
@@ -213,6 +222,9 @@ export class SiegeSystem {
             }
           }
         }
+
+        // Signal that this wave's spawning is complete — unblocks victory check
+        siegeRef.activeSpawnJobs = Math.max(0, siegeRef.activeSpawnJobs - 1);
       })()
     );
 
