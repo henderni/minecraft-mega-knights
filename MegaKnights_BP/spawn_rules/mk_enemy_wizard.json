@@ -1,5 +1,5 @@
 {
-  "format_version": "1.8.0",
+  "format_version": "1.18.0",
   "minecraft:spawn_rules": {
     "description": {
       "identifier": "mk:mk_enemy_wizard",
@@ -18,7 +18,7 @@
           "max_size": 1
         },
         "minecraft:weight": {
-          "default": 12
+          "default": 6
         },
         "minecraft:biome_filter": {
           "any_of": [
@@ -35,6 +35,9 @@
               "value": "extreme_hills"
             }
           ]
+        },
+        "minecraft:density_limit": {
+          "surface": 2
         }
       }
     ]

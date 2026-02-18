@@ -1,5 +1,5 @@
 {
-  "format_version": "1.8.0",
+  "format_version": "1.18.0",
   "minecraft:spawn_rules": {
     "description": {
       "identifier": "mk:mk_enemy_archer",
@@ -18,7 +18,7 @@
           "max_size": 2
         },
         "minecraft:weight": {
-          "default": 25
+          "default": 12
         },
         "minecraft:biome_filter": {
           "any_of": [
@@ -35,6 +35,9 @@
               "value": "taiga"
             }
           ]
+        },
+        "minecraft:density_limit": {
+          "surface": 2
         }
       }
     ]

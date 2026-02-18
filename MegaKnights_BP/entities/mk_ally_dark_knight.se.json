@@ -42,13 +42,12 @@
         "can_walk": true,
         "avoid_water": true,
         "can_pass_doors": true,
-        "can_open_doors": true,
-        "can_break_doors": true
+        "can_open_doors": true
       },
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
       "minecraft:follow_range": {
-        "value": 32
+        "value": 24
       },
       "minecraft:is_tamed": {},
       "minecraft:behavior.float": {
@@ -89,28 +88,26 @@
               "subject": "other",
               "value": "mk_enemy"
             },
-            "max_dist": 32
-          },
-          {
-            "filters": {
-              "test": "is_family",
-              "subject": "other",
-              "value": "monster"
-            },
-            "max_dist": 16
+            "max_dist": 20
           }
         ],
+        "scan_interval": 10,
         "must_see": true,
-        "must_see_forget_duration": 25.0
+        "must_see_forget_duration": 12.0
       },
       "minecraft:knockback_resistance": {
         "value": 0.5
       },
       "minecraft:nameable": {
-        "always_show": true,
+        "always_show": false,
         "allow_name_tag_renaming": false
       },
-      "minecraft:persistent": {}
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "max_distance": 128,
+          "min_distance": 96
+        }
+      }
     },
     "events": {
       "minecraft:entity_spawned": {},

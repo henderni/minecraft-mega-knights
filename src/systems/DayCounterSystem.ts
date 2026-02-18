@@ -9,7 +9,7 @@ import {
   HUD_ACTION_BAR,
 } from "../data/Strings";
 
-/** Pre-built progress bar strings to avoid string allocations every 2 ticks */
+/** Pre-built progress bar strings to avoid string allocations every HUD tick */
 const BAR_LENGTH = 20;
 const PROGRESS_BARS: string[] = [];
 for (let i = 0; i <= BAR_LENGTH; i++) {
@@ -28,29 +28,47 @@ export class DayCounterSystem {
 
   private onDayChangeCallbacks: ((day: number) => void)[] = [];
 
-  /** Cached HUD values — only re-read from dynamic properties when they change */
-  private cachedDay = -1;
-  private cachedTickCounter = -1;
+  /** Cached values — source of truth after initial load. Only read dynamic properties once. */
+  private cachedActive = false;
+  private cachedDay = 0;
+  private cachedTickCounter = 0;
+  private initialized = false;
+
+  /** Per-player HUD string cache to skip setActionBar when nothing changed */
+  private lastHudStrings = new Map<string, string>();
 
   /** Register a callback that fires whenever the day changes */
   onDayChanged(callback: (day: number) => void): void {
     this.onDayChangeCallbacks.push(callback);
   }
 
+  /** Load cached values from dynamic properties (call once on first use) */
+  private ensureInitialized(): void {
+    if (this.initialized) return;
+    this.initialized = true;
+    this.cachedActive = (world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE) as boolean) ?? false;
+    this.cachedDay = (world.getDynamicProperty(DayCounterSystem.KEY_DAY) as number) ?? 0;
+    this.cachedTickCounter = (world.getDynamicProperty(DayCounterSystem.KEY_TICK) as number) ?? 0;
+  }
+
   getCurrentDay(): number {
-    return (world.getDynamicProperty(DayCounterSystem.KEY_DAY) as number) ?? 0;
+    this.ensureInitialized();
+    return this.cachedDay;
   }
 
   isActive(): boolean {
-    return (world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE) as boolean) ?? false;
+    this.ensureInitialized();
+    return this.cachedActive;
   }
 
   startQuest(): void {
     world.setDynamicProperty(DayCounterSystem.KEY_ACTIVE, true);
     world.setDynamicProperty(DayCounterSystem.KEY_DAY, 0);
     world.setDynamicProperty(DayCounterSystem.KEY_TICK, 0);
+    this.cachedActive = true;
     this.cachedDay = 0;
     this.cachedTickCounter = 0;
+    this.initialized = true;
     world.sendMessage(QUEST_START_TITLE);
     world.sendMessage(QUEST_START_DESC);
   }
@@ -61,14 +79,15 @@ export class DayCounterSystem {
    * many days at once (e.g. setday 0 → 100).
    */
   setDay(day: number): void {
-    const previousDay = this.getCurrentDay();
+    const previousDay = this.cachedDay;
     world.setDynamicProperty(DayCounterSystem.KEY_DAY, day);
     world.setDynamicProperty(DayCounterSystem.KEY_TICK, 0);
     this.cachedDay = day;
     this.cachedTickCounter = 0;
 
-    if (!this.isActive()) {
+    if (!this.cachedActive) {
       world.setDynamicProperty(DayCounterSystem.KEY_ACTIVE, true);
+      this.cachedActive = true;
     }
 
     // Collect days with milestones or callbacks to fire
@@ -105,8 +124,10 @@ export class DayCounterSystem {
     world.setDynamicProperty(DayCounterSystem.KEY_ACTIVE, false);
     world.setDynamicProperty(DayCounterSystem.KEY_DAY, 0);
     world.setDynamicProperty(DayCounterSystem.KEY_TICK, 0);
+    this.cachedActive = false;
     this.cachedDay = 0;
     this.cachedTickCounter = 0;
+    this.lastHudStrings.clear();
   }
 
   initializePlayer(player: Player): void {
@@ -125,36 +146,27 @@ export class DayCounterSystem {
   }
 
   tick(): void {
-    if (!this.isActive()) return;
+    this.ensureInitialized();
+    if (!this.cachedActive) return;
+    if (this.cachedDay >= DayCounterSystem.MAX_DAY) return;
 
-    const currentDay = this.getCurrentDay();
-    if (currentDay >= DayCounterSystem.MAX_DAY) return;
+    this.cachedTickCounter += 20; // called every 20 ticks
 
-    let tickCounter = (world.getDynamicProperty(DayCounterSystem.KEY_TICK) as number) ?? 0;
-    tickCounter += 20; // called every 20 ticks
-
-    if (tickCounter >= DayCounterSystem.TICKS_PER_DAY) {
-      tickCounter = 0;
-      const newDay = currentDay + 1;
-      world.setDynamicProperty(DayCounterSystem.KEY_DAY, newDay);
-      this.cachedDay = newDay;
-      this.onDayChange(newDay);
+    if (this.cachedTickCounter >= DayCounterSystem.TICKS_PER_DAY) {
+      this.cachedTickCounter = 0;
+      this.cachedDay += 1;
+      world.setDynamicProperty(DayCounterSystem.KEY_DAY, this.cachedDay);
+      this.onDayChange(this.cachedDay);
     }
 
-    world.setDynamicProperty(DayCounterSystem.KEY_TICK, tickCounter);
-    this.cachedTickCounter = tickCounter;
+    world.setDynamicProperty(DayCounterSystem.KEY_TICK, this.cachedTickCounter);
   }
 
   updateHUD(): void {
-    if (!this.isActive()) return;
+    if (!this.cachedActive) return;
 
-    // Use cached values — updated by tick() and setDay() rather than re-reading dynamic props
-    const currentDay = this.cachedDay >= 0 ? this.cachedDay : this.getCurrentDay();
-    const tickCounter = this.cachedTickCounter >= 0
-      ? this.cachedTickCounter
-      : ((world.getDynamicProperty(DayCounterSystem.KEY_TICK) as number) ?? 0);
-
-    const progress = tickCounter / DayCounterSystem.TICKS_PER_DAY;
+    const currentDay = this.cachedDay;
+    const progress = this.cachedTickCounter / DayCounterSystem.TICKS_PER_DAY;
     const filled = Math.floor(progress * BAR_LENGTH);
     // Use pre-built bar string — no allocation
     const bar = PROGRESS_BARS[filled] ?? PROGRESS_BARS[0];
@@ -167,9 +179,14 @@ export class DayCounterSystem {
         const tier = (player.getDynamicProperty("mk:current_tier") as number) ?? 0;
         const tierName = TIER_NAMES[tier] ?? "Page";
 
-        player.onScreenDisplay.setActionBar(
-          HUD_ACTION_BAR(currentDay, bar, armySize, tierName)
-        );
+        const hudString = HUD_ACTION_BAR(currentDay, bar, armySize, tierName);
+
+        // Skip setActionBar if the string hasn't changed — saves native bridge call
+        const lastHud = this.lastHudStrings.get(player.name);
+        if (hudString !== lastHud) {
+          player.onScreenDisplay.setActionBar(hudString);
+          this.lastHudStrings.set(player.name, hudString);
+        }
       } catch {
         // Player may have disconnected between getAllPlayers and property access
       }

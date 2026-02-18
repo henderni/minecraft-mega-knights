@@ -14,8 +14,8 @@ import {
   SIEGE_DEFEAT_3,
 } from "../data/Strings";
 
-/** How many entities to spawn per tick during staggered wave spawning */
-const SPAWNS_PER_TICK = 3;
+/** How many entities to spawn per tick during staggered wave spawning — kept low for Switch */
+const SPAWNS_PER_TICK = 1;
 
 /**
  * Max spawns per wave per player — prevents entity count explosion in multiplayer.
@@ -27,11 +27,17 @@ const MAX_SPAWNS_PER_PLAYER = 24;
 /** Ticks between victory checks after all waves are spawned (every 3 seconds) */
 const VICTORY_CHECK_INTERVAL = 60;
 
+/** Maximum active siege mobs before delaying next wave — prevents Switch frame drops */
+const MAX_ACTIVE_SIEGE_MOBS = 30;
+
 export class SiegeSystem {
   private siegeActive = false;
   private currentWave = 0;
   private ticksSinceWave = 0;
   private ticksSinceVictoryCheck = 0;
+
+  /** Reusable Set for dimension deduplication in victory checks — avoids allocation */
+  private checkedDimensions = new Set<string>();
 
   startSiege(): void {
     if (this.siegeActive) return;
@@ -56,8 +62,13 @@ export class SiegeSystem {
     if (this.currentWave < WAVE_DEFINITIONS.length) {
       const wave = WAVE_DEFINITIONS[this.currentWave];
       if (this.ticksSinceWave >= wave.delayTicks) {
-        this.spawnWave();
-        this.ticksSinceWave = 0;
+        // Check active siege mob count before spawning — delay if too many alive
+        const activeMobs = this.countActiveSiegeMobs();
+        if (activeMobs < MAX_ACTIVE_SIEGE_MOBS) {
+          this.spawnWave();
+          this.ticksSinceWave = 0;
+        }
+        // If over cap, ticksSinceWave stays high so we re-check next tick
       }
     }
 
@@ -71,6 +82,30 @@ export class SiegeSystem {
     }
   }
 
+  /** Count active siege mobs across all dimensions players are in */
+  private countActiveSiegeMobs(): number {
+    this.checkedDimensions.clear();
+    let total = 0;
+
+    for (const player of world.getAllPlayers()) {
+      if (!player.isValid) continue;
+      const dimId = player.dimension.id;
+      if (this.checkedDimensions.has(dimId)) continue;
+      this.checkedDimensions.add(dimId);
+
+      try {
+        const siegeMobs = player.dimension.getEntities({
+          tags: ["mk_siege_mob"],
+        });
+        total += siegeMobs.length;
+      } catch {
+        // Skip if dimension query fails
+      }
+    }
+
+    return total;
+  }
+
   private spawnWave(): void {
     if (this.currentWave >= WAVE_DEFINITIONS.length) return;
 
@@ -80,8 +115,7 @@ export class SiegeSystem {
     const players = world.getAllPlayers();
     const playerCount = players.length;
 
-    // Scale spawn counts: in multiplayer, reduce per-player spawns to stay under entity limits
-    // Solo: full wave. 2 players: 75% each. 3+: 60% each. Capped at MAX_SPAWNS_PER_PLAYER.
+    // Scale spawn counts: solo gets full wave, multiplayer reduces per-player to stay under entity limits
     const scaleFactor = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
 
     // Build a flat spawn queue with scaled counts per player
@@ -102,23 +136,29 @@ export class SiegeSystem {
     }
 
     // Stagger spawns across ticks using system.runJob
-    // Re-fetch player by name inside generator to handle disconnects safely
+    // Re-fetch player by name only at yield boundaries (not every spawn)
     system.runJob(
       (function* () {
         let spawned = 0;
+        let lastPlayerName = "";
+        let cachedPlayer: Player | undefined;
+
         for (const entry of spawnQueue) {
-          // Re-fetch the player each iteration — handles disconnect/rejoin
-          let targetPlayer: Player | undefined;
-          for (const p of world.getAllPlayers()) {
-            if (p.name === entry.playerName && p.isValid) {
-              targetPlayer = p;
-              break;
+          // Only re-fetch player when the name changes or at yield boundaries
+          if (entry.playerName !== lastPlayerName || !cachedPlayer) {
+            lastPlayerName = entry.playerName;
+            cachedPlayer = undefined;
+            for (const p of world.getAllPlayers()) {
+              if (p.name === entry.playerName && p.isValid) {
+                cachedPlayer = p;
+                break;
+              }
             }
           }
 
-          if (targetPlayer) {
+          if (cachedPlayer) {
             try {
-              const loc = targetPlayer.location;
+              const loc = cachedPlayer.location;
               const angle = Math.random() * Math.PI * 2;
               const dist = 20 + Math.random() * 15;
               const spawnLoc = {
@@ -127,7 +167,7 @@ export class SiegeSystem {
                 z: loc.z + Math.sin(angle) * dist,
               };
 
-              const entity = targetPlayer.dimension.spawnEntity(
+              const entity = cachedPlayer.dimension.spawnEntity(
                 entry.entityId,
                 spawnLoc
               );
@@ -139,6 +179,8 @@ export class SiegeSystem {
 
           spawned++;
           if (spawned % SPAWNS_PER_TICK === 0) {
+            // Invalidate cached player at yield boundary — they may have disconnected
+            cachedPlayer = undefined;
             yield;
           }
         }
@@ -149,24 +191,7 @@ export class SiegeSystem {
   }
 
   private checkVictory(): void {
-    const checkedDimensions = new Set<string>();
-    let totalSiegeMobs = 0;
-
-    for (const player of world.getAllPlayers()) {
-      if (!player.isValid) continue;
-      const dimId = player.dimension.id;
-      if (checkedDimensions.has(dimId)) continue;
-      checkedDimensions.add(dimId);
-
-      try {
-        const siegeMobs = player.dimension.getEntities({
-          tags: ["mk_siege_mob"],
-        });
-        totalSiegeMobs += siegeMobs.length;
-      } catch {
-        // Skip if dimension query fails
-      }
-    }
+    const totalSiegeMobs = this.countActiveSiegeMobs();
 
     if (totalSiegeMobs === 0) {
       this.endSiege(true);

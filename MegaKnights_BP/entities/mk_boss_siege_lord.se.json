@@ -47,8 +47,7 @@
         "can_walk": true,
         "avoid_water": true,
         "can_pass_doors": true,
-        "can_open_doors": true,
-        "can_break_doors": true
+        "can_open_doors": true
       },
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
@@ -62,7 +61,7 @@
         "priority": 3,
         "speed_multiplier": 1.3,
         "track_target": true,
-        "reach_multiplier": 2.0
+        "reach_multiplier": 1.5
       },
       "minecraft:behavior.random_stroll": {
         "priority": 6,
@@ -96,11 +95,12 @@
                 }
               ]
             },
-            "max_dist": 32
+            "max_dist": 24
           }
         ],
         "must_see": true,
-        "must_see_forget_duration": 30.0
+        "must_see_forget_duration": 15.0,
+        "scan_interval": 10
       },
       "minecraft:experience_reward": {
         "on_death": "q.last_hit_by_player ? 100 : 0"
@@ -113,13 +113,12 @@
       },
       "minecraft:fire_immune": true,
       "minecraft:nameable": {
-        "always_show": true,
+        "always_show": false,
         "allow_name_tag_renaming": false
       },
-      "minecraft:persistent": {},
       "minecraft:boss": {
-        "should_darken_sky": true,
-        "hud_range": 55,
+        "should_darken_sky": false,
+        "hud_range": 35,
         "name": "The Siege Lord"
       }
     },

@@ -19,21 +19,41 @@ import {
 /** Max castle troop bonus a player can accumulate (+30 = all 3 structures) */
 const MAX_ARMY_BONUS = 30;
 
+/** Cache for sanitized player tags — player names don't change during a session */
+const tagCache = new Map<string, string>();
+
 /** Sanitize player name for use in entity tags (only alphanum, underscore, hyphen allowed) */
 function sanitizePlayerTag(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_\-]/g, "_");
+  let cached = tagCache.get(name);
+  if (cached !== undefined) return cached;
+  cached = name.replace(/[^a-zA-Z0-9_\-]/g, "_");
+  tagCache.set(name, cached);
+  return cached;
 }
+
+/** Pre-computed display names for known ally types — avoids string manipulation on every recruit */
+const ALLY_DISPLAY_NAMES = new Map<string, string>([
+  ["mk:mk_ally_knight", "Knight"],
+  ["mk:mk_ally_archer", "Archer"],
+  ["mk:mk_ally_wizard", "Wizard"],
+  ["mk:mk_ally_dark_knight", "Dark Knight"],
+]);
 
 export class ArmySystem {
   private static readonly BASE_ARMY_SIZE = 20;
 
-  /** Derive a display name from an ally type ID like "mk:mk_ally_dark_knight" -> "Dark Knight" */
+  /** Derive a display name from an ally type ID — uses pre-computed cache */
   private static allyDisplayName(allyTypeId: string): string {
+    const cached = ALLY_DISPLAY_NAMES.get(allyTypeId);
+    if (cached) return cached;
+    // Fallback for unknown types
     const raw = allyTypeId.replace("mk:mk_ally_", "").replace(/_/g, " ");
-    return raw
+    const name = raw
       .split(" ")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
+    ALLY_DISPLAY_NAMES.set(allyTypeId, name);
+    return name;
   }
 
   /** Get the current max army size for a player (base + castle bonuses) */
@@ -98,7 +118,7 @@ export class ArmySystem {
       const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
       if (!ownerName) return;
 
-      // Find the owner player and decrement army size
+      // Find the owner player by name — use simple loop instead of getAllPlayers() array
       for (const player of world.getAllPlayers()) {
         if (player.name === ownerName && player.isValid) {
           const current =
@@ -113,8 +133,8 @@ export class ArmySystem {
   }
 
   /**
-   * Periodic recount — runs less frequently now since death events handle
-   * most updates. Acts as a correction pass for edge cases (unloaded chunks, etc).
+   * Periodic recount — runs every 10 seconds as a safety net.
+   * Death events handle most updates; this corrects edge cases (unloaded chunks, etc).
    */
   tick(): void {
     for (const player of world.getAllPlayers()) {
@@ -168,26 +188,57 @@ export class ArmySystem {
     return (player.getDynamicProperty("mk:army_size") as number) ?? 0;
   }
 
+  /** Debug spawn allies — staggered across ticks to avoid freezing Switch */
   debugSpawnAllies(player: Player, count: number): void {
     const safeTag = sanitizePlayerTag(player.name);
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 3 + Math.random() * 3;
-      const loc = {
-        x: player.location.x + Math.cos(angle) * dist,
-        y: player.location.y,
-        z: player.location.z + Math.sin(angle) * dist,
-      };
-      try {
-        const ally = player.dimension.spawnEntity("mk:mk_ally_knight", loc);
-        ally.addTag("mk_army");
-        ally.addTag(`mk_owner_${safeTag}`);
-        ally.setDynamicProperty("mk:owner_name", player.name);
-        ally.nameTag = `§a${player.name}'s Knight`;
-      } catch (e) {
-        console.warn(`[MegaKnights] Failed to spawn debug ally: ${e}`);
-      }
-    }
-    player.sendMessage(DEBUG_ALLIES_SPAWNED(count));
+    const playerName = player.name;
+    const dimension = player.dimension;
+    const baseLoc = { ...player.location };
+
+    system.runJob(
+      (function* () {
+        let spawned = 0;
+        for (let i = 0; i < count; i++) {
+          // Re-fetch player to handle disconnect
+          let currentPlayer: Player | undefined;
+          for (const p of world.getAllPlayers()) {
+            if (p.name === playerName && p.isValid) {
+              currentPlayer = p;
+              break;
+            }
+          }
+          if (!currentPlayer) break;
+
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 3 + Math.random() * 3;
+          const loc = {
+            x: currentPlayer.location.x + Math.cos(angle) * dist,
+            y: currentPlayer.location.y,
+            z: currentPlayer.location.z + Math.sin(angle) * dist,
+          };
+          try {
+            const ally = dimension.spawnEntity("mk:mk_ally_knight", loc);
+            ally.addTag("mk_army");
+            ally.addTag(`mk_owner_${safeTag}`);
+            ally.setDynamicProperty("mk:owner_name", playerName);
+            ally.nameTag = `§a${playerName}'s Knight`;
+          } catch (e) {
+            console.warn(`[MegaKnights] Failed to spawn debug ally: ${e}`);
+          }
+
+          spawned++;
+          if (spawned % 2 === 0) {
+            yield; // 2 spawns per tick max
+          }
+        }
+        // Notify after all spawned
+        for (const p of world.getAllPlayers()) {
+          if (p.name === playerName && p.isValid) {
+            p.sendMessage(DEBUG_ALLIES_SPAWNED(count));
+            break;
+          }
+        }
+      })()
+    );
   }
 }

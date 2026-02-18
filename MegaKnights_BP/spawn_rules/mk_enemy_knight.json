@@ -1,5 +1,5 @@
 {
-  "format_version": "1.8.0",
+  "format_version": "1.18.0",
   "minecraft:spawn_rules": {
     "description": {
       "identifier": "mk:mk_enemy_knight",
@@ -15,10 +15,10 @@
         },
         "minecraft:herd": {
           "min_size": 1,
-          "max_size": 2
+          "max_size": 1
         },
         "minecraft:weight": {
-          "default": 35
+          "default": 15
         },
         "minecraft:biome_filter": {
           "any_of": [
@@ -39,6 +39,9 @@
               "value": "extreme_hills"
             }
           ]
+        },
+        "minecraft:density_limit": {
+          "surface": 2
         }
       }
     ]

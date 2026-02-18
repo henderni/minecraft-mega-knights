@@ -4,7 +4,7 @@
     "description": {
       "identifier": "mk:mk_enemy_archer",
       "is_summonable": true,
-      "is_spawnable": true,
+      "is_spawnable": false,
       "is_experimental": false
     },
     "component_groups": {
@@ -43,7 +43,7 @@
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
       "minecraft:follow_range": {
-        "value": 32
+        "value": 16
       },
       "minecraft:shooter": {
         "def": "minecraft:arrow"
@@ -58,7 +58,7 @@
         "charge_shoot_trigger": 4.0,
         "attack_interval_min": 1.0,
         "attack_interval_max": 3.0,
-        "attack_radius": 15.0,
+        "attack_radius": 10.0,
         "speed_multiplier": 1.0
       },
       "minecraft:behavior.melee_attack": {
@@ -82,6 +82,7 @@
       },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 2,
+        "scan_interval": 10,
         "entity_types": [
           {
             "filters": {
@@ -90,17 +91,23 @@
                 { "test": "is_family", "subject": "other", "value": "mk_ally" }
               ]
             },
-            "max_dist": 24
+            "max_dist": 16
           }
         ],
         "must_see": true,
-        "must_see_forget_duration": 17.0
+        "must_see_forget_duration": 8.0
       },
       "minecraft:experience_reward": {
         "on_death": "q.last_hit_by_player ? 8 : 0"
       },
       "minecraft:loot": {
         "table": "loot_tables/entities/mk_enemy_archer.json"
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "max_distance": 54,
+          "min_distance": 32
+        }
       }
     },
     "events": {

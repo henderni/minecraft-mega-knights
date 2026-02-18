@@ -4,7 +4,7 @@
     "description": {
       "identifier": "mk:mk_ally_knight",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity"
       },
       "textures": {
         "default": "textures/entity/mk_ally_knight"

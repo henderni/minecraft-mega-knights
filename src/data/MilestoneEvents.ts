@@ -8,50 +8,74 @@ export interface Milestone {
   execute: () => void;
 }
 
-/** How many entities to spawn per tick during staggered milestone spawning */
-const SPAWNS_PER_TICK = 2;
+/** How many entities to spawn per tick during staggered milestone spawning — low for Switch */
+const SPAWNS_PER_TICK = 1;
+
+interface SpawnRequest {
+  entityId: string;
+  count: number;
+}
 
 /**
- * Stagger-spawns enemies near all players using system.runJob.
- * Re-fetches players by name inside the generator to handle disconnects safely.
+ * Queued spawn system: collects all spawn requests and runs them through a
+ * single runJob generator. Avoids creating multiple parallel generators
+ * (which previously caused 4-8 spawns/tick during busy milestones like day 90).
  */
-function spawnEnemiesNearPlayers(entityId: string, count: number): void {
+function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   // Capture player names at call time — generator re-fetches live player refs
-  const playerNames = world.getAllPlayers().map((p) => p.name);
+  const playerNames: string[] = [];
+  for (const p of world.getAllPlayers()) {
+    if (p.isValid) playerNames.push(p.name);
+  }
+
+  // Build flat spawn queue
+  const queue: { entityId: string; playerName: string }[] = [];
+  for (const name of playerNames) {
+    for (const req of requests) {
+      for (let i = 0; i < req.count; i++) {
+        queue.push({ entityId: req.entityId, playerName: name });
+      }
+    }
+  }
 
   system.runJob(
     (function* () {
       let spawned = 0;
-      for (const name of playerNames) {
-        for (let i = 0; i < count; i++) {
-          // Re-fetch player each iteration — safe if they disconnect mid-spawn
-          let player: Player | undefined;
+      let lastPlayerName = "";
+      let cachedPlayer: Player | undefined;
+
+      for (const entry of queue) {
+        // Only re-fetch player when name changes or at yield boundaries
+        if (entry.playerName !== lastPlayerName || !cachedPlayer) {
+          lastPlayerName = entry.playerName;
+          cachedPlayer = undefined;
           for (const p of world.getAllPlayers()) {
-            if (p.name === name && p.isValid) {
-              player = p;
+            if (p.name === entry.playerName && p.isValid) {
+              cachedPlayer = p;
               break;
             }
           }
-          if (!player) break; // Player gone, skip remaining spawns for them
+        }
+        if (!cachedPlayer) continue; // Player gone, skip
 
-          try {
-            const loc = player.location;
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 15 + Math.random() * 20;
-            const spawnLoc = {
-              x: loc.x + Math.cos(angle) * dist,
-              y: loc.y,
-              z: loc.z + Math.sin(angle) * dist,
-            };
-            player.dimension.spawnEntity(entityId, spawnLoc);
-          } catch {
-            // Chunk not loaded or entity limit reached
-          }
+        try {
+          const loc = cachedPlayer.location;
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 15 + Math.random() * 20;
+          const spawnLoc = {
+            x: loc.x + Math.cos(angle) * dist,
+            y: loc.y,
+            z: loc.z + Math.sin(angle) * dist,
+          };
+          cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
+        } catch {
+          // Chunk not loaded or entity limit reached
+        }
 
-          spawned++;
-          if (spawned % SPAWNS_PER_TICK === 0) {
-            yield;
-          }
+        spawned++;
+        if (spawned % SPAWNS_PER_TICK === 0) {
+          cachedPlayer = undefined; // Invalidate at yield boundary
+          yield;
         }
       }
     })()
@@ -89,8 +113,10 @@ export const MILESTONES: Record<number, Milestone> = {
     title: "Enemy Scouts Spotted!",
     message: "A scouting party approaches! Defeat them to recruit soldiers.",
     execute: () => {
-      spawnEnemiesNearPlayers("mk:mk_enemy_knight", 3);
-      spawnEnemiesNearPlayers("mk:mk_enemy_archer", 2);
+      spawnEnemiesNearPlayersBatched([
+        { entityId: "mk:mk_enemy_knight", count: 3 },
+        { entityId: "mk:mk_enemy_archer", count: 2 },
+      ]);
     },
   },
   20: {
@@ -106,8 +132,10 @@ export const MILESTONES: Record<number, Milestone> = {
     title: "Raiders at the Gates!",
     message: "A raiding party attacks!",
     execute: () => {
-      spawnEnemiesNearPlayers("mk:mk_enemy_knight", 6);
-      spawnEnemiesNearPlayers("mk:mk_enemy_archer", 4);
+      spawnEnemiesNearPlayersBatched([
+        { entityId: "mk:mk_enemy_knight", count: 6 },
+        { entityId: "mk:mk_enemy_archer", count: 4 },
+      ]);
     },
   },
   35: {
@@ -131,9 +159,11 @@ export const MILESTONES: Record<number, Milestone> = {
     title: "A Dark Force Gathers...",
     message: "Dark wizards have joined the enemy ranks!",
     execute: () => {
-      spawnEnemiesNearPlayers("mk:mk_enemy_knight", 8);
-      spawnEnemiesNearPlayers("mk:mk_enemy_archer", 5);
-      spawnEnemiesNearPlayers("mk:mk_enemy_wizard", 2);
+      spawnEnemiesNearPlayersBatched([
+        { entityId: "mk:mk_enemy_knight", count: 8 },
+        { entityId: "mk:mk_enemy_archer", count: 5 },
+        { entityId: "mk:mk_enemy_wizard", count: 2 },
+      ]);
       giveBlueprintToPlayers("mk:mk_blueprint_great_hall");
     },
   },
@@ -150,10 +180,12 @@ export const MILESTONES: Record<number, Milestone> = {
     title: "The Enemy Army Marches!",
     message: "A massive force approaches your position!",
     execute: () => {
-      spawnEnemiesNearPlayers("mk:mk_enemy_knight", 10);
-      spawnEnemiesNearPlayers("mk:mk_enemy_archer", 8);
-      spawnEnemiesNearPlayers("mk:mk_enemy_wizard", 3);
-      spawnEnemiesNearPlayers("mk:mk_enemy_dark_knight", 2);
+      spawnEnemiesNearPlayersBatched([
+        { entityId: "mk:mk_enemy_knight", count: 10 },
+        { entityId: "mk:mk_enemy_archer", count: 8 },
+        { entityId: "mk:mk_enemy_wizard", count: 3 },
+        { entityId: "mk:mk_enemy_dark_knight", count: 2 },
+      ]);
     },
   },
   85: {
@@ -169,10 +201,12 @@ export const MILESTONES: Record<number, Milestone> = {
     title: "The Siege Lord's Vanguard!",
     message: "The Siege Lord sends his elite forces to test you!",
     execute: () => {
-      spawnEnemiesNearPlayers("mk:mk_enemy_dark_knight", 5);
-      spawnEnemiesNearPlayers("mk:mk_enemy_wizard", 5);
-      spawnEnemiesNearPlayers("mk:mk_enemy_knight", 10);
-      spawnEnemiesNearPlayers("mk:mk_enemy_archer", 5);
+      spawnEnemiesNearPlayersBatched([
+        { entityId: "mk:mk_enemy_dark_knight", count: 5 },
+        { entityId: "mk:mk_enemy_wizard", count: 5 },
+        { entityId: "mk:mk_enemy_knight", count: 10 },
+        { entityId: "mk:mk_enemy_archer", count: 5 },
+      ]);
     },
   },
 };

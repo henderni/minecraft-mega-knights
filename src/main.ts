@@ -30,16 +30,16 @@ system.runInterval(() => {
   siege.tick();
 }, 20);
 
-// Army recount correction pass (every 100 ticks = 5 seconds)
+// Army recount correction pass (every 200 ticks = 10 seconds)
 // Death events handle most updates; this is a safety net for edge cases
 system.runInterval(() => {
   army.tick();
-}, 100);
+}, 200);
 
-// HUD update (every 4 ticks — slightly less frequent for Switch perf, still smooth)
+// HUD update (every 10 ticks = 0.5 seconds — action bar text persists ~2s so no flicker)
 system.runInterval(() => {
   dayCounter.updateHUD();
-}, 4);
+}, 10);
 
 // Player spawn
 world.afterEvents.playerSpawn.subscribe((event) => {

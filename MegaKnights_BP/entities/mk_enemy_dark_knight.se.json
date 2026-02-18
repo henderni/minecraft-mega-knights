@@ -4,7 +4,7 @@
     "description": {
       "identifier": "mk:mk_enemy_dark_knight",
       "is_summonable": true,
-      "is_spawnable": true,
+      "is_spawnable": false,
       "is_experimental": false
     },
     "component_groups": {
@@ -43,13 +43,12 @@
         "can_walk": true,
         "avoid_water": true,
         "can_pass_doors": true,
-        "can_open_doors": true,
-        "can_break_doors": true
+        "can_open_doors": true
       },
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
       "minecraft:follow_range": {
-        "value": 32
+        "value": 24
       },
       "minecraft:behavior.float": {
         "priority": 0
@@ -76,6 +75,7 @@
       },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 2,
+        "scan_interval": 10,
         "entity_types": [
           {
             "filters": {
@@ -92,11 +92,11 @@
                 }
               ]
             },
-            "max_dist": 32
+            "max_dist": 20
           }
         ],
         "must_see": true,
-        "must_see_forget_duration": 25.0
+        "must_see_forget_duration": 12.0
       },
       "minecraft:experience_reward": {
         "on_death": "q.last_hit_by_player ? 20 : 0"
@@ -106,6 +106,12 @@
       },
       "minecraft:knockback_resistance": {
         "value": 0.5
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "max_distance": 54,
+          "min_distance": 32
+        }
       }
     },
     "events": {

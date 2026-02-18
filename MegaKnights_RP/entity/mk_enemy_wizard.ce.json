@@ -4,7 +4,7 @@
     "description": {
       "identifier": "mk:mk_enemy_wizard",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity"
       },
       "textures": {
         "default": "textures/entity/mk_enemy_wizard"
