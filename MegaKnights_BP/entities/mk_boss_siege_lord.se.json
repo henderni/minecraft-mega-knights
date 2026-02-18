@@ -120,6 +120,12 @@
         "should_darken_sky": false,
         "hud_range": 35,
         "name": "The Siege Lord"
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "max_distance": 128,
+          "min_distance": 96
+        }
       }
     },
     "events": {

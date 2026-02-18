@@ -36,6 +36,10 @@ export class SiegeSystem {
   private ticksSinceWave = 0;
   private ticksSinceVictoryCheck = 0;
 
+  /** Throttle mob count checks — only recount every 3 seconds (60 ticks) */
+  private ticksSinceMobCount = 0;
+  private lastMobCount = 0;
+
   /** Reusable Set for dimension deduplication in victory checks — avoids allocation */
   private checkedDimensions = new Set<string>();
 
@@ -62,13 +66,19 @@ export class SiegeSystem {
     if (this.currentWave < WAVE_DEFINITIONS.length) {
       const wave = WAVE_DEFINITIONS[this.currentWave];
       if (this.ticksSinceWave >= wave.delayTicks) {
-        // Check active siege mob count before spawning — delay if too many alive
-        const activeMobs = this.countActiveSiegeMobs();
-        if (activeMobs < MAX_ACTIVE_SIEGE_MOBS) {
+        // Throttle mob count checks to every 3 seconds (60 ticks) during siege
+        this.ticksSinceMobCount += 20;
+        if (this.ticksSinceMobCount >= 60) {
+          this.ticksSinceMobCount = 0;
+          this.lastMobCount = this.countActiveSiegeMobs();
+        }
+        if (this.lastMobCount < MAX_ACTIVE_SIEGE_MOBS) {
           this.spawnWave();
           this.ticksSinceWave = 0;
+          this.ticksSinceMobCount = 0; // Reset so next wave gets a fresh count
+          this.lastMobCount = MAX_ACTIVE_SIEGE_MOBS; // Assume full until next recount
         }
-        // If over cap, ticksSinceWave stays high so we re-check next tick
+        // If over cap, ticksSinceWave stays high so we re-check after throttle
       }
     }
 
@@ -96,6 +106,8 @@ export class SiegeSystem {
       try {
         const siegeMobs = player.dimension.getEntities({
           tags: ["mk_siege_mob"],
+          location: player.location,
+          maxDistance: 128,
         });
         total += siegeMobs.length;
       } catch {
@@ -136,7 +148,8 @@ export class SiegeSystem {
     }
 
     // Stagger spawns across ticks using system.runJob
-    // Re-fetch player by name only at yield boundaries (not every spawn)
+    // Re-fetch player only when name changes or isValid fails (not every yield)
+    const siegeRef = this;
     system.runJob(
       (function* () {
         let spawned = 0;
@@ -144,8 +157,8 @@ export class SiegeSystem {
         let cachedPlayer: Player | undefined;
 
         for (const entry of spawnQueue) {
-          // Only re-fetch player when the name changes or at yield boundaries
-          if (entry.playerName !== lastPlayerName || !cachedPlayer) {
+          // Re-fetch player when name changes or when cached ref is stale
+          if (entry.playerName !== lastPlayerName || !cachedPlayer?.isValid) {
             lastPlayerName = entry.playerName;
             cachedPlayer = undefined;
             for (const p of world.getAllPlayers()) {
@@ -179,9 +192,18 @@ export class SiegeSystem {
 
           spawned++;
           if (spawned % SPAWNS_PER_TICK === 0) {
-            // Invalidate cached player at yield boundary — they may have disconnected
-            cachedPlayer = undefined;
             yield;
+            // Mid-wave entity cap check: pause spawning if over budget
+            if (spawned % 5 === 0) {
+              const currentCount = siegeRef.countActiveSiegeMobs();
+              if (currentCount >= MAX_ACTIVE_SIEGE_MOBS) {
+                // Wait until mobs die before continuing to spawn
+                while (siegeRef.countActiveSiegeMobs() >= MAX_ACTIVE_SIEGE_MOBS) {
+                  // Yield 60 times (~3 seconds) before rechecking
+                  for (let w = 0; w < 60; w++) yield;
+                }
+              }
+            }
           }
         }
       })()

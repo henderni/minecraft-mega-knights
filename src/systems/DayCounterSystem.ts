@@ -34,8 +34,11 @@ export class DayCounterSystem {
   private cachedTickCounter = 0;
   private initialized = false;
 
-  /** Per-player HUD string cache to skip setActionBar when nothing changed */
-  private lastHudStrings = new Map<string, string>();
+  /** Per-player HUD key cache — uses numeric composite key to avoid string allocation */
+  private lastHudKeys = new Map<string, number>();
+
+  /** Tick counter for throttling dynamic property persistence */
+  private tickWriteCounter = 0;
 
   /** Register a callback that fires whenever the day changes */
   onDayChanged(callback: (day: number) => void): void {
@@ -127,7 +130,8 @@ export class DayCounterSystem {
     this.cachedActive = false;
     this.cachedDay = 0;
     this.cachedTickCounter = 0;
-    this.lastHudStrings.clear();
+    this.tickWriteCounter = 0;
+    this.lastHudKeys.clear();
   }
 
   initializePlayer(player: Player): void {
@@ -156,11 +160,23 @@ export class DayCounterSystem {
       this.cachedTickCounter = 0;
       this.cachedDay += 1;
       world.setDynamicProperty(DayCounterSystem.KEY_DAY, this.cachedDay);
+      world.setDynamicProperty(DayCounterSystem.KEY_TICK, 0);
+      this.tickWriteCounter = 0;
       this.onDayChange(this.cachedDay);
+    } else {
+      // Persist tick counter every 60s for crash recovery (not every tick)
+      this.tickWriteCounter++;
+      if (this.tickWriteCounter >= 60) {
+        this.tickWriteCounter = 0;
+        world.setDynamicProperty(DayCounterSystem.KEY_TICK, this.cachedTickCounter);
+      }
     }
-
-    world.setDynamicProperty(DayCounterSystem.KEY_TICK, this.cachedTickCounter);
   }
+
+  /** Counter for throttling per-player dynamic property reads in HUD */
+  private hudPropertyReadCounter = 0;
+  private cachedPlayerArmySize = new Map<string, number>();
+  private cachedPlayerTier = new Map<string, number>();
 
   updateHUD(): void {
     if (!this.cachedActive) return;
@@ -171,21 +187,57 @@ export class DayCounterSystem {
     // Use pre-built bar string — no allocation
     const bar = PROGRESS_BARS[filled] ?? PROGRESS_BARS[0];
 
-    for (const player of world.getAllPlayers()) {
+    const players = world.getAllPlayers();
+
+    // Read per-player dynamic properties every 8th HUD call (~4s) instead of every call
+    this.hudPropertyReadCounter++;
+    const shouldReadProps = this.hudPropertyReadCounter >= 8;
+    if (shouldReadProps) this.hudPropertyReadCounter = 0;
+
+    // Prune disconnected players from caches
+    if (shouldReadProps) {
+      const activeNames = new Set<string>();
+      for (const p of players) {
+        if (p.isValid) activeNames.add(p.name);
+      }
+      for (const key of this.lastHudKeys.keys()) {
+        if (!activeNames.has(key)) {
+          this.lastHudKeys.delete(key);
+          this.cachedPlayerArmySize.delete(key);
+          this.cachedPlayerTier.delete(key);
+        }
+      }
+    }
+
+    for (const player of players) {
       if (!player.isValid) continue;
 
       try {
-        const armySize = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
-        const tier = (player.getDynamicProperty("mk:current_tier") as number) ?? 0;
-        const tierName = TIER_NAMES[tier] ?? "Page";
+        let armySize: number;
+        let tier: number;
 
-        const hudString = HUD_ACTION_BAR(currentDay, bar, armySize, tierName);
+        if (shouldReadProps) {
+          // Full read from dynamic properties
+          armySize = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+          tier = (player.getDynamicProperty("mk:current_tier") as number) ?? 0;
+          this.cachedPlayerArmySize.set(player.name, armySize);
+          this.cachedPlayerTier.set(player.name, tier);
+        } else {
+          // Use cached values
+          armySize = this.cachedPlayerArmySize.get(player.name) ?? 0;
+          tier = this.cachedPlayerTier.get(player.name) ?? 0;
+        }
 
-        // Skip setActionBar if the string hasn't changed — saves native bridge call
-        const lastHud = this.lastHudStrings.get(player.name);
-        if (hudString !== lastHud) {
+        // Use numeric composite key to detect changes without allocating a string
+        // Packs day (0-100), filled (0-20), armySize (0-50), tier (0-4) into one number
+        const key = (currentDay << 18) | (filled << 10) | (armySize << 3) | tier;
+        const lastKey = this.lastHudKeys.get(player.name);
+
+        if (key !== lastKey) {
+          const tierName = TIER_NAMES[tier] ?? "Page";
+          const hudString = HUD_ACTION_BAR(currentDay, bar, armySize, tierName);
           player.onScreenDisplay.setActionBar(hudString);
-          this.lastHudStrings.set(player.name, hudString);
+          this.lastHudKeys.set(player.name, key);
         }
       } catch {
         // Player may have disconnected between getAllPlayers and property access

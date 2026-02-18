@@ -11,6 +11,9 @@ export interface Milestone {
 /** How many entities to spawn per tick during staggered milestone spawning — low for Switch */
 const SPAWNS_PER_TICK = 1;
 
+/** Max milestone entities across all players — prevents exceeding entity budget */
+const MAX_MILESTONE_ENTITIES = 40;
+
 interface SpawnRequest {
   entityId: string;
   count: number;
@@ -20,6 +23,7 @@ interface SpawnRequest {
  * Queued spawn system: collects all spawn requests and runs them through a
  * single runJob generator. Avoids creating multiple parallel generators
  * (which previously caused 4-8 spawns/tick during busy milestones like day 90).
+ * Caps total spawns at MAX_MILESTONE_ENTITIES to protect entity budget.
  */
 function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   // Capture player names at call time — generator re-fetches live player refs
@@ -28,11 +32,19 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
     if (p.isValid) playerNames.push(p.name);
   }
 
-  // Build flat spawn queue
+  // Scale per-player counts in multiplayer to stay under entity cap
+  const playerCount = playerNames.length;
+  const totalRequested = requests.reduce((sum, r) => sum + r.count, 0) * playerCount;
+  const scaleFactor = totalRequested > MAX_MILESTONE_ENTITIES
+    ? MAX_MILESTONE_ENTITIES / totalRequested
+    : 1.0;
+
+  // Build flat spawn queue with scaled counts
   const queue: { entityId: string; playerName: string }[] = [];
   for (const name of playerNames) {
     for (const req of requests) {
-      for (let i = 0; i < req.count; i++) {
+      const scaledCount = Math.max(1, Math.round(req.count * scaleFactor));
+      for (let i = 0; i < scaledCount; i++) {
         queue.push({ entityId: req.entityId, playerName: name });
       }
     }
@@ -45,8 +57,8 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
       let cachedPlayer: Player | undefined;
 
       for (const entry of queue) {
-        // Only re-fetch player when name changes or at yield boundaries
-        if (entry.playerName !== lastPlayerName || !cachedPlayer) {
+        // Only re-fetch player when name changes or when cached ref is stale
+        if (entry.playerName !== lastPlayerName || !cachedPlayer?.isValid) {
           lastPlayerName = entry.playerName;
           cachedPlayer = undefined;
           for (const p of world.getAllPlayers()) {
@@ -74,7 +86,6 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
 
         spawned++;
         if (spawned % SPAWNS_PER_TICK === 0) {
-          cachedPlayer = undefined; // Invalidate at yield boundary
           yield;
         }
       }

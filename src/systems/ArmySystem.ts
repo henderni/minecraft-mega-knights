@@ -42,6 +42,9 @@ const ALLY_DISPLAY_NAMES = new Map<string, string>([
 export class ArmySystem {
   private static readonly BASE_ARMY_SIZE = 20;
 
+  /** Cached player list — refreshed on every army recount tick (~10s) */
+  private cachedPlayers: Player[] = [];
+
   /** Derive a display name from an ally type ID — uses pre-computed cache */
   private static allyDisplayName(allyTypeId: string): string {
     const cached = ALLY_DISPLAY_NAMES.get(allyTypeId);
@@ -118,8 +121,8 @@ export class ArmySystem {
       const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
       if (!ownerName) return;
 
-      // Find the owner player by name — use simple loop instead of getAllPlayers() array
-      for (const player of world.getAllPlayers()) {
+      // Find the owner player by name — use cached player list (refreshed every recount tick)
+      for (const player of this.cachedPlayers) {
         if (player.name === ownerName && player.isValid) {
           const current =
             (player.getDynamicProperty("mk:army_size") as number) ?? 0;
@@ -137,7 +140,9 @@ export class ArmySystem {
    * Death events handle most updates; this corrects edge cases (unloaded chunks, etc).
    */
   tick(): void {
-    for (const player of world.getAllPlayers()) {
+    // Refresh cached player list (used by death listener to avoid getAllPlayers per death)
+    this.cachedPlayers = world.getAllPlayers();
+    for (const player of this.cachedPlayers) {
       if (!player.isValid) continue;
 
       const safeTag = sanitizePlayerTag(player.name);
@@ -198,16 +203,20 @@ export class ArmySystem {
     system.runJob(
       (function* () {
         let spawned = 0;
+        let currentPlayer: Player | undefined = player;
+
         for (let i = 0; i < count; i++) {
-          // Re-fetch player to handle disconnect
-          let currentPlayer: Player | undefined;
-          for (const p of world.getAllPlayers()) {
-            if (p.name === playerName && p.isValid) {
-              currentPlayer = p;
-              break;
+          // Only re-fetch player at yield boundaries or if stale
+          if (!currentPlayer?.isValid) {
+            currentPlayer = undefined;
+            for (const p of world.getAllPlayers()) {
+              if (p.name === playerName && p.isValid) {
+                currentPlayer = p;
+                break;
+              }
             }
+            if (!currentPlayer) break;
           }
-          if (!currentPlayer) break;
 
           const angle = Math.random() * Math.PI * 2;
           const dist = 3 + Math.random() * 3;
@@ -228,6 +237,7 @@ export class ArmySystem {
 
           spawned++;
           if (spawned % 2 === 0) {
+            currentPlayer = undefined; // Invalidate at yield boundary
             yield; // 2 spawns per tick max
           }
         }
