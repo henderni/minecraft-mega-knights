@@ -27,6 +27,10 @@ const MAX_SPAWNS_PER_PLAYER = 24;
 /** Ticks between victory checks after all waves are spawned (every 3 seconds) */
 const VICTORY_CHECK_INTERVAL = 60;
 
+/** Ticks between safety-net getEntities() recounts to correct counter drift (every 30 seconds).
+ *  Mobs can despawn (unloaded chunks, minecraft:despawn) without firing entityDie. */
+const RECOUNT_INTERVAL = 600;
+
 /** Maximum active siege mobs before delaying next wave — prevents Switch frame drops */
 const MAX_ACTIVE_SIEGE_MOBS = 30;
 
@@ -35,6 +39,7 @@ export class SiegeSystem {
   private currentWave = 0;
   private ticksSinceWave = 0;
   private ticksSinceVictoryCheck = 0;
+  private ticksSinceRecount = 0;
 
   /** Spawn/death counter for siege mobs — avoids expensive getEntities() calls entirely.
    *  Incremented on successful spawn, decremented via death event subscription. */
@@ -47,6 +52,7 @@ export class SiegeSystem {
     this.currentWave = 0;
     this.ticksSinceWave = 0;
     this.ticksSinceVictoryCheck = 0;
+    this.ticksSinceRecount = 0;
     this.siegeMobCount = 0;
 
     world.sendMessage(SIEGE_BEGIN);
@@ -81,6 +87,29 @@ export class SiegeSystem {
           this.ticksSinceWave = 0;
         }
         // If over cap, ticksSinceWave stays high so we re-check next tick()
+      }
+    }
+
+    // Safety-net recount: correct siegeMobCount drift from despawns (unloaded chunks, etc.)
+    // Runs every 30s — infrequent enough to not impact performance, but catches counter drift.
+    this.ticksSinceRecount += 20;
+    if (this.ticksSinceRecount >= RECOUNT_INTERVAL) {
+      this.ticksSinceRecount = 0;
+      try {
+        const players = world.getAllPlayers();
+        if (players.length > 0) {
+          const firstPlayer = players[0];
+          if (firstPlayer.isValid) {
+            const actual = firstPlayer.dimension.getEntities({
+              tags: ["mk_siege_mob"],
+              location: firstPlayer.location,
+              maxDistance: 128,
+            });
+            this.siegeMobCount = actual.length;
+          }
+        }
+      } catch {
+        // Dimension query may fail if player is transitioning
       }
     }
 
@@ -175,10 +204,12 @@ export class SiegeSystem {
               }
               // Mid-wave entity cap check: pause spawning if over budget
               if (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
-                // Wait until mobs die before continuing to spawn
-                while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
+                // Wait until mobs die before continuing to spawn (max 5 retries to prevent infinite spin)
+                let retries = 0;
+                while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS && retries < 5) {
                   // Yield 120 times (~6 seconds) before rechecking — longer pause when Switch is under load
                   for (let w = 0; w < 120; w++) yield;
+                  retries++;
                 }
                 // Refresh player map after long wait
                 playerMap.clear();
