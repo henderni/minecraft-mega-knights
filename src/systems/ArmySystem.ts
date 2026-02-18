@@ -162,7 +162,7 @@ export class ArmySystem {
         const allies = player.dimension.getEntities({
           tags: ["mk_army", ownerTag],
           location: player.location,
-          maxDistance: 128,
+          maxDistance: 96,
         });
         player.setDynamicProperty("mk:army_size", allies.length);
       } catch {
@@ -196,7 +196,7 @@ export class ArmySystem {
       return player.dimension.getEntities({
         tags: ["mk_army", ownerTag],
         location: player.location,
-        maxDistance: 128,
+        maxDistance: 96,
       });
     } catch {
       return [];

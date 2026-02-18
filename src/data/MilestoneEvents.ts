@@ -26,9 +26,10 @@ interface SpawnRequest {
  * Caps total spawns at MAX_MILESTONE_ENTITIES to protect entity budget.
  */
 function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
-  // Capture player names at call time — generator re-fetches live player refs
+  // Capture players at call time — reuse for both name list and initial generator map
+  const initialPlayers = world.getAllPlayers();
   const playerNames: string[] = [];
-  for (const p of world.getAllPlayers()) {
+  for (const p of initialPlayers) {
     if (p.isValid) playerNames.push(p.name);
   }
 
@@ -53,9 +54,9 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   system.runJob(
     (function* () {
       let spawned = 0;
-      // Build player map once; refresh only at yield boundaries (reuse with .clear())
+      // Build player map from outer array — avoids double getAllPlayers() on same tick
       const playerMap = new Map<string, Player>();
-      for (const p of world.getAllPlayers()) {
+      for (const p of initialPlayers) {
         if (p.isValid) playerMap.set(p.name, p);
       }
 
@@ -80,10 +81,12 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
         spawned++;
         if (spawned % SPAWNS_PER_TICK === 0) {
           yield;
-          // Refresh player map at yield boundary — reuse Map with .clear()
-          playerMap.clear();
-          for (const p of world.getAllPlayers()) {
-            if (p.isValid) playerMap.set(p.name, p);
+          // Refresh player map every 5th yield — balances staleness vs bridge call cost
+          if (spawned % 5 === 0) {
+            playerMap.clear();
+            for (const p of world.getAllPlayers()) {
+              if (p.isValid) playerMap.set(p.name, p);
+            }
           }
         }
       }

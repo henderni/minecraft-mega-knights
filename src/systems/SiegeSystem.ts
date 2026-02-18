@@ -133,7 +133,7 @@ export class SiegeSystem {
     system.runJob(
       (function* () {
         let spawned = 0;
-        // Build player map from outer array; refresh with getAllPlayers only at yield boundaries
+        // Build player map from outer array; refresh with getAllPlayers only every 5th yield
         const playerMap = new Map<string, Player>();
         for (const p of initialPlayers) {
           if (p.isValid) playerMap.set(p.name, p);
@@ -167,13 +167,13 @@ export class SiegeSystem {
           spawned++;
           if (spawned % SPAWNS_PER_TICK === 0) {
             yield;
-            // Refresh player map at yield boundary — reuse Map with .clear() to avoid allocation
-            playerMap.clear();
-            for (const p of world.getAllPlayers()) {
-              if (p.isValid) playerMap.set(p.name, p);
-            }
-            // Mid-wave entity cap check: pause spawning if over budget
+            // Refresh player map every 5th yield — balances staleness vs bridge call cost
             if (spawned % 5 === 0) {
+              playerMap.clear();
+              for (const p of world.getAllPlayers()) {
+                if (p.isValid) playerMap.set(p.name, p);
+              }
+              // Mid-wave entity cap check: pause spawning if over budget
               if (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
                 // Wait until mobs die before continuing to spawn
                 while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
