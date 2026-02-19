@@ -164,10 +164,10 @@ describe("Try-Catch Coverage on Entity Operations", () => {
 // ---------------------------------------------------------------------------
 
 describe("Input Validation at Command Boundaries", () => {
-  it("setday command validates range 0-100 before dispatching", () => {
+  it("setday command validates input is a number before dispatching", () => {
     const src = readMain();
-    expect(src).toContain("day >= 0 && day <= 100");
     expect(src).toContain("!isNaN(day)");
+    // Range clamping is enforced inside DayCounterSystem.setDay() — not duplicated here
   });
 
   it("army debug command validates count in 1-50 range", () => {
@@ -182,9 +182,9 @@ describe("Input Validation at Command Boundaries", () => {
     expect(src).toContain('typeId === "minecraft:player"');
   });
 
-  it("army debug command has rate-limit cooldown (100 ticks = 5 seconds)", () => {
+  it("army debug command has per-player rate-limit cooldown (100 ticks = 5 seconds)", () => {
     const src = readMain();
-    expect(src).toContain("lastArmySpawnTick");
+    expect(src).toContain("lastArmySpawnTickByPlayer");
     expect(src).toContain(">= 100");
   });
 
@@ -209,15 +209,11 @@ describe("Input Validation at Command Boundaries", () => {
     expect(src).toContain("if (this.siegeActive)");
   });
 
-  it("DayCounterSystem.setDay is called only with validated 0-100 range from main.ts", () => {
-    // setDay itself has no bounds check — validation lives in main.ts before dispatch
-    const mainSrc = readMain();
-    expect(mainSrc).toContain("day >= 0 && day <= 100");
-    // Verify setDay is only called after validation
-    const setDayCallIdx = mainSrc.indexOf("dayCounter.setDay(day)");
-    const validationIdx = mainSrc.indexOf("day >= 0 && day <= 100");
-    expect(validationIdx).toBeGreaterThan(-1);
-    expect(setDayCallIdx).toBeGreaterThan(validationIdx);
+  it("DayCounterSystem.setDay clamps input to [0, MAX_DAY] internally", () => {
+    // Validation lives inside setDay() as the authoritative enforcement point
+    const src = readSystem("DayCounterSystem.ts");
+    expect(src).toContain("Math.max(0, Math.min(");
+    expect(src).toContain("DayCounterSystem.MAX_DAY");
   });
 });
 

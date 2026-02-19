@@ -102,13 +102,14 @@ world.afterEvents.playerInteractWithEntity.subscribe((event) => {
 });
 
 // Debug commands via /scriptevent (requires operator permissions)
-let lastArmySpawnTick = 0;
+// Per-player rate limit map — prevents each operator from spamming mk:army independently
+const lastArmySpawnTickByPlayer = new Map<string, number>();
 system.afterEvents.scriptEventReceive.subscribe((event) => {
   if (event.id === "mk:setday") {
     const day = parseInt(event.message);
-    if (!isNaN(day) && day >= 0 && day <= 100) {
-      dayCounter.setDay(day);
-      world.sendMessage(DEBUG_DAY_SET(day));
+    if (!isNaN(day)) {
+      dayCounter.setDay(day); // setDay() clamps internally to [0, MAX_DAY]
+      world.sendMessage(DEBUG_DAY_SET(Math.max(0, Math.min(100, day))));
     }
   } else if (event.id === "mk:start") {
     dayCounter.startQuest();
@@ -121,17 +122,21 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
   } else if (event.id === "mk:army") {
     const count = parseInt(event.message);
     const now = system.currentTick;
-    // Rate limit: 5-second cooldown between debug spawns to prevent entity exhaustion
+    const sourcePlayer = event.sourceEntity;
     if (
       !isNaN(count) &&
       count > 0 &&
       count <= 50 &&
-      event.sourceEntity &&
-      event.sourceEntity.typeId === "minecraft:player" &&
-      now - lastArmySpawnTick >= 100
+      sourcePlayer &&
+      sourcePlayer.typeId === "minecraft:player"
     ) {
-      lastArmySpawnTick = now;
-      army.debugSpawnAllies(event.sourceEntity as import("@minecraft/server").Player, count);
+      const playerName = sourcePlayer.name;
+      const lastTick = lastArmySpawnTickByPlayer.get(playerName) ?? 0;
+      // Rate limit: 5-second cooldown per operator to prevent entity exhaustion
+      if (now - lastTick >= 100) {
+        lastArmySpawnTickByPlayer.set(playerName, now);
+        army.debugSpawnAllies(sourcePlayer as import("@minecraft/server").Player, count);
+      }
     }
   }
 });
