@@ -36,7 +36,8 @@ npm run watch
 ```
 
 You should see output like:
-```
+
+```bash
 ✓ Compiled src/main.ts → MegaKnights_BP/scripts/main.js
 ```
 
@@ -50,6 +51,7 @@ You should see output like:
    - **Linux**: `~/.minecraft/`
 
 2. **Copy packs:**
+
    ```bash
    cp -r MegaKnights_BP ~/Library/Application\ Support/minecraft/development_behavior_packs/
    cp -r MegaKnights_RP ~/Library/Application\ Support/minecraft/development_resource_packs/
@@ -74,17 +76,20 @@ For realistic testing environment (closer to production):
 #### macOS/Linux Setup
 
 1. **Download BDS:**
+
    ```bash
    # Get latest BDS from https://www.minecraft.net/en-us/download/server/bedrock/
    # Extract to ~/BDS/
    ```
 
 2. **Set environment variable:**
+
    ```bash
    export BDS_DIR=~/BDS/server
    ```
 
 3. **Deploy packs:**
+
    ```bash
    npm run deploy
    # This runs: bash tools/build.sh
@@ -92,6 +97,7 @@ For realistic testing environment (closer to production):
    ```
 
 4. **Start BDS:**
+
    ```bash
    cd ~/BDS/server
    ./start.sh  # or .bat on Windows
@@ -104,6 +110,7 @@ For realistic testing environment (closer to production):
    - Join world
 
 6. **Development workflow:**
+
    ```bash
    # Terminal 1: Watch TypeScript
    npm run watch
@@ -129,6 +136,7 @@ This is **the primary performance target**. Test here before shipping.
 ### Before Testing
 
 1. **Pack your add-on:**
+
    ```bash
    npm run package
    # Creates MegaKnights.mcaddon
@@ -141,6 +149,7 @@ This is **the primary performance target**. Test here before shipping.
 ### During Testing
 
 **Focus areas:**
+
 - Siege waves (highest entity load)
 - Army recruiting during combat
 - 100-day progression smooth?
@@ -148,7 +157,8 @@ This is **the primary performance target**. Test here before shipping.
 - No input lag
 
 **Debug commands (useful on Switch too):**
-```
+
+```bash
 /scriptevent mk:start           # Start quest
 /scriptevent mk:setday 50       # Jump to day 50
 /scriptevent mk:setday 100      # Jump to day 100
@@ -158,6 +168,7 @@ This is **the primary performance target**. Test here before shipping.
 ```
 
 **Performance profiling:**
+
 1. Run `/scriptevent mk:siege`
 2. Watch entity count in chat (if implemented)
 3. Count entities at each wave
@@ -165,6 +176,7 @@ This is **the primary performance target**. Test here before shipping.
 5. Check for pathfinding stalls (units standing still)
 
 **If performance issues:**
+
 - Reduce `follow_range` in entity JSON
 - Check for `getAllPlayers()` in runInterval callbacks
 - Ensure dynamic properties are cached
@@ -175,6 +187,7 @@ This is **the primary performance target**. Test here before shipping.
 Same `.mcaddon` distribution works for iOS/Android.
 
 **Known differences from Switch:**
+
 - Variable GPU performance (depends on device age)
 - Touch controls (confirm command input works)
 - Battery impact
@@ -193,6 +206,7 @@ npm run lint:fix         # Auto-fix where possible
 ```
 
 **Common issues fixed:**
+
 - `console.log` → `console.warn`
 - Missing `const` declarations
 - Unused imports
@@ -208,6 +222,7 @@ npm run format:check    # Check without modifying
 ```
 
 **Before committing:**
+
 ```bash
 npm run lint:fix && npm run format && npm run build
 ```
@@ -238,13 +253,15 @@ tail -f ~/BDS/server/latest_log.txt | grep "mk:"
 ```
 
 Example logs:
-```
+
+```bash
 [Scripting] mk: DayCounterSystem initialized
 [Scripting] mk: Milestone reached: Day 20
 [Scripting] mk: Army recruited: 5 new units
 ```
 
 Use `console.warn()` for important messages:
+
 ```typescript
 console.warn("mk: Critical event happened");
 ```
@@ -252,17 +269,20 @@ console.warn("mk: Critical event happened");
 ### Entity Issues
 
 **Entities not spawning?**
+
 - Check `spawn_rules/` JSON is valid (`npm run build` validates)
 - Ensure spawn location is accessible (not in ceiling)
 - Check entity budget (under 40 normally)
 - Review entity JSON for syntax errors
 
 **Entities despawning too early?**
+
 - Check `minecraft:despawn` component in entity JSON
 - `max_distance: 54, min_distance: 32` should match vanilla
 - Allies need larger despawn distance (96-128) to persist
 
 **Pathfinding broken?**
+
 - Check `follow_range` (should be ≤16 for basic mobs)
 - If range is high, pathfinding cost is cubic
 - Reduce range or increase tick updates
@@ -270,11 +290,13 @@ console.warn("mk: Critical event happened");
 ### Dynamic Property Issues
 
 **Progress not saving?**
+
 - Check if `world.setDynamicProperty()` is being called
 - Verify key format (no special characters)
 - Values must be primitives (numbers, strings, booleans), not objects
 
 **Wrong player data loading?**
+
 - Use `entity.getDynamicProperty()` for player-scoped data
 - Use `world.getDynamicProperty()` for world-scoped data
 - Ensure scope matches intent
@@ -282,27 +304,35 @@ console.warn("mk: Critical event happened");
 ## Common Issues & Fixes
 
 ### Issue: "Pack not showing in Minecraft"
+
 **Solution:**
+
 - Ensure you copied to `development_behavior_packs/` and `development_resource_packs/`
 - Check folder name matches manifest UUID (or just use folder names)
 - Restart Minecraft completely
 - On Switch: restart the app
 
 ### Issue: "Script errors after `/reload`"
+
 **Solution:**
+
 - Check `latest_log.txt` for the actual error
 - Might be missing entity that the script expects
 - Try full world restart instead of `/reload`
 
 ### Issue: "Entities freeze/don't attack"
+
 **Solution:**
+
 - Check `follow_range` isn't too high
 - Ensure `nearest_attackable_target` has `scan_interval: 10`
 - Verify target selector syntax in entity JSON
 - Look for pathfinding issues (check build log)
 
 ### Issue: "Performance terrible on Switch"
+
 **Solution:**
+
 1. Run `/scriptedit mk:siege` and count entities
 2. If > 60: reduce enemy spawn rates or wave sizes
 3. Check for `getAllPlayers()` or `getEntities()` in loops
@@ -310,7 +340,9 @@ console.warn("mk: Critical event happened");
 5. Profile with lower entity counts
 
 ### Issue: "npm run deploy fails"
+
 **Solution:**
+
 - Check `BDS_DIR` environment variable is set: `echo $BDS_DIR`
 - Verify `MegaKnights_BP/scripts/main.js` exists (run `npm run build` first)
 - Check BDS server isn't running during deploy
@@ -318,7 +350,7 @@ console.warn("mk: Critical event happened");
 
 ## Project Structure
 
-```
+```text
 src/
   ├── main.ts                 # Entry point
   ├── systems/                # Core game logic (6 files)
@@ -406,11 +438,13 @@ Before submitting to Marketplace:
 ## Getting Help
 
 **For technical issues:**
+
 - Check BDS logs: `tail -f ~/BDS/server/latest_log.txt`
 - Run linter: `npm run lint`
 - Check `.claude/settings.json` for performance review hooks
 
 **For design questions:**
+
 - See CLAUDE.md for architecture & patterns
 - See README.md for gameplay overview
 
