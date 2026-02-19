@@ -278,18 +278,15 @@ export class SiegeSystem {
                   playerMap.set(p.name, p);
                 }
               }
-              // Mid-wave entity cap check: pause spawning if over budget
-              if (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
-                // Wait until mobs die before continuing to spawn (max 5 retries to prevent infinite spin)
-                let retries = 0;
-                while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS && retries < 5) {
-                  // Yield 120 times (~6 seconds) before rechecking — longer pause when Switch is under load
-                  for (let w = 0; w < 120; w++) {
-                    yield;
-                  }
-                  retries++;
-                }
-                // Refresh player map after long wait
+              // Mid-wave entity cap check: pause spawning if over budget.
+              // Yield one tick at a time so the generator stays responsive
+              // and resumes promptly once mobs die. The main tick() also gates
+              // wave *starts* via the same cap, so this only affects mid-wave pauses.
+              while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
+                yield;
+              }
+              // Refresh player map after pause
+              if (siegeRef.siegeMobCount < MAX_ACTIVE_SIEGE_MOBS) {
                 playerMap.clear();
                 for (const p of world.getAllPlayers()) {
                   if (p.isValid) {
@@ -338,14 +335,14 @@ export class SiegeSystem {
   }
 
   private checkBossPhase(): void {
-    if (!this.bossEntity) return;
+    if (!this.bossEntity) {return;}
     try {
       if (!this.bossEntity.isValid) {
         this.bossEntity = null;
         return;
       }
       const hp = this.bossEntity.getComponent("minecraft:health") as EntityHealthComponent | undefined;
-      if (!hp) return;
+      if (!hp) {return;}
       const ratio = hp.currentValue / hp.effectiveMax;
       if (ratio <= 0.33 && this.siegePhase < 2) {
         this.siegePhase = 2;

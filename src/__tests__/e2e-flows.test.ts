@@ -307,15 +307,15 @@ describe("Cross-System Consistency: Milestone Source", () => {
     }
   });
 
-  it("all enemy types spawned in milestones are gated in main.ts ENEMY_SPAWN_DAY", () => {
-    const mainSrc = fs.readFileSync(path.join(__dirname, "../main.ts"), "utf-8");
+  it("all enemy types spawned in milestones are gated in ENEMY_SPAWN_DAY", () => {
+    const waveSrc = fs.readFileSync(path.join(__dirname, "../data/WaveDefinitions.ts"), "utf-8");
     const enemyMatches = milestoneSrc.match(/entityId:\s*"(mk:mk_enemy_[^"]+)"/g) ?? [];
     const enemyTypes = new Set(
       enemyMatches.map((m) => m.match(/"([^"]+)"/)?.[1] ?? "").filter(Boolean),
     );
 
     for (const enemyType of enemyTypes) {
-      expect(mainSrc, `Enemy type "${enemyType}" missing from ENEMY_SPAWN_DAY in main.ts`).toContain(
+      expect(waveSrc, `Enemy type "${enemyType}" missing from ENEMY_SPAWN_DAY in WaveDefinitions.ts`).toContain(
         `"${enemyType}"`,
       );
     }

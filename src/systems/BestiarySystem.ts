@@ -18,7 +18,7 @@ export class BestiarySystem {
    */
   onKill(player: Player, enemyTypeId: string): void {
     const entry = this.getEntryForType(enemyTypeId);
-    if (!entry) return;
+    if (!entry) {return;}
 
     const current = Math.max(0, (player.getDynamicProperty(entry.killKey) as number) ?? 0);
     const next = current + 1;
@@ -40,7 +40,7 @@ export class BestiarySystem {
   tick(): void {
     const players = world.getAllPlayers();
     for (const player of players) {
-      if (!player.isValid) continue;
+      if (!player.isValid) {continue;}
       this.applyEarnedEffects(player);
     }
   }
@@ -62,7 +62,7 @@ export class BestiarySystem {
         }
       }
 
-      if (highestMilestone < 0) continue;
+      if (highestMilestone < 0) {continue;}
 
       const milestone = entry.milestones[highestMilestone];
       try {
@@ -78,7 +78,7 @@ export class BestiarySystem {
 
   private getEntryForType(typeId: string): BestiaryEntry | undefined {
     for (const entry of BESTIARY) {
-      if (entry.enemyTypeId === typeId) return entry;
+      if (entry.enemyTypeId === typeId) {return entry;}
     }
     return undefined;
   }

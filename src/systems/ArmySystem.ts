@@ -23,7 +23,7 @@ const MAX_ARMY_BONUS = 20;
 
 /** Global army entity budget — in multiplayer, each player gets floor(GLOBAL/playerCount).
  *  Must satisfy: GLOBAL_ARMY_CAP + MAX_ACTIVE_SIEGE_MOBS (25) ≤ 60 (Switch siege budget). */
-const GLOBAL_ARMY_CAP = 35;
+export const GLOBAL_ARMY_CAP = 35;
 
 /** Cache for sanitized player tags — player names don't change during a session */
 const tagCache = new Map<string, string>();
@@ -35,7 +35,7 @@ const ownerTagCache = new Map<string, string>();
 const MAX_TAG_CACHE = 100;
 
 /** Sanitize player name for use in entity tags (only alphanum, underscore, hyphen allowed) */
-function sanitizePlayerTag(name: string): string {
+export function sanitizePlayerTag(name: string): string {
   let cached = tagCache.get(name);
   if (cached !== undefined) {
     return cached;
@@ -49,7 +49,7 @@ function sanitizePlayerTag(name: string): string {
 }
 
 /** Get the full owner tag string for a player name — cached to avoid repeat concat */
-function getOwnerTag(name: string): string {
+export function getOwnerTag(name: string): string {
   let cached = ownerTagCache.get(name);
   if (cached !== undefined) {
     return cached;
@@ -235,15 +235,15 @@ export class ArmySystem {
         // Standard Bearer aura: apply Strength I to allies within 8 blocks of each bearer
         // Reuses the allies array — no extra getEntities() call
         for (const bearer of allies) {
-          if (!bearer.isValid || bearer.typeId !== "mk:mk_ally_standard_bearer") continue;
+          if (!bearer.isValid || bearer.typeId !== "mk:mk_ally_standard_bearer") {continue;}
           const bLoc = bearer.location;
           for (const ally of allies) {
-            if (!ally.isValid) continue;
+            if (!ally.isValid) {continue;}
             const dx = ally.location.x - bLoc.x;
             const dy = ally.location.y - bLoc.y;
             const dz = ally.location.z - bLoc.z;
             if (dx * dx + dy * dy + dz * dz <= 64) {
-              try { ally.addEffect("strength", 300, { amplifier: 0, showParticles: false }); } catch {}
+              try { ally.addEffect("strength", 300, { amplifier: 0, showParticles: false }); } catch { /* entity may be invalid */ }
             }
           }
         }
@@ -271,8 +271,8 @@ export class ArmySystem {
       const [eventName, modeName] = nextStance === 0
         ? ["mk:set_mode_follow", "Follow"]
         : nextStance === 1
-        ? ["mk:set_mode_guard", "Guard"]
-        : ["mk:set_mode_hold", "Hold"];
+          ? ["mk:set_mode_guard", "Guard"]
+          : ["mk:set_mode_hold", "Hold"];
       try {
         entity.triggerEvent(eventName);
         event.player.sendMessage(ALLY_MODE_SET(modeName));
@@ -313,7 +313,8 @@ export class ArmySystem {
   }
 
   getArmySize(player: Player): number {
-    return (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+    const raw = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+    return Math.max(0, Math.min(GLOBAL_ARMY_CAP, Math.floor(raw)));
   }
 
   /** Debug spawn allies — staggered across ticks to avoid freezing Switch */

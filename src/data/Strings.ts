@@ -69,6 +69,11 @@ export const CAMP_CLEARED = (tierName: string) =>
   `§a✓ ${tierName} cleared! Collect your rewards!`;
 export const CAMP_DEBUG_SPAWNED = "§e[Debug] Enemy camp spawned nearby";
 
+// --- Merchant ---
+export const MERCHANT_APPEARED = "§6⚑ A Wandering Merchant has appeared nearby!";
+export const STANDARD_BEARER_JOINED =
+  "§a+ A Standard Bearer has joined your army, raising morale!";
+
 // --- Debug ---
 export const DEBUG_DAY_SET = (day: number) => `§e[Debug] Day set to ${day}`;
 export const DEBUG_QUEST_STARTED = "§a[Debug] Quest started!";

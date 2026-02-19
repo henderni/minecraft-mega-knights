@@ -71,7 +71,7 @@ export const FACTION_GUARD_WEIGHTS: Record<FactionId, Partial<Record<string, num
 export function getFactionForBiome(biomeId: string): FactionDef {
   const lower = biomeId.toLowerCase();
   for (const faction of FACTIONS) {
-    if (faction.biomeKeywords.length === 0) continue; // Skip default
+    if (faction.biomeKeywords.length === 0) {continue;} // Skip default
     if (faction.biomeKeywords.some((kw) => lower.includes(kw))) {
       return faction;
     }

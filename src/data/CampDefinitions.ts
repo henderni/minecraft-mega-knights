@@ -78,6 +78,7 @@ export const CAMP_TIERS: CampTierDef[] = [
       { entityId: "mk:mk_enemy_dark_knight", count: 2 },
     ],
     rewards: [
+      { itemId: "minecraft:iron_ingot", min: 2, max: 4 },
       { itemId: "minecraft:diamond", min: 2, max: 5 },
       { itemId: "minecraft:experience_bottle", min: 5, max: 10 },
     ],

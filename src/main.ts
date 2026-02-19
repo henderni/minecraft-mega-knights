@@ -1,7 +1,7 @@
 import { world, system } from "@minecraft/server";
 import { DayCounterSystem } from "./systems/DayCounterSystem";
 import { ArmorTierSystem } from "./systems/ArmorTierSystem";
-import { ArmySystem } from "./systems/ArmySystem";
+import { ArmySystem, GLOBAL_ARMY_CAP } from "./systems/ArmySystem";
 import { CombatSystem } from "./systems/CombatSystem";
 import { CastleSystem } from "./systems/CastleSystem";
 import { SiegeSystem } from "./systems/SiegeSystem";
@@ -9,6 +9,7 @@ import { EnemyCampSystem } from "./systems/EnemyCampSystem";
 import { BestiarySystem } from "./systems/BestiarySystem";
 import { MerchantSystem } from "./systems/MerchantSystem";
 import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET } from "./data/Strings";
+import { ENEMY_SPAWN_DAY } from "./data/WaveDefinitions";
 
 const dayCounter = new DayCounterSystem();
 const armorTier = new ArmorTierSystem();
@@ -18,7 +19,7 @@ const combat = new CombatSystem(army, bestiary);
 const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
 const campSystem = new EnemyCampSystem();
-const merchant = new MerchantSystem();
+const merchant = new MerchantSystem(army);
 
 // Wire up event-driven death tracking
 army.setupDeathListener(); // Instant army recount on ally death
@@ -56,13 +57,7 @@ system.runInterval(() => {
 // Gate natural enemy spawns behind quest progress
 // Enemies spawned by milestones have "mk_script_spawned" tag; siege mobs have "mk_siege_mob".
 // Naturally-spawned enemies (via spawn rules) are despawned if the quest hasn't progressed enough.
-const ENEMY_SPAWN_DAY: Record<string, number> = {
-  "mk:mk_enemy_knight": 10,
-  "mk:mk_enemy_archer": 10,
-  "mk:mk_enemy_wizard": 50,
-  "mk:mk_enemy_dark_knight": 70,
-};
-
+// ENEMY_SPAWN_DAY imported from data/WaveDefinitions.ts — single source of truth.
 world.afterEvents.entitySpawn.subscribe((event) => {
   const entity = event.entity;
   if (!entity.isValid) {
@@ -123,7 +118,32 @@ world.afterEvents.playerInteractWithEntity.subscribe((event) => {
 
 // Debug commands via /scriptevent (requires operator permissions)
 // Per-player rate limit map — prevents each operator from spamming mk:army independently
+const MAX_RATE_LIMIT_CACHE = 200;
 const lastArmySpawnTickByPlayer = new Map<string, number>();
+const playerNameInsertionOrder: string[] = [];
+
+/**
+ * Record a player's army spawn tick, evicting oldest entries if cache exceeds MAX_RATE_LIMIT_CACHE
+ */
+function recordArmySpawnTick(playerName: string, tick: number): void {
+  lastArmySpawnTickByPlayer.set(playerName, tick);
+
+  // Track insertion order for LRU eviction
+  const existingIndex = playerNameInsertionOrder.indexOf(playerName);
+  if (existingIndex >= 0) {
+    playerNameInsertionOrder.splice(existingIndex, 1);
+  }
+  playerNameInsertionOrder.push(playerName);
+
+  // Evict oldest entries if cache exceeds limit
+  while (lastArmySpawnTickByPlayer.size > MAX_RATE_LIMIT_CACHE) {
+    const oldestPlayer = playerNameInsertionOrder.shift();
+    if (oldestPlayer) {
+      lastArmySpawnTickByPlayer.delete(oldestPlayer);
+    }
+  }
+}
+
 system.afterEvents.scriptEventReceive.subscribe((event) => {
   if (event.id === "mk:setday") {
     const day = parseInt(event.message);
@@ -146,7 +166,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (
       !isNaN(count) &&
       count > 0 &&
-      count <= 50 &&
+      count <= GLOBAL_ARMY_CAP &&
       sourcePlayer &&
       sourcePlayer.typeId === "minecraft:player"
     ) {
@@ -154,7 +174,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
       const lastTick = lastArmySpawnTickByPlayer.get(playerName) ?? 0;
       // Rate limit: 5-second cooldown per operator to prevent entity exhaustion
       if (now - lastTick >= 100) {
-        lastArmySpawnTickByPlayer.set(playerName, now);
+        recordArmySpawnTick(playerName, now);
         army.debugSpawnAllies(sourcePlayer as import("@minecraft/server").Player, count);
       }
     }

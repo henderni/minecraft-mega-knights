@@ -54,6 +54,14 @@ export class CastleSystem {
     }
 
     if (placed) {
+      // Consume the blueprint item (1 per use)
+      // Reconstruct typeId from validated blueprintId to avoid using raw item.typeId in commands
+      const safeTypeId = `mk:mk_blueprint_${blueprintId}`;
+      try {
+        player.runCommand(`clear @s ${safeTypeId} 0 1`);
+      } catch {
+        // clear command may fail if item was already removed — non-fatal
+      }
       player.sendMessage(CASTLE_PLACED(blueprint.displayName));
       this.army.addTroopBonus(player, blueprint.troopBonus);
       const newMax = this.army.getMaxArmySize(player);
@@ -157,6 +165,16 @@ export class CastleSystem {
     cmds.push(`setblock ${x} ${y + 1} ${z} lantern`);
     cmds.push(`setblock ${x - 1} ${y + 5} ${z - 1} lantern`);
 
+    // Cobblestone wall parapets between merlons for proper battlements
+    cmds.push(`setblock ${x - 1} ${y + 8} ${z - 2} cobblestone_wall`);
+    cmds.push(`setblock ${x + 1} ${y + 8} ${z - 2} cobblestone_wall`);
+    cmds.push(`setblock ${x - 1} ${y + 8} ${z + 2} cobblestone_wall`);
+    cmds.push(`setblock ${x + 1} ${y + 8} ${z + 2} cobblestone_wall`);
+
+    // Corner flagpoles
+    cmds.push(`setblock ${x - 2} ${y + 9} ${z - 2} oak_fence`);
+    cmds.push(`setblock ${x + 2} ${y + 9} ${z + 2} oak_fence`);
+
     return cmds;
   }
 
@@ -200,6 +218,24 @@ export class CastleSystem {
     // Passage lighting
     cmds.push(`setblock ${x} ${y + 1} ${z - 1} lantern`);
     cmds.push(`setblock ${x} ${y + 1} ${z + 1} lantern`);
+
+    // Ladder access hole through ceiling so player can reach roof
+    cmds.push(`setblock ${x + 3} ${y + 6} ${z + 2} ladder ["facing_direction":4]`);
+
+    // Arrow slits in side walls
+    cmds.push(`setblock ${x - 4} ${y + 3} ${z - 1} iron_bars`);
+    cmds.push(`setblock ${x - 4} ${y + 3} ${z + 1} iron_bars`);
+    cmds.push(`setblock ${x + 4} ${y + 3} ${z - 1} iron_bars`);
+    cmds.push(`setblock ${x + 4} ${y + 3} ${z + 1} iron_bars`);
+
+    // Corner flagpoles on roof
+    cmds.push(`setblock ${x - 4} ${y + 8} ${z - 3} oak_fence`);
+    cmds.push(`setblock ${x + 4} ${y + 8} ${z - 3} oak_fence`);
+    cmds.push(`setblock ${x - 4} ${y + 8} ${z + 3} oak_fence`);
+    cmds.push(`setblock ${x + 4} ${y + 8} ${z + 3} oak_fence`);
+
+    // Roof walkway lighting
+    cmds.push(`setblock ${x} ${y + 7} ${z} lantern`);
 
     return cmds;
   }
@@ -257,6 +293,16 @@ export class CastleSystem {
     cmds.push(`setblock ${x + 4} ${y + 1} ${z - 3} lantern`);
     cmds.push(`setblock ${x - 4} ${y + 1} ${z + 3} lantern`);
     cmds.push(`setblock ${x + 4} ${y + 1} ${z + 3} lantern`);
+
+    // Red carpet down center aisle to throne
+    cmds.push(`fill ${x} ${y + 1} ${z - 3} ${x} ${y + 1} ${z + 1} red_carpet`);
+
+    // Bookshelves flanking throne along back wall
+    cmds.push(`fill ${x - 4} ${y + 1} ${z + 3} ${x - 3} ${y + 2} ${z + 3} bookshelf`);
+    cmds.push(`fill ${x + 3} ${y + 1} ${z + 3} ${x + 4} ${y + 2} ${z + 3} bookshelf`);
+
+    // Blue tapestry on back wall behind throne
+    cmds.push(`fill ${x - 1} ${y + 3} ${z + 4} ${x + 1} ${y + 5} ${z + 4} blue_wool`);
 
     return cmds;
   }

@@ -1,4 +1,4 @@
-import { world, system, Player, Dimension, Vector3 } from "@minecraft/server";
+import { world, system, Player, Dimension, Vector3, ItemStack } from "@minecraft/server";
 import {
   CAMP_TIERS,
   getCampTierForDay,
@@ -12,12 +12,13 @@ import {
 import { CAMP_SPAWNED, CAMP_CLEARED, CAMP_DEBUG_SPAWNED } from "../data/Strings";
 import { getFactionForBiome, FACTION_GUARD_WEIGHTS, FactionDef, FactionId } from "../data/FactionDefinitions";
 import { MILESTONE_DAYS } from "../data/MilestoneEvents";
+import { findGroundLevel } from "./MerchantSystem";
 
 const CMDS_PER_TICK = 2;
 const SPAWNS_PER_TICK = 1;
-const GROUND_SCAN_RANGE = 15;
 
 let nextCampId = 1;
+const MAX_CAMP_ID = 1_000_000;
 
 interface CampState {
   campId: string;
@@ -41,25 +42,25 @@ export class EnemyCampSystem {
    * Called from dayCounter.onDayChanged() in main.ts.
    */
   onDayChanged(day: number, siegeActive: boolean): void {
-    if (day < CAMP_START_DAY || day >= 100) return;
-    if (siegeActive) return;
-    if (MILESTONE_DAYS.has(day)) return;
+    if (day < CAMP_START_DAY || day >= 100) {return;}
+    if (siegeActive) {return;}
+    if (MILESTONE_DAYS.has(day)) {return;}
 
     const tier = getCampTierForDay(day);
-    if (!tier) return;
+    if (!tier) {return;}
 
     const players = world.getAllPlayers();
     const playerCount = players.length;
     const scaleFactor = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
 
     for (const player of players) {
-      if (!player.isValid) continue;
+      if (!player.isValid) {continue;}
       const name = player.name;
 
-      if (this.activeCamps.has(name)) continue;
+      if (this.activeCamps.has(name)) {continue;}
 
       const lastDay = this.lastCampDay.get(name) ?? 0;
-      if (day - lastDay < CAMP_COOLDOWN_DAYS) continue;
+      if (day - lastDay < CAMP_COOLDOWN_DAYS) {continue;}
 
       this.spawnCamp(player, day, tier, scaleFactor);
     }
@@ -72,7 +73,7 @@ export class EnemyCampSystem {
   setupDeathListener(): void {
     world.afterEvents.entityDie.subscribe((event) => {
       const dead = event.deadEntity;
-      if (!dead.hasTag("mk_camp_guard")) return;
+      if (!dead.hasTag("mk_camp_guard")) {return;}
 
       for (const [playerName, camp] of this.activeCamps) {
         if (dead.hasTag(`mk_camp_${camp.campId}`)) {
@@ -99,7 +100,7 @@ export class EnemyCampSystem {
     }
 
     for (const [playerName, camp] of this.activeCamps) {
-      if (!camp.spawningComplete) continue;
+      if (!camp.spawningComplete) {continue;}
 
       try {
         const dim = world.getDimension(camp.dimensionId);
@@ -111,7 +112,7 @@ export class EnemyCampSystem {
         camp.guardCount = guards.length;
 
         if (camp.guardCount <= 0) {
-          this.activeCamps.delete(playerName);
+          this.campCleared(playerName, camp);
         }
       } catch {
         // Dimension query failed — skip this cycle
@@ -128,14 +129,15 @@ export class EnemyCampSystem {
   }
 
   private spawnCamp(player: Player, day: number, tier: CampTierDef, scaleFactor: number): void {
-    const campId = String(nextCampId++);
+    const campId = String(nextCampId);
+    nextCampId = (nextCampId + 1) % MAX_CAMP_ID;
     const angle = Math.random() * Math.PI * 2;
     const dist = CAMP_SPAWN_MIN_DIST + Math.random() * (CAMP_SPAWN_MAX_DIST - CAMP_SPAWN_MIN_DIST);
     const rawX = player.location.x + Math.cos(angle) * dist;
     const rawZ = player.location.z + Math.sin(angle) * dist;
 
     const dimension = player.dimension;
-    const groundY = this.findGroundLevel(dimension, Math.floor(rawX), Math.floor(player.location.y), Math.floor(rawZ));
+    const groundY = findGroundLevel(dimension, Math.floor(rawX), Math.floor(player.location.y), Math.floor(rawZ), 15);
 
     if (groundY === null) {
       console.warn(`[MegaKnights] Camp spawn skipped: no solid ground at ${Math.floor(rawX)}, ${Math.floor(rawZ)}`);
@@ -183,20 +185,6 @@ export class EnemyCampSystem {
     });
   }
 
-  private findGroundLevel(dimension: Dimension, x: number, baseY: number, z: number): number | null {
-    for (let y = baseY + GROUND_SCAN_RANGE; y >= baseY - GROUND_SCAN_RANGE; y--) {
-      try {
-        const block = dimension.getBlock({ x, y, z });
-        if (block && !block.isAir && !block.isLiquid) {
-          return y;
-        }
-      } catch {
-        // Block not loaded
-      }
-    }
-    return null;
-  }
-
   private buildCampStructure(
     dimension: Dimension,
     origin: Vector3,
@@ -204,7 +192,7 @@ export class EnemyCampSystem {
     onComplete: () => void,
   ): void {
     // Try .mcstructure file first (allows dropping pre-built files in structures/ later)
-    const structureId = size === 7 ? "megaknights:camp_small" : "megaknights:camp_large";
+    const structureId = size === 7 ? "mk:camp_small" : "mk:camp_large";
     try {
       world.structureManager.place(structureId, dimension, origin);
       onComplete();
@@ -383,12 +371,15 @@ export class EnemyCampSystem {
 
         for (const reward of rewards) {
           const count = reward.min + Math.floor(Math.random() * (reward.max - reward.min + 1));
-          if (count <= 0) continue;
+          if (count <= 0) {continue;}
 
           try {
-            dimension.runCommand(
-              `summon item ${Math.floor(loc.x)} ${Math.floor(loc.y) + 1} ${Math.floor(loc.z)} ${reward.itemId} ${count}`,
-            );
+            const item = new ItemStack(reward.itemId, count);
+            dimension.spawnItem(item, {
+              x: Math.floor(loc.x),
+              y: Math.floor(loc.y) + 1,
+              z: Math.floor(loc.z),
+            });
           } catch (e) {
             console.warn(`[MegaKnights] Camp reward drop failed: ${e}`);
           }
@@ -405,13 +396,13 @@ export class EnemyCampSystem {
   private getCompassDirection(angle: number): string {
     // cos(angle) = X offset (+X = East), sin(angle) = Z offset (+Z = South)
     const deg = (((angle * 180) / Math.PI) % 360 + 360) % 360;
-    if (deg < 22.5 || deg >= 337.5) return "East";
-    if (deg < 67.5) return "Southeast";
-    if (deg < 112.5) return "South";
-    if (deg < 157.5) return "Southwest";
-    if (deg < 202.5) return "West";
-    if (deg < 247.5) return "Northwest";
-    if (deg < 292.5) return "North";
+    if (deg < 22.5 || deg >= 337.5) {return "East";}
+    if (deg < 67.5) {return "Southeast";}
+    if (deg < 112.5) {return "South";}
+    if (deg < 157.5) {return "Southwest";}
+    if (deg < 202.5) {return "West";}
+    if (deg < 247.5) {return "Northwest";}
+    if (deg < 292.5) {return "North";}
     return "Northeast";
   }
 }

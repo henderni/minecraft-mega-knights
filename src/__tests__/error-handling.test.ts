@@ -170,10 +170,10 @@ describe("Input Validation at Command Boundaries", () => {
     // Range clamping is enforced inside DayCounterSystem.setDay() — not duplicated here
   });
 
-  it("army debug command validates count in 1-50 range", () => {
+  it("army debug command validates count in 1-GLOBAL_ARMY_CAP range", () => {
     const src = readMain();
     expect(src).toContain("count > 0");
-    expect(src).toContain("count <= 50");
+    expect(src).toContain("count <= GLOBAL_ARMY_CAP");
     expect(src).toContain("!isNaN(count)");
   });
 

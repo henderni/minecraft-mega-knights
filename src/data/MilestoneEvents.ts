@@ -102,7 +102,18 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   );
 }
 
+/** Allowlist of blueprint item IDs that may be given via command */
+const VALID_BLUEPRINT_ITEMS = new Set([
+  "mk:mk_blueprint_small_tower",
+  "mk:mk_blueprint_gatehouse",
+  "mk:mk_blueprint_great_hall",
+]);
+
 function giveBlueprintToPlayers(blueprintItem: string): void {
+  if (!VALID_BLUEPRINT_ITEMS.has(blueprintItem)) {
+    console.warn(`[MegaKnights] Invalid blueprint item: ${blueprintItem}`);
+    return;
+  }
   for (const player of world.getAllPlayers()) {
     if (!player.isValid) {
       continue;

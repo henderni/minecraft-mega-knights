@@ -9,6 +9,17 @@ export interface WaveDefinition {
   delayTicks: number; // ticks before this wave spawns (after previous wave)
 }
 
+/**
+ * Minimum quest day before each enemy type can spawn naturally (via spawn rules).
+ * Script-spawned enemies (milestones, siege, camps) bypass this gate.
+ */
+export const ENEMY_SPAWN_DAY: Record<string, number> = {
+  "mk:mk_enemy_knight": 10,
+  "mk:mk_enemy_archer": 10,
+  "mk:mk_enemy_wizard": 50,
+  "mk:mk_enemy_dark_knight": 70,
+};
+
 export const WAVE_DEFINITIONS: WaveDefinition[] = [
   {
     waveNumber: 1,
@@ -40,9 +51,10 @@ export const WAVE_DEFINITIONS: WaveDefinition[] = [
   {
     waveNumber: 4,
     spawns: [
+      { entityId: "mk:mk_enemy_knight", count: 5 },
       { entityId: "mk:mk_enemy_dark_knight", count: 6 },
       { entityId: "mk:mk_enemy_wizard", count: 6 },
-      { entityId: "mk:mk_enemy_archer", count: 10 },
+      { entityId: "mk:mk_enemy_archer", count: 8 },
     ],
     delayTicks: 1200,
   },

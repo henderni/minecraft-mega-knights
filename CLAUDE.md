@@ -19,6 +19,10 @@ npm install          # Install dependencies
 npm run build        # Compile TS → MegaKnights_BP/scripts/
 npm run watch        # Watch mode
 npm run deploy       # Build + rsync to BDS (requires $BDS_DIR env var)
+npm run test:run     # Run vitest test suite (41 test files)
+npm run lint         # ESLint check
+npm run lint:fix     # ESLint auto-fix
+npm run format:check # Prettier check
 ```
 
 ## Architecture
@@ -28,8 +32,11 @@ TypeScript source in `src/` compiles to `MegaKnights_BP/scripts/`. Never edit co
 ```
 src/
   main.ts              # Entry point — wires all systems together
-  systems/             # 6 core systems (each manages one mechanic)
-  data/                # Config: ArmorTiers, CastleBlueprints, MilestoneEvents, WaveDefinitions
+  systems/             # 9 core systems (each manages one mechanic)
+  data/                # Config: ArmorTiers, BestiaryDefinitions, CampDefinitions,
+                       #   CastleBlueprints, FactionDefinitions, MilestoneEvents,
+                       #   Strings, WaveDefinitions (includes ENEMY_SPAWN_DAY)
+  __tests__/           # 41 vitest test files (source-as-text pattern — no @minecraft/server imports)
 MegaKnights_BP/        # Behavior pack (entities, items, loot, recipes, scripts/)
 MegaKnights_RP/        # Resource pack (textures, models, animations)
 tools/build.sh         # BDS deploy script
@@ -45,6 +52,9 @@ tools/build.sh         # BDS deploy script
 | CombatSystem | Death event handler, 30% enemy recruitment chance |
 | CastleSystem | Blueprint item usage → structure placement |
 | SiegeSystem | Day-100 final wave event, 5 waves + boss |
+| BestiarySystem | Kill-count tracking per enemy type, passive buff rewards at milestones |
+| EnemyCampSystem | Enemy camp spawning on non-milestone off-days, compass direction hints |
+| MerchantSystem | Standard Bearer scroll usage, merchant unit spawning |
 
 ## Key Conventions
 
@@ -54,10 +64,19 @@ tools/build.sh         # BDS deploy script
 - `mk_army` — identifies player-owned allied units
 - `mk_owner_[playername]` — tracks unit ownership
 - `mk_siege_mob` — marks active siege enemies
+- `mk_camp_guard` — marks enemies spawned as camp guards
 
 **Dynamic properties** (persistent storage):
 - World: `mk:current_day`, `mk:day_tick_counter`, `mk:quest_active`
 - Player: `mk:kills`, `mk:army_size`, `mk:current_tier`, `mk:army_bonus`, `mk:has_started`, `mk:tier_unlocked_*`
+- Entity (ally): `mk:owner_name` — tracks which player owns the unit
+- Entity (ally): `mk:stance` — current stance index (0=Follow, 1=Guard, 2=Hold)
+- Player (bestiary): `mk:bestiary_kills_<type>` — per-enemy kill count for bestiary milestones
+
+**Key data exports**:
+- `ENEMY_SPAWN_DAY` (WaveDefinitions.ts) — minimum quest day before each enemy type spawns naturally
+- `MERCHANT_DAYS` (MerchantSystem.ts) — days the Wandering Merchant appears (15, 30, 55, 75, 95)
+- `MILESTONE_DAYS` (MilestoneEvents.ts) — days with milestone events (camps and merchants avoid these)
 
 **Logging**: Uses `console.warn()` (not `console.log`) — intentional, captures to stderr in BDS.
 
@@ -69,6 +88,7 @@ tools/build.sh         # BDS deploy script
 /scriptevent mk:reset            # Reset all progress
 /scriptevent mk:siege            # Trigger siege immediately
 /scriptevent mk:army <count>     # Spawn debug allies
+/scriptevent mk:camp             # Spawn enemy camp near player
 ```
 
 ## Testing & Performance Validation
@@ -97,7 +117,7 @@ tools/build.sh         # BDS deploy script
 - **Deleted utils**: `src/utils/` (EntityUtils, MessageUtils, PlayerData) was removed — logic now lives in each system.
 - **Tick rate**: 20 ticks/sec. Day counter ticks every 20 ticks. HUD updates every 10 ticks. Army recount every 200 ticks.
 - **Army capacity**: Base 15 units + castle bonuses (+5 tower, +7 gatehouse, +8 great hall) = 35 max singleplayer. `GLOBAL_ARMY_CAP=35` is intentional — 35 allies + 25 siege mobs = 60, the Switch entity budget ceiling.
-- **Minecraft API versions**: Requires engine `[1, 21, 50]`; uses `@minecraft/server@2.3.0`.
+- **Minecraft API versions**: Requires engine `[1, 21, 50]`; uses `@minecraft/server@^2.5.0`.
 
 ## Bedrock Dev Patterns
 
@@ -111,14 +131,21 @@ tools/build.sh         # BDS deploy script
 - **Cache HUD strings**: Compare with previous value before calling `setActionBar()`. Skip the native bridge call when nothing changed.
 - **Set `scan_interval` on target scanning**: `nearest_attackable_target` without `scan_interval` scans every few ticks. Always set `"scan_interval": 10` (half-second) minimum.
 - **Keep `follow_range` low**: Pathfinding cost is roughly cubic with distance. Use 16 for basic mobs, 20-24 for elites, 32 only for bosses.
-- **Add `minecraft:despawn` to all enemies**: Without it, naturally-spawned enemies persist forever. Use `max_distance: 54, min_distance: 32` to match vanilla behavior.
-- **Add `minecraft:density_limit` to all spawn rules**: Prevents unbounded accumulation of custom mobs in loaded chunks.
-- **Use opaque materials**: `entity_alphatest` breaks early-Z optimization on Switch GPU. Use `entity` (opaque) unless textures need cutout transparency.
-- **Bump manifest `version` on every deploy**: Minecraft caches packs by UUID+version. Unchanged versions → stale content on clients.
-- **Localize player-facing strings**: Use `texts/en_US.lang` instead of hardcoded strings in scripts.
-- **Test multiplayer**: Player-scoped vs world-scoped dynamic properties behave differently with multiple players. Army ownership and HUD updates need multi-player testing.
-- **Prefer JSON behaviors over script**: Component groups, timers, and sensors are cheaper than script-driven AI. Reserve scripting for logic that can't be expressed in entity JSON.
 - **Set despawn distances for allies**: Use large despawn distance (96-128 blocks) instead of `minecraft:persistent` where possible, to prevent unbounded memory growth.
+
+## Adding New Content
+
+**New item checklist** (all required):
+1. `MegaKnights_BP/items/tools/<name>.json` — identifier `mk:mk_<name>`
+2. `MegaKnights_RP/textures/items/<name>.png` — texture PNG
+3. Entry in `MegaKnights_RP/textures/item_texture.json` — key matches part after `mk:` (e.g. `mk_standard_bearer_scroll`)
+4. Lang key `item.mk:mk_<name>.name=...` in BOTH `MegaKnights_BP/texts/en_US.lang` AND `MegaKnights_RP/texts/en_US.lang`
+
+**New entity checklist** (all required):
+1. `MegaKnights_BP/entities/<name>.se.json` — identifier `mk:mk_<name>`
+2. `MegaKnights_RP/entity/<name>.ce.json` — client entity definition
+3. `MegaKnights_RP/textures/entity/<name>.png` — texture PNG
+4. Lang key `entity.mk:mk_<name>.name=...` in BOTH lang files
 
 ## BDS Deployment
 
