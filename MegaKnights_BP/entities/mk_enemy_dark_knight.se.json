@@ -10,6 +10,14 @@
     "component_groups": {
       "mk:despawn": {
         "minecraft:instant_despawn": {}
+      },
+      "mk:camp_guard": {
+        "minecraft:despawn": {
+          "despawn_from_distance": {
+            "max_distance": 128,
+            "min_distance": 96
+          }
+        }
       }
     },
     "components": {
@@ -112,6 +120,9 @@
         "add": {
           "component_groups": ["mk:despawn"]
         }
+      },
+      "mk:become_camp_guard": {
+        "add": { "component_groups": ["mk:camp_guard"] }
       }
     }
   }

@@ -50,6 +50,11 @@ export class SiegeSystem {
    *  victory if siegeMobCount briefly hits 0 mid-spawn. */
   private activeSpawnJobs = 0;
 
+  /** Check if siege is currently active — used by camp system to avoid spawning during siege */
+  isActive(): boolean {
+    return this.siegeActive;
+  }
+
   startSiege(): void {
     if (this.siegeActive) {
       return;

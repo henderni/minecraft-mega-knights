@@ -5,6 +5,7 @@ import { ArmySystem } from "./systems/ArmySystem";
 import { CombatSystem } from "./systems/CombatSystem";
 import { CastleSystem } from "./systems/CastleSystem";
 import { SiegeSystem } from "./systems/SiegeSystem";
+import { EnemyCampSystem } from "./systems/EnemyCampSystem";
 import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET } from "./data/Strings";
 
 const dayCounter = new DayCounterSystem();
@@ -13,16 +14,19 @@ const army = new ArmySystem();
 const combat = new CombatSystem(army);
 const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
+const campSystem = new EnemyCampSystem();
 
 // Wire up event-driven death tracking
 army.setupDeathListener(); // Instant army recount on ally death
 siege.setupDeathListener(); // Decrement siege mob counter on enemy death
+campSystem.setupDeathListener(); // Decrement camp guard counter on kill
 
-// Auto-trigger siege on Day 100
+// Auto-trigger siege on Day 100; spawn enemy camps on off-days
 dayCounter.onDayChanged((day) => {
   if (day >= 100) {
     siege.startSiege();
   }
+  campSystem.onDayChanged(day, siege.isActive());
 });
 
 // Main game tick (every 20 ticks = 1 second)
@@ -35,6 +39,7 @@ system.runInterval(() => {
 // Death events handle most updates; this is a safety net for edge cases
 system.runInterval(() => {
   army.tick();
+  campSystem.tick(); // Camp guard recount safety net (same cadence)
 }, 200);
 
 // HUD update (every 10 ticks = 0.5 seconds — action bar text persists ~2s so no flicker)
@@ -64,17 +69,22 @@ world.afterEvents.entitySpawn.subscribe((event) => {
   } // Not one of our enemies
 
   // Script-spawned entities are tagged before afterEvents fire — don't touch them
-  if (entity.hasTag("mk_script_spawned") || entity.hasTag("mk_siege_mob")) {
+  if (entity.hasTag("mk_script_spawned") || entity.hasTag("mk_siege_mob") || entity.hasTag("mk_camp_guard")) {
     return;
   }
 
-  // Despawn if quest not active or day too early
+  // Despawn if quest not active or day too early.
+  // Deferred via system.run() — must not mutate entities during afterEvents processing.
   if (!dayCounter.isActive() || dayCounter.getCurrentDay() < minDay) {
-    try {
-      entity.remove();
-    } catch {
-      // Entity may already be invalid
-    }
+    system.run(() => {
+      try {
+        if (entity.isValid) {
+          entity.remove();
+        }
+      } catch {
+        // Entity may already be invalid
+      }
+    });
   }
 });
 
@@ -130,13 +140,21 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
       sourcePlayer &&
       sourcePlayer.typeId === "minecraft:player"
     ) {
-      const playerName = sourcePlayer.name;
+      const playerName = (sourcePlayer as import("@minecraft/server").Player).name;
       const lastTick = lastArmySpawnTickByPlayer.get(playerName) ?? 0;
       // Rate limit: 5-second cooldown per operator to prevent entity exhaustion
       if (now - lastTick >= 100) {
         lastArmySpawnTickByPlayer.set(playerName, now);
         army.debugSpawnAllies(sourcePlayer as import("@minecraft/server").Player, count);
       }
+    }
+  } else if (event.id === "mk:camp") {
+    const sourcePlayer = event.sourceEntity;
+    if (sourcePlayer && sourcePlayer.typeId === "minecraft:player") {
+      campSystem.debugSpawnCamp(
+        sourcePlayer as import("@minecraft/server").Player,
+        dayCounter.getCurrentDay(),
+      );
     }
   }
 });

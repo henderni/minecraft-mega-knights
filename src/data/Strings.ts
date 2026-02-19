@@ -59,6 +59,13 @@ export const SIEGE_DEFEAT_1 = "§4§l=== DEFEAT ===";
 export const SIEGE_DEFEAT_2 = "§cThe siege has overwhelmed your defenses...";
 export const SIEGE_DEFEAT_3 = '§7Use "/scriptevent mk:reset" to try again.';
 
+// --- Enemy Camps ---
+export const CAMP_SPAWNED = (tierName: string, direction: string) =>
+  `§c⚔ Enemy scouts have established a ${tierName} to the ${direction}!`;
+export const CAMP_CLEARED = (tierName: string) =>
+  `§a✓ ${tierName} cleared! Collect your rewards!`;
+export const CAMP_DEBUG_SPAWNED = "§e[Debug] Enemy camp spawned nearby";
+
 // --- Debug ---
 export const DEBUG_DAY_SET = (day: number) => `§e[Debug] Day set to ${day}`;
 export const DEBUG_QUEST_STARTED = "§a[Debug] Quest started!";
