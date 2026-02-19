@@ -1,10 +1,4 @@
-import {
-  world,
-  system,
-  Dimension,
-  Vector3,
-  ItemUseAfterEvent,
-} from "@minecraft/server";
+import { world, system, Dimension, Vector3, ItemUseAfterEvent } from "@minecraft/server";
 import { CASTLE_BLUEPRINTS } from "../data/CastleBlueprints";
 import { ArmySystem } from "./ArmySystem";
 import {
@@ -23,13 +17,17 @@ export class CastleSystem {
 
   onItemUse(event: ItemUseAfterEvent): void {
     const item = event.itemStack;
-    if (!item || !item.typeId.startsWith("mk:mk_blueprint_")) return;
+    if (!item || !item.typeId.startsWith("mk:mk_blueprint_")) {
+      return;
+    }
 
     const player = event.source;
     const blueprintId = item.typeId.replace("mk:mk_blueprint_", "");
     const blueprint = CASTLE_BLUEPRINTS[blueprintId];
 
-    if (!blueprint) return;
+    if (!blueprint) {
+      return;
+    }
 
     // Get the block the player is looking at
     const rayResult = player.getBlockFromViewDirection({ maxDistance: 7 });
@@ -47,11 +45,7 @@ export class CastleSystem {
     // Try structure manager first, fall back to command-based building
     let placed = false;
     try {
-      world.structureManager.place(
-        blueprint.structureId,
-        player.dimension,
-        placeLoc
-      );
+      world.structureManager.place(blueprint.structureId, player.dimension, placeLoc);
       placed = true;
     } catch {
       // Structure file not found — use command-based fallback (staggered via runJob)
@@ -73,13 +67,11 @@ export class CastleSystem {
    * Builds a castle structure block-by-block using system.runJob().
    * Spreads runCommand calls across ticks to avoid freezing on low-end devices.
    */
-  private buildFallbackStaggered(
-    blueprintId: string,
-    dimension: Dimension,
-    origin: Vector3
-  ): void {
+  private buildFallbackStaggered(blueprintId: string, dimension: Dimension, origin: Vector3): void {
     const commands = this.getBuildCommands(blueprintId, origin);
-    if (commands.length === 0) return;
+    if (commands.length === 0) {
+      return;
+    }
 
     // Run 2 commands per tick to spread work across frames
     const CMDS_PER_TICK = 2;
@@ -99,7 +91,7 @@ export class CastleSystem {
             yield;
           }
         }
-      })()
+      })(),
     );
   }
 

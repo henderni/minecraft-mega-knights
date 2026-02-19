@@ -5,11 +5,7 @@
       "identifier": "mk:mk_page_leggings"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "LLL",
-      "L L",
-      "L L"
-    ],
+    "pattern": ["LLL", "L L", "L L"],
     "key": {
       "L": { "item": "minecraft:leather" }
     },

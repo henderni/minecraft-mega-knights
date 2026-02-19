@@ -5,10 +5,7 @@
       "identifier": "mk:mk_page_helmet"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "LLL",
-      "L L"
-    ],
+    "pattern": ["LLL", "L L"],
     "key": {
       "L": { "item": "minecraft:leather" }
     },

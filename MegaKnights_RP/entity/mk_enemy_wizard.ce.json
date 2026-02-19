@@ -19,12 +19,7 @@
         "attack": "animation.mk.cast"
       },
       "scripts": {
-        "animate": [
-          "walk",
-          "look_at_target",
-          "idle",
-          { "attack": "q.is_delayed_attacking" }
-        ]
+        "animate": ["walk", "look_at_target", "idle", { "attack": "q.is_delayed_attacking" }]
       },
       "render_controllers": ["controller.render.mk_entity"],
       "spawn_egg": {

@@ -42,11 +42,13 @@ You have 100 in-game days to prepare for a massive siege. Along the way you'll:
 
 ### Army & Castles
 
-- Base troop capacity: **20 units**
+- Base troop capacity: **15 units**
 - Small Tower: **+5** capacity
-- Gatehouse: **+10** capacity
-- Great Hall: **+15** capacity
-- Maximum capacity: **50 units**
+- Gatehouse: **+7** capacity
+- Great Hall: **+8** capacity
+- Maximum capacity: **35 units** (singleplayer)
+
+> **Multiplayer note:** In multiplayer the per-player cap scales with `floor(35 / playerCount)` to keep the total entity budget within Switch hardware limits (35 allies + 25 siege mobs = 60 entities max).
 
 ## Installation
 
@@ -134,6 +136,41 @@ This add-on is optimized for Nintendo Switch and other low-end Bedrock devices:
 - HUD updates skip when content hasn't changed
 - Spawns staggered at 1–2 entities per tick via `system.runJob()`
 - `getAllPlayers()` and `getEntities()` calls throttled and cached
+
+## Distribution
+
+### Create .mcaddon Package
+
+Package the add-on for distribution:
+
+```bash
+npm run package
+```
+
+This creates `MegaKnights.mcaddon` containing both the behavior pack and resource pack.
+
+### Installation from .mcaddon
+
+Users can install the `.mcaddon` file by:
+1. Downloading `MegaKnights.mcaddon`
+2. Opening it with Minecraft (double-click or "Open with")
+3. Confirming the pack activation
+4. Enabling **Beta APIs** in world settings
+
+### Microsoft Marketplace Submission
+
+To publish on the official Minecraft Marketplace:
+
+1. **Register** as a Minecraft Creator through [Microsoft Creator Portal](https://www.microsoft.com/en-us/minecraft/creator/)
+2. **Prepare submission**:
+   - Create the `.mcaddon` package (`npm run package`)
+   - Write detailed description and include screenshots
+   - Ensure all manifests have correct metadata
+   - Test thoroughly on multiple platforms (Windows, Switch, mobile)
+3. **Submit** via Creator Portal for review
+4. **Wait for approval** (typically 1-2 weeks)
+
+**Note**: Marketplace availability varies by region. Direct distribution via `.mcaddon` download is always available and requires no approval.
 
 ## License
 

@@ -5,11 +5,7 @@
       "identifier": "mk:mk_squire_leggings"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "MTM",
-      "M M",
-      "M M"
-    ],
+    "pattern": ["MTM", "M M", "M M"],
     "key": {
       "M": { "item": "minecraft:iron_ingot" },
       "T": { "item": "mk:mk_squire_token" }

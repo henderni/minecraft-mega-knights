@@ -14,23 +14,19 @@ export const QUEST_START_DESC =
 export const DAY_CHANGE = (day: number) => `§6=== Day ${day} of 100 ===`;
 
 // --- Milestones ---
-export const MILESTONE_TITLE = (title: string) =>
-  `§e§l[Milestone] ${title}`;
+export const MILESTONE_TITLE = (title: string) => `§e§l[Milestone] ${title}`;
 export const MILESTONE_MESSAGE = (msg: string) => `§7${msg}`;
 
 // --- Armor ---
 export const ARMOR_GIVEN = "§aYou have been given your Page armor. Your journey begins!";
-export const TIER_UNLOCKED = (name: string) =>
-  `§6${name} armor is now available!`;
+export const TIER_UNLOCKED = (name: string) => `§6${name} armor is now available!`;
 
 // --- Army ---
 export const ARMY_FULL = "§cYour army is at maximum capacity!";
 export const ARMY_FULL_SHARED = (cap: number) =>
   `§cThe realm cannot sustain more warriors! §7(Limit: ${cap} per player in multiplayer)`;
-export const ALLY_RECRUITED = (displayName: string) =>
-  `§a+ A ${displayName} has joined your army!`;
-export const ALLY_NOT_YOURS = (ownerName: string) =>
-  `§7This warrior serves ${ownerName}.`;
+export const ALLY_RECRUITED = (displayName: string) => `§a+ A ${displayName} has joined your army!`;
+export const ALLY_NOT_YOURS = (ownerName: string) => `§7This warrior serves ${ownerName}.`;
 export const ALLY_INFO = (nameTag: string, hp: string | number, maxHp: string | number) =>
   `§b${nameTag} §7- HP: ${hp}/${maxHp}`;
 
@@ -40,14 +36,12 @@ export const HUD_ACTION_BAR = (
   bar: string,
   armySize: number,
   armyCap: number,
-  tierName: string
+  tierName: string,
 ) => `§6Day ${day}/100 §7[${bar}] §bArmy: ${armySize}/${armyCap} §d${tierName}`;
 
 // --- Castle ---
-export const CASTLE_LOOK_AT_GROUND =
-  "§cLook at the ground where you want to place the structure!";
-export const CASTLE_PLACED = (name: string) =>
-  `§a${name} has been placed!`;
+export const CASTLE_LOOK_AT_GROUND = "§cLook at the ground where you want to place the structure!";
+export const CASTLE_PLACED = (name: string) => `§a${name} has been placed!`;
 export const CASTLE_CAPACITY_UP = (bonus: number, max: number) =>
   `§7Army capacity increased by +${bonus}! (Max: ${max})`;
 export const CASTLE_FAILED = "§cFailed to place structure. Try a flatter area.";
@@ -55,8 +49,7 @@ export const CASTLE_FAILED = "§cFailed to place structure. Try a flatter area."
 // --- Siege ---
 export const SIEGE_BEGIN = "§4§l=== THE SIEGE HAS BEGUN! ===";
 export const SIEGE_DEFEND = "§cDefend your castle! Waves of enemies approach!";
-export const SIEGE_WAVE = (num: number, total: number) =>
-  `§c--- Wave ${num}/${total} ---`;
+export const SIEGE_WAVE = (num: number, total: number) => `§c--- Wave ${num}/${total} ---`;
 export const SIEGE_VICTORY_1 = "§a§l=== VICTORY! ===";
 export const SIEGE_VICTORY_2 = "§6The Siege Lord has been defeated!";
 export const SIEGE_VICTORY_3 = "§dYou are a TRUE Mega Knight!";
@@ -70,5 +63,4 @@ export const SIEGE_DEFEAT_3 = '§7Use "/scriptevent mk:reset" to try again.';
 export const DEBUG_DAY_SET = (day: number) => `§e[Debug] Day set to ${day}`;
 export const DEBUG_QUEST_STARTED = "§a[Debug] Quest started!";
 export const DEBUG_QUEST_RESET = "§c[Debug] Quest reset!";
-export const DEBUG_ALLIES_SPAWNED = (count: number) =>
-  `§e[Debug] Spawned ${count} allies`;
+export const DEBUG_ALLIES_SPAWNED = (count: number) => `§e[Debug] Spawned ${count} allies`;

@@ -5,11 +5,7 @@
       "identifier": "mk:mk_knight_chestplate"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "MTM",
-      "MMM",
-      "MMM"
-    ],
+    "pattern": ["MTM", "MMM", "MMM"],
     "key": {
       "M": { "item": "minecraft:iron_ingot" },
       "T": { "item": "mk:mk_knight_token" }

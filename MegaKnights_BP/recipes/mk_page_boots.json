@@ -5,10 +5,7 @@
       "identifier": "mk:mk_page_boots"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "L L",
-      "L L"
-    ],
+    "pattern": ["L L", "L L"],
     "key": {
       "L": { "item": "minecraft:leather" }
     },

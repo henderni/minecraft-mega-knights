@@ -1,2 +1,35 @@
 pack.name=Mega Knights
 pack.description=100-Day Knight Progression - Castle, Army, and Siege!
+
+## Armor
+item.mk:mk_page_helmet.name=Page Helmet
+item.mk:mk_page_chestplate.name=Page Chestplate
+item.mk:mk_page_leggings.name=Page Leggings
+item.mk:mk_page_boots.name=Page Boots
+item.mk:mk_squire_helmet.name=Squire Helmet
+item.mk:mk_squire_chestplate.name=Squire Chestplate
+item.mk:mk_squire_leggings.name=Squire Leggings
+item.mk:mk_squire_boots.name=Squire Boots
+item.mk:mk_knight_helmet.name=Knight Helmet
+item.mk:mk_knight_chestplate.name=Knight Chestplate
+item.mk:mk_knight_leggings.name=Knight Leggings
+item.mk:mk_knight_boots.name=Knight Boots
+item.mk:mk_champion_helmet.name=Champion Helmet
+item.mk:mk_champion_chestplate.name=Champion Chestplate
+item.mk:mk_champion_leggings.name=Champion Leggings
+item.mk:mk_champion_boots.name=Champion Boots
+item.mk:mk_mega_knight_helmet.name=Mega Knight Helmet
+item.mk:mk_mega_knight_chestplate.name=Mega Knight Chestplate
+item.mk:mk_mega_knight_leggings.name=Mega Knight Leggings
+item.mk:mk_mega_knight_boots.name=Mega Knight Boots
+
+## Tokens
+item.mk:mk_squire_token.name=Squire Token
+item.mk:mk_knight_token.name=Knight Token
+item.mk:mk_champion_token.name=Champion Token
+item.mk:mk_mega_knight_token.name=Mega Knight Token
+
+## Blueprints
+item.mk:mk_blueprint_small_tower.name=Small Tower Blueprint
+item.mk:mk_blueprint_gatehouse.name=Gatehouse Blueprint
+item.mk:mk_blueprint_great_hall.name=Great Hall Blueprint

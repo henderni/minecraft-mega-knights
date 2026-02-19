@@ -5,10 +5,7 @@
       "identifier": "mk:mk_squire_helmet"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "MMM",
-      "MTM"
-    ],
+    "pattern": ["MMM", "MTM"],
     "key": {
       "M": { "item": "minecraft:iron_ingot" },
       "T": { "item": "mk:mk_squire_token" }

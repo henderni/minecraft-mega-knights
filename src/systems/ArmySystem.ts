@@ -36,9 +36,13 @@ const MAX_TAG_CACHE = 100;
 /** Sanitize player name for use in entity tags (only alphanum, underscore, hyphen allowed) */
 function sanitizePlayerTag(name: string): string {
   let cached = tagCache.get(name);
-  if (cached !== undefined) return cached;
-  if (tagCache.size >= MAX_TAG_CACHE) tagCache.clear();
-  cached = name.replace(/[^a-zA-Z0-9_\-]/g, "_");
+  if (cached !== undefined) {
+    return cached;
+  }
+  if (tagCache.size >= MAX_TAG_CACHE) {
+    tagCache.clear();
+  }
+  cached = name.replace(/[^a-zA-Z0-9_-]/g, "_");
   tagCache.set(name, cached);
   return cached;
 }
@@ -46,8 +50,12 @@ function sanitizePlayerTag(name: string): string {
 /** Get the full owner tag string for a player name — cached to avoid repeat concat */
 function getOwnerTag(name: string): string {
   let cached = ownerTagCache.get(name);
-  if (cached !== undefined) return cached;
-  if (ownerTagCache.size >= MAX_TAG_CACHE) ownerTagCache.clear();
+  if (cached !== undefined) {
+    return cached;
+  }
+  if (ownerTagCache.size >= MAX_TAG_CACHE) {
+    ownerTagCache.clear();
+  }
   cached = `mk_owner_${sanitizePlayerTag(name)}`;
   ownerTagCache.set(name, cached);
   return cached;
@@ -70,7 +78,9 @@ export class ArmySystem {
   /** Derive a display name from an ally type ID — uses pre-computed cache */
   private static allyDisplayName(allyTypeId: string): string {
     const cached = ALLY_DISPLAY_NAMES.get(allyTypeId);
-    if (cached) return cached;
+    if (cached) {
+      return cached;
+    }
     // Fallback for unknown types
     const raw = allyTypeId.replace("mk:mk_ally_", "").replace(/_/g, " ");
     const name = raw
@@ -83,44 +93,42 @@ export class ArmySystem {
 
   /** Get the current max army size for a player (base + castle bonuses, clamped) */
   getMaxArmySize(player: Player): number {
-    const bonus =
-      (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+    const bonus = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
     return ArmySystem.BASE_ARMY_SIZE + Math.min(bonus, MAX_ARMY_BONUS);
   }
 
   /** Compute effective army cap accounting for multiplayer scaling — used by HUD */
   static getEffectiveCap(armyBonus: number, playerCount: number): number {
     const personalCap = ArmySystem.BASE_ARMY_SIZE + Math.min(armyBonus, MAX_ARMY_BONUS);
-    if (playerCount <= 1) return personalCap;
+    if (playerCount <= 1) {
+      return personalCap;
+    }
     return Math.min(personalCap, Math.floor(GLOBAL_ARMY_CAP / playerCount));
   }
 
   /** Add troop capacity from placing a castle structure (capped) */
   addTroopBonus(player: Player, bonus: number): void {
-    const current =
-      (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+    const current = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
     const capped = Math.min(current + bonus, MAX_ARMY_BONUS);
     player.setDynamicProperty("mk:army_bonus", capped);
   }
 
-  recruitAlly(
-    player: Player,
-    enemyTypeId: string,
-    location: Vector3,
-    dimension: Dimension
-  ): void {
-    if (!player.isValid) return;
+  recruitAlly(player: Player, enemyTypeId: string, location: Vector3, dimension: Dimension): void {
+    if (!player.isValid) {
+      return;
+    }
 
-    const armySize =
-      (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+    const armySize = Math.max(
+      0,
+      Math.min(GLOBAL_ARMY_CAP, (player.getDynamicProperty("mk:army_size") as number) ?? 0),
+    );
     const maxSize = this.getMaxArmySize(player);
 
     // Dynamic cap: in multiplayer, scale per-player limit to stay within global entity budget
     // Uses cachedPlayerMap (refreshed every 10s in tick()) to avoid bridge call
     const playerCount = Math.max(1, this.cachedPlayerMap.size);
-    const effectiveCap = playerCount > 1
-      ? Math.min(maxSize, Math.floor(GLOBAL_ARMY_CAP / playerCount))
-      : maxSize;
+    const effectiveCap =
+      playerCount > 1 ? Math.min(maxSize, Math.floor(GLOBAL_ARMY_CAP / playerCount)) : maxSize;
 
     if (armySize >= effectiveCap) {
       if (effectiveCap < maxSize && playerCount > 1) {
@@ -141,7 +149,9 @@ export class ArmySystem {
       ally.addTag("mk_army");
       ally.addTag(ownerTag);
       ally.setDynamicProperty("mk:owner_name", player.name);
-      ally.nameTag = `§a${player.name}'s ${displayName}`;
+      // Strip § codes from player name — BDS/offline servers may allow unusual names
+      const safeName = player.name.replace(/§./g, "");
+      ally.nameTag = `§a${safeName}'s ${displayName}`;
 
       player.setDynamicProperty("mk:army_size", armySize + 1);
       player.sendMessage(ALLY_RECRUITED(displayName));
@@ -157,16 +167,19 @@ export class ArmySystem {
   setupDeathListener(): void {
     world.afterEvents.entityDie.subscribe((event) => {
       const dead = event.deadEntity;
-      if (!dead.hasTag("mk_army")) return;
+      if (!dead.hasTag("mk_army")) {
+        return;
+      }
 
       const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
-      if (!ownerName) return;
+      if (!ownerName) {
+        return;
+      }
 
       // Find the owner player by name — O(1) lookup from cached Map (refreshed every recount tick)
       const player = this.cachedPlayerMap.get(ownerName);
       if (player?.isValid) {
-        const current =
-          (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+        const current = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
         if (current > 0) {
           player.setDynamicProperty("mk:army_size", current - 1);
         }
@@ -183,10 +196,14 @@ export class ArmySystem {
     this.cachedPlayerMap.clear();
     const allPlayers = world.getAllPlayers();
     for (const p of allPlayers) {
-      if (p.isValid) this.cachedPlayerMap.set(p.name, p);
+      if (p.isValid) {
+        this.cachedPlayerMap.set(p.name, p);
+      }
     }
     for (const player of allPlayers) {
-      if (!player.isValid) continue;
+      if (!player.isValid) {
+        continue;
+      }
 
       const ownerTag = getOwnerTag(player.name);
       try {
@@ -204,7 +221,9 @@ export class ArmySystem {
 
   onPlayerInteract(event: PlayerInteractWithEntityAfterEvent): void {
     const entity = event.target;
-    if (!entity.hasTag("mk_army")) return;
+    if (!entity.hasTag("mk_army")) {
+      return;
+    }
 
     const ownerName = entity.getDynamicProperty("mk:owner_name") as string;
     if (ownerName !== event.player.name) {
@@ -212,13 +231,15 @@ export class ArmySystem {
       return;
     }
 
-    // Show ally info
-    const hp = entity.getComponent("minecraft:health") as
-      | EntityHealthComponent
-      | undefined;
-    const healthValue = hp ? Math.floor(hp.currentValue) : "?";
-    const healthMax = hp ? Math.floor(hp.effectiveMax) : "?";
-    event.player.sendMessage(ALLY_INFO(entity.nameTag, healthValue, healthMax));
+    // Show ally info — entity may despawn or chunk may unload between event and access
+    try {
+      const hp = entity.getComponent("minecraft:health") as EntityHealthComponent | undefined;
+      const healthValue = hp ? Math.floor(hp.currentValue) : "?";
+      const healthMax = hp ? Math.floor(hp.effectiveMax) : "?";
+      event.player.sendMessage(ALLY_INFO(entity.nameTag, healthValue, healthMax));
+    } catch {
+      // Entity became invalid before we could read its health
+    }
   }
 
   getArmyEntities(player: Player): Entity[] {
@@ -259,7 +280,9 @@ export class ArmySystem {
                 break;
               }
             }
-            if (!currentPlayer) break;
+            if (!currentPlayer) {
+              break;
+            }
           }
 
           const angle = Math.random() * Math.PI * 2;
@@ -274,7 +297,7 @@ export class ArmySystem {
             ally.addTag("mk_army");
             ally.addTag(ownerTag);
             ally.setDynamicProperty("mk:owner_name", playerName);
-            ally.nameTag = `§a${playerName}'s Knight`;
+            ally.nameTag = `§a${playerName.replace(/§./g, "")}'s Knight`;
           } catch (e) {
             console.warn(`[MegaKnights] Failed to spawn debug ally: ${e}`);
           }
@@ -292,7 +315,7 @@ export class ArmySystem {
             break;
           }
         }
-      })()
+      })(),
     );
   }
 }

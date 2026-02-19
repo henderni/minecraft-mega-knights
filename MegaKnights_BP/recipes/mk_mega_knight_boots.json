@@ -5,10 +5,7 @@
       "identifier": "mk:mk_mega_knight_boots"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "MTM",
-      "M M"
-    ],
+    "pattern": ["MTM", "M M"],
     "key": {
       "M": { "item": "minecraft:diamond" },
       "T": { "item": "mk:mk_mega_knight_token" }

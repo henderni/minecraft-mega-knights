@@ -1,0 +1,11 @@
+node_modules/
+.git/
+.venv/
+MegaKnights_BP/scripts/
+MegaKnights_BP/manifest.json
+MegaKnights_RP/manifest.json
+dist/
+build/
+*.mcaddon
+coverage/
+.vitest/

@@ -14,11 +14,7 @@
     },
     "components": {
       "minecraft:type_family": {
-        "family": [
-          "mk_enemy",
-          "monster",
-          "mob"
-        ]
+        "family": ["mk_enemy", "monster", "mob"]
       },
       "minecraft:health": {
         "value": 25,
@@ -28,7 +24,7 @@
         "damage": 6
       },
       "minecraft:movement": {
-        "value": 0.30
+        "value": 0.3
       },
       "minecraft:collision_box": {
         "width": 0.6,
@@ -118,9 +114,7 @@
       "minecraft:entity_spawned": {},
       "mk:despawn": {
         "add": {
-          "component_groups": [
-            "mk:despawn"
-          ]
+          "component_groups": ["mk:despawn"]
         }
       }
     }

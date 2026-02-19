@@ -15,7 +15,7 @@ const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
 
 // Wire up event-driven death tracking
-army.setupDeathListener();  // Instant army recount on ally death
+army.setupDeathListener(); // Instant army recount on ally death
 siege.setupDeathListener(); // Decrement siege mob counter on enemy death
 
 // Auto-trigger siege on Day 100
@@ -54,13 +54,19 @@ const ENEMY_SPAWN_DAY: Record<string, number> = {
 
 world.afterEvents.entitySpawn.subscribe((event) => {
   const entity = event.entity;
-  if (!entity.isValid) return;
+  if (!entity.isValid) {
+    return;
+  }
 
   const minDay = ENEMY_SPAWN_DAY[entity.typeId];
-  if (minDay === undefined) return; // Not one of our enemies
+  if (minDay === undefined) {
+    return;
+  } // Not one of our enemies
 
   // Script-spawned entities are tagged before afterEvents fire — don't touch them
-  if (entity.hasTag("mk_script_spawned") || entity.hasTag("mk_siege_mob")) return;
+  if (entity.hasTag("mk_script_spawned") || entity.hasTag("mk_siege_mob")) {
+    return;
+  }
 
   // Despawn if quest not active or day too early
   if (!dayCounter.isActive() || dayCounter.getCurrentDay() < minDay) {
@@ -116,7 +122,14 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     const count = parseInt(event.message);
     const now = system.currentTick;
     // Rate limit: 5-second cooldown between debug spawns to prevent entity exhaustion
-    if (!isNaN(count) && count > 0 && count <= 50 && event.sourceEntity && event.sourceEntity.typeId === "minecraft:player" && now - lastArmySpawnTick >= 100) {
+    if (
+      !isNaN(count) &&
+      count > 0 &&
+      count <= 50 &&
+      event.sourceEntity &&
+      event.sourceEntity.typeId === "minecraft:player" &&
+      now - lastArmySpawnTick >= 100
+    ) {
       lastArmySpawnTick = now;
       army.debugSpawnAllies(event.sourceEntity as import("@minecraft/server").Player, count);
     }

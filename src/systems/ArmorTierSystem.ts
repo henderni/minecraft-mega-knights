@@ -7,20 +7,24 @@ export class ArmorTierSystem {
     const hasStarted = player.getDynamicProperty("mk:has_started") as boolean;
     if (!hasStarted) {
       // Give starting Page armor
-      player.runCommand(`give @s mk:mk_page_helmet`);
-      player.runCommand(`give @s mk:mk_page_chestplate`);
-      player.runCommand(`give @s mk:mk_page_leggings`);
-      player.runCommand(`give @s mk:mk_page_boots`);
+      player.runCommand("give @s mk:mk_page_helmet");
+      player.runCommand("give @s mk:mk_page_chestplate");
+      player.runCommand("give @s mk:mk_page_leggings");
+      player.runCommand("give @s mk:mk_page_boots");
       player.sendMessage(ARMOR_GIVEN);
     }
   }
 
   static unlockTier(tierIndex: number): void {
     const tier = ARMOR_TIERS[tierIndex];
-    if (!tier) return;
+    if (!tier) {
+      return;
+    }
 
     for (const player of world.getAllPlayers()) {
-      if (!player.isValid) continue;
+      if (!player.isValid) {
+        continue;
+      }
 
       try {
         player.setDynamicProperty(`mk:tier_unlocked_${tierIndex}`, true);
@@ -38,7 +42,9 @@ export class ArmorTierSystem {
   }
 
   static isTierUnlocked(player: Player, tierIndex: number): boolean {
-    if (tierIndex === 0) return true; // Page is always available
+    if (tierIndex === 0) {
+      return true;
+    } // Page is always available
     return (player.getDynamicProperty(`mk:tier_unlocked_${tierIndex}`) as boolean) ?? false;
   }
 }

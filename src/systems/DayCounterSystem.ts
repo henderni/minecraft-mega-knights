@@ -1,4 +1,5 @@
 import { world, system, Player } from "@minecraft/server";
+import { ARMOR_TIERS } from "../data/ArmorTiers";
 import { MILESTONES } from "../data/MilestoneEvents";
 import { ArmySystem } from "./ArmySystem";
 import {
@@ -55,7 +56,9 @@ export class DayCounterSystem {
 
   /** Load cached values from dynamic properties (call once on first use) */
   private ensureInitialized(): void {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
     this.initialized = true;
     this.cachedActive = (world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE) as boolean) ?? false;
     this.cachedDay = (world.getDynamicProperty(DayCounterSystem.KEY_DAY) as number) ?? 0;
@@ -126,7 +129,7 @@ export class DayCounterSystem {
             }
             yield; // One day per tick
           }
-        })()
+        })(),
       );
     }
   }
@@ -159,8 +162,12 @@ export class DayCounterSystem {
 
   tick(): void {
     this.ensureInitialized();
-    if (!this.cachedActive) return;
-    if (this.cachedDay >= DayCounterSystem.MAX_DAY) return;
+    if (!this.cachedActive) {
+      return;
+    }
+    if (this.cachedDay >= DayCounterSystem.MAX_DAY) {
+      return;
+    }
 
     this.cachedTickCounter += 20; // called every 20 ticks
 
@@ -188,7 +195,9 @@ export class DayCounterSystem {
   private cachedPlayerArmyBonus = new Map<string, number>();
 
   updateHUD(): void {
-    if (!this.cachedActive) return;
+    if (!this.cachedActive) {
+      return;
+    }
 
     const currentDay = this.cachedDay;
     const progress = this.cachedTickCounter / DayCounterSystem.TICKS_PER_DAY;
@@ -207,13 +216,17 @@ export class DayCounterSystem {
     // Read per-player dynamic properties every 8th HUD call (~4s) instead of every call
     this.hudPropertyReadCounter++;
     const shouldReadProps = this.hudPropertyReadCounter >= 8;
-    if (shouldReadProps) this.hudPropertyReadCounter = 0;
+    if (shouldReadProps) {
+      this.hudPropertyReadCounter = 0;
+    }
 
     // Prune disconnected players from caches — reuse Set to avoid allocation
     if (shouldReadProps) {
       this.activeNames.clear();
       for (const p of players) {
-        if (p.isValid) this.activeNames.add(p.name);
+        if (p.isValid) {
+          this.activeNames.add(p.name);
+        }
       }
       for (const key of this.lastHudKeys.keys()) {
         if (!this.activeNames.has(key)) {
@@ -226,7 +239,9 @@ export class DayCounterSystem {
     }
 
     for (const player of players) {
-      if (!player.isValid) continue;
+      if (!player.isValid) {
+        continue;
+      }
 
       // Cache player.name in local variable — avoids repeated bridge property access
       const name = player.name;
@@ -238,9 +253,15 @@ export class DayCounterSystem {
 
         if (shouldReadProps) {
           // Full read from dynamic properties
-          armySize = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
-          tier = (player.getDynamicProperty("mk:current_tier") as number) ?? 0;
-          armyBonus = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+          armySize = Math.max(0, (player.getDynamicProperty("mk:army_size") as number) ?? 0);
+          tier = Math.max(
+            0,
+            Math.min(
+              ARMOR_TIERS.length - 1,
+              (player.getDynamicProperty("mk:current_tier") as number) ?? 0,
+            ),
+          );
+          armyBonus = Math.max(0, (player.getDynamicProperty("mk:army_bonus") as number) ?? 0);
           this.cachedPlayerArmySize.set(name, armySize);
           this.cachedPlayerTier.set(name, tier);
           this.cachedPlayerArmyBonus.set(name, armyBonus);

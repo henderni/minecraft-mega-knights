@@ -51,7 +51,9 @@ export class SiegeSystem {
   private activeSpawnJobs = 0;
 
   startSiege(): void {
-    if (this.siegeActive) return;
+    if (this.siegeActive) {
+      return;
+    }
 
     this.siegeActive = true;
     this.currentWave = 0;
@@ -72,7 +74,9 @@ export class SiegeSystem {
    *  Must be called once during system setup (from main.ts). */
   setupDeathListener(): void {
     world.afterEvents.entityDie.subscribe((event) => {
-      if (!this.siegeActive) return;
+      if (!this.siegeActive) {
+        return;
+      }
       const dead = event.deadEntity;
 
       if (dead.hasTag("mk_siege_mob")) {
@@ -82,13 +86,19 @@ export class SiegeSystem {
       // Player death during siege — check if ALL players are dead
       if (dead.typeId === "minecraft:player") {
         system.run(() => {
-          if (!this.siegeActive) return;
+          if (!this.siegeActive) {
+            return;
+          }
           const players = world.getAllPlayers();
-          if (players.length === 0) return;
+          if (players.length === 0) {
+            return;
+          }
 
           let anyAlive = false;
           for (const p of players) {
-            if (!p.isValid) continue;
+            if (!p.isValid) {
+              continue;
+            }
             try {
               const health = p.getComponent("minecraft:health");
               if (health && health.currentValue > 0) {
@@ -109,7 +119,9 @@ export class SiegeSystem {
   }
 
   tick(): void {
-    if (!this.siegeActive) return;
+    if (!this.siegeActive) {
+      return;
+    }
 
     this.ticksSinceWave += 20; // called every 20 ticks
 
@@ -156,7 +168,9 @@ export class SiegeSystem {
   }
 
   private spawnWave(): void {
-    if (this.currentWave >= WAVE_DEFINITIONS.length) return;
+    if (this.currentWave >= WAVE_DEFINITIONS.length) {
+      return;
+    }
 
     const wave = WAVE_DEFINITIONS[this.currentWave];
     world.sendMessage(SIEGE_WAVE(wave.waveNumber, WAVE_DEFINITIONS.length));
@@ -171,16 +185,22 @@ export class SiegeSystem {
     const spawnQueue: { entityId: string; playerName: string }[] = [];
 
     for (const player of players) {
-      if (!player.isValid) continue;
+      if (!player.isValid) {
+        continue;
+      }
       let playerSpawns = 0;
       for (const spawn of wave.spawns) {
         const scaledCount = Math.max(1, Math.round(spawn.count * scaleFactor));
         for (let i = 0; i < scaledCount; i++) {
-          if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) break;
+          if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
+            break;
+          }
           spawnQueue.push({ entityId: spawn.entityId, playerName: player.name });
           playerSpawns++;
         }
-        if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) break;
+        if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
+          break;
+        }
       }
     }
 
@@ -196,7 +216,9 @@ export class SiegeSystem {
         // Build player map from outer array; refresh with getAllPlayers only every 5th yield
         const playerMap = new Map<string, Player>();
         for (const p of initialPlayers) {
-          if (p.isValid) playerMap.set(p.name, p);
+          if (p.isValid) {
+            playerMap.set(p.name, p);
+          }
         }
 
         for (const entry of spawnQueue) {
@@ -213,10 +235,7 @@ export class SiegeSystem {
                 z: loc.z + Math.sin(angle) * dist,
               };
 
-              const entity = cachedPlayer.dimension.spawnEntity(
-                entry.entityId,
-                spawnLoc
-              );
+              const entity = cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
               entity.addTag("mk_siege_mob");
               siegeRef.siegeMobCount++;
             } catch {
@@ -231,7 +250,9 @@ export class SiegeSystem {
             if (spawned % 5 === 0) {
               playerMap.clear();
               for (const p of world.getAllPlayers()) {
-                if (p.isValid) playerMap.set(p.name, p);
+                if (p.isValid) {
+                  playerMap.set(p.name, p);
+                }
               }
               // Mid-wave entity cap check: pause spawning if over budget
               if (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
@@ -239,13 +260,17 @@ export class SiegeSystem {
                 let retries = 0;
                 while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS && retries < 5) {
                   // Yield 120 times (~6 seconds) before rechecking — longer pause when Switch is under load
-                  for (let w = 0; w < 120; w++) yield;
+                  for (let w = 0; w < 120; w++) {
+                    yield;
+                  }
                   retries++;
                 }
                 // Refresh player map after long wait
                 playerMap.clear();
                 for (const p of world.getAllPlayers()) {
-                  if (p.isValid) playerMap.set(p.name, p);
+                  if (p.isValid) {
+                    playerMap.set(p.name, p);
+                  }
                 }
               }
             }
@@ -254,7 +279,7 @@ export class SiegeSystem {
 
         // Signal that this wave's spawning is complete — unblocks victory check
         siegeRef.activeSpawnJobs = Math.max(0, siegeRef.activeSpawnJobs - 1);
-      })()
+      })(),
     );
 
     this.currentWave++;
@@ -269,7 +294,9 @@ export class SiegeSystem {
       world.sendMessage(SIEGE_VICTORY_3);
 
       for (const player of world.getAllPlayers()) {
-        if (!player.isValid) continue;
+        if (!player.isValid) {
+          continue;
+        }
         player.onScreenDisplay.setTitle(SIEGE_VICTORY_TITLE, {
           subtitle: SIEGE_VICTORY_SUBTITLE,
           fadeInDuration: 20,

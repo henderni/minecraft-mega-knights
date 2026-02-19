@@ -14,26 +14,36 @@ export class CombatSystem {
     const killer = event.damageSource.damagingEntity;
 
     // Only process if a player killed a recruitable enemy
-    if (!killer || !(killer instanceof Player)) return;
-    if (!dead.typeId.startsWith("mk:mk_enemy_")) return;
+    if (!killer || !(killer instanceof Player)) {
+      return;
+    }
+    if (!dead.typeId.startsWith("mk:mk_enemy_")) {
+      return;
+    }
     // Boss entities are not recruitable
-    if (dead.typeId.includes("boss")) return;
+    if (dead.typeId.includes("boss")) {
+      return;
+    }
 
     const player = killer;
 
     // Track kill count
-    const kills =
-      ((player.getDynamicProperty("mk:kills") as number) ?? 0) + 1;
+    const kills = Math.max(0, (player.getDynamicProperty("mk:kills") as number) ?? 0) + 1;
     player.setDynamicProperty("mk:kills", kills);
 
-    // Roll for recruitment — defer to next tick to avoid mutating world during death event
+    // Roll for recruitment — defer to next tick to avoid mutating world during death event.
+    // Capture entity properties before the entity object is invalidated by the engine.
     if (Math.random() < CombatSystem.RECRUIT_CHANCE) {
-      const typeId = dead.typeId;
-      const location = { ...dead.location };
-      const dimension = dead.dimension;
-      system.run(() => {
-        this.army.recruitAlly(player, typeId, location, dimension);
-      });
+      try {
+        const typeId = dead.typeId;
+        const location = { ...dead.location };
+        const dimension = dead.dimension;
+        system.run(() => {
+          this.army.recruitAlly(player, typeId, location, dimension);
+        });
+      } catch {
+        // Entity was removed from world before spawn data could be captured
+      }
     }
   }
 }

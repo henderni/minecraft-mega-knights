@@ -5,11 +5,7 @@
       "identifier": "mk:mk_page_chestplate"
     },
     "tags": ["crafting_table"],
-    "pattern": [
-      "L L",
-      "LLL",
-      "LLL"
-    ],
+    "pattern": ["L L", "LLL", "LLL"],
     "key": {
       "L": { "item": "minecraft:leather" }
     },

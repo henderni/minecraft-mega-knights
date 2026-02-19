@@ -19,12 +19,7 @@
         "bow_and_arrow": "animation.humanoid.bow_and_arrow"
       },
       "scripts": {
-        "animate": [
-          "walk",
-          "look_at_target",
-          "idle",
-          { "bow_and_arrow": "q.is_using_item" }
-        ]
+        "animate": ["walk", "look_at_target", "idle", { "bow_and_arrow": "q.is_using_item" }]
       },
       "render_controllers": ["controller.render.mk_entity"],
       "spawn_egg": {

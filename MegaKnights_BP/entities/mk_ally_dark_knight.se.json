@@ -14,10 +14,7 @@
     },
     "components": {
       "minecraft:type_family": {
-        "family": [
-          "mk_ally",
-          "mob"
-        ]
+        "family": ["mk_ally", "mob"]
       },
       "minecraft:health": {
         "value": 50,
@@ -109,9 +106,7 @@
       "minecraft:entity_spawned": {},
       "mk:despawn": {
         "add": {
-          "component_groups": [
-            "mk:despawn"
-          ]
+          "component_groups": ["mk:despawn"]
         }
       }
     }

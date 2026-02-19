@@ -5,14 +5,34 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "deploy": "bash tools/build.sh"
+    "deploy": "bash tools/build.sh",
+    "package": "bash tools/package.sh",
+    "lint": "eslint src/ --ext .ts",
+    "lint:fix": "eslint src/ --ext .ts --fix",
+    "format": "prettier --write src/ MegaKnights_BP/ MegaKnights_RP/",
+    "format:check": "prettier --check src/ MegaKnights_BP/ MegaKnights_RP/",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:report": "vitest run --coverage --coverage.reporter=html && open coverage/index.html"
   },
-  "keywords": ["minecraft", "bedrock", "addon"],
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "addon"
+  ],
   "author": "",
-  "license": "MIT",
+  "license": "Proprietary",
   "devDependencies": {
-    "@minecraft/server": "^2.3.0",
+    "@minecraft/server": "^2.5.0",
     "@minecraft/server-ui": "^2.0.0",
-    "typescript": "^5.9.3"
+    "@types/node": "^25.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^8.57.1",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

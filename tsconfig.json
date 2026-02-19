@@ -13,8 +13,9 @@
     "declaration": false,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["@minecraft/server", "@minecraft/server-ui"]
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "src/**/__tests__/**"],
   "include": ["src/**/*.ts"]
 }

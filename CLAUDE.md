@@ -71,12 +71,32 @@ tools/build.sh         # BDS deploy script
 /scriptevent mk:army <count>     # Spawn debug allies
 ```
 
+## Testing & Performance Validation
+
+**Switch is the primary performance target.** Every change must be tested on Switch hardware (or simulated as closely as possible).
+
+### Performance Testing Checklist
+
+- Test siege waves on Switch — the siege is the peak load scenario
+- Profile with `/scriptevent mk:siege` and count entities during each wave transition
+- Watch for: pathfinding stalls (entities standing still), frame drops below 20 FPS, input lag
+- Run `/scriptevent mk:army 30` before siege to simulate realistic ally counts
+- Entity count targets: **<40 normal play, <60 during siege, never exceed 80**
+- Test with `should_darken_sky: false` on boss to measure GPU impact
+- After texture art is finalized, verify materials are `entity` (opaque) not `entity_alphatest` unless needed
+
+### Development Iteration
+
+- `npm run watch` + `/reload` in-game for fast script iteration (no server restart)
+- BDS auto-deploy: `export BDS_DIR=... && npm run deploy` to skip manual pack copying
+- Check BDS stderr for `console.warn()` logs — grep for `mk:` prefix to filter noise
+
 ## Gotchas
 
 - **Structure placement**: `world.structureManager.place()` is primary; falls back to fill/setblock commands if `.mcstructure` files missing.
 - **Deleted utils**: `src/utils/` (EntityUtils, MessageUtils, PlayerData) was removed — logic now lives in each system.
 - **Tick rate**: 20 ticks/sec. Day counter ticks every 20 ticks. HUD updates every 10 ticks. Army recount every 200 ticks.
-- **Army capacity**: Base 20 units + castle bonuses (+5/+10/+15 per structure type).
+- **Army capacity**: Base 15 units + castle bonuses (+5 tower, +7 gatehouse, +8 great hall) = 35 max singleplayer. `GLOBAL_ARMY_CAP=35` is intentional — 35 allies + 25 siege mobs = 60, the Switch entity budget ceiling.
 - **Minecraft API versions**: Requires engine `[1, 21, 50]`; uses `@minecraft/server@2.3.0`.
 
 ## Bedrock Dev Patterns

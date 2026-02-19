@@ -30,15 +30,16 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   const initialPlayers = world.getAllPlayers();
   const playerNames: string[] = [];
   for (const p of initialPlayers) {
-    if (p.isValid) playerNames.push(p.name);
+    if (p.isValid) {
+      playerNames.push(p.name);
+    }
   }
 
   // Scale per-player counts in multiplayer to stay under entity cap
   const playerCount = playerNames.length;
   const totalRequested = requests.reduce((sum, r) => sum + r.count, 0) * playerCount;
-  const scaleFactor = totalRequested > MAX_MILESTONE_ENTITIES
-    ? MAX_MILESTONE_ENTITIES / totalRequested
-    : 1.0;
+  const scaleFactor =
+    totalRequested > MAX_MILESTONE_ENTITIES ? MAX_MILESTONE_ENTITIES / totalRequested : 1.0;
 
   // Build flat spawn queue with scaled counts
   const queue: { entityId: string; playerName: string }[] = [];
@@ -57,12 +58,16 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
       // Build player map from outer array — avoids double getAllPlayers() on same tick
       const playerMap = new Map<string, Player>();
       for (const p of initialPlayers) {
-        if (p.isValid) playerMap.set(p.name, p);
+        if (p.isValid) {
+          playerMap.set(p.name, p);
+        }
       }
 
       for (const entry of queue) {
         const cachedPlayer = playerMap.get(entry.playerName);
-        if (!cachedPlayer?.isValid) continue; // Player gone, skip
+        if (!cachedPlayer?.isValid) {
+          continue;
+        } // Player gone, skip
 
         try {
           const loc = cachedPlayer.location;
@@ -86,18 +91,22 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
           if (spawned % 5 === 0) {
             playerMap.clear();
             for (const p of world.getAllPlayers()) {
-              if (p.isValid) playerMap.set(p.name, p);
+              if (p.isValid) {
+                playerMap.set(p.name, p);
+              }
             }
           }
         }
       }
-    })()
+    })(),
   );
 }
 
 function giveBlueprintToPlayers(blueprintItem: string): void {
   for (const player of world.getAllPlayers()) {
-    if (!player.isValid) continue;
+    if (!player.isValid) {
+      continue;
+    }
     try {
       player.runCommand(`give @s ${blueprintItem}`);
     } catch {

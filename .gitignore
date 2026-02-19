@@ -3,3 +3,9 @@ MegaKnights_BP/scripts/
 *.js.map
 .DS_Store
 .claude.local.md
+.eslintcache
+dist/
+build/
+*.mcaddon
+coverage/
+.vitest/

@@ -14,12 +14,7 @@
     },
     "components": {
       "minecraft:type_family": {
-        "family": [
-          "mk_enemy",
-          "monster",
-          "mob",
-          "mk_boss"
-        ]
+        "family": ["mk_enemy", "monster", "mob", "mk_boss"]
       },
       "minecraft:health": {
         "value": 200,
@@ -128,9 +123,7 @@
       "minecraft:entity_spawned": {},
       "mk:despawn": {
         "add": {
-          "component_groups": [
-            "mk:despawn"
-          ]
+          "component_groups": ["mk:despawn"]
         }
       }
     }
