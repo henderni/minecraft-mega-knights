@@ -31,8 +31,8 @@ const VICTORY_CHECK_INTERVAL = 60;
  *  Mobs can despawn (unloaded chunks, minecraft:despawn) without firing entityDie. */
 const RECOUNT_INTERVAL = 600;
 
-/** Maximum active siege mobs before delaying next wave — prevents Switch frame drops */
-const MAX_ACTIVE_SIEGE_MOBS = 30;
+/** Maximum active siege mobs before delaying next wave — keeps total custom entities under 60 on Switch */
+const MAX_ACTIVE_SIEGE_MOBS = 25;
 
 export class SiegeSystem {
   private siegeActive = false;
@@ -67,14 +67,43 @@ export class SiegeSystem {
     this.spawnWave();
   }
 
-  /** Subscribe to entity death events to decrement siege mob counter.
+  /** Subscribe to entity death events to decrement siege mob counter
+   *  and detect total party defeat.
    *  Must be called once during system setup (from main.ts). */
   setupDeathListener(): void {
     world.afterEvents.entityDie.subscribe((event) => {
       if (!this.siegeActive) return;
       const dead = event.deadEntity;
+
       if (dead.hasTag("mk_siege_mob")) {
         this.siegeMobCount = Math.max(0, this.siegeMobCount - 1);
+      }
+
+      // Player death during siege — check if ALL players are dead
+      if (dead.typeId === "minecraft:player") {
+        system.run(() => {
+          if (!this.siegeActive) return;
+          const players = world.getAllPlayers();
+          if (players.length === 0) return;
+
+          let anyAlive = false;
+          for (const p of players) {
+            if (!p.isValid) continue;
+            try {
+              const health = p.getComponent("minecraft:health");
+              if (health && health.currentValue > 0) {
+                anyAlive = true;
+                break;
+              }
+            } catch {
+              // Can't check — assume dead
+            }
+          }
+
+          if (!anyAlive) {
+            this.endSiege(false);
+          }
+        });
       }
     });
   }

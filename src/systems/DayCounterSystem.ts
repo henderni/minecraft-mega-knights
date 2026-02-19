@@ -1,5 +1,6 @@
 import { world, system, Player } from "@minecraft/server";
 import { MILESTONES } from "../data/MilestoneEvents";
+import { ArmySystem } from "./ArmySystem";
 import {
   QUEST_START_TITLE,
   QUEST_START_DESC,
@@ -184,6 +185,7 @@ export class DayCounterSystem {
   private hudPropertyReadCounter = 0;
   private cachedPlayerArmySize = new Map<string, number>();
   private cachedPlayerTier = new Map<string, number>();
+  private cachedPlayerArmyBonus = new Map<string, number>();
 
   updateHUD(): void {
     if (!this.cachedActive) return;
@@ -218,6 +220,7 @@ export class DayCounterSystem {
           this.lastHudKeys.delete(key);
           this.cachedPlayerArmySize.delete(key);
           this.cachedPlayerTier.delete(key);
+          this.cachedPlayerArmyBonus.delete(key);
         }
       }
     }
@@ -231,27 +234,34 @@ export class DayCounterSystem {
       try {
         let armySize: number;
         let tier: number;
+        let armyBonus: number;
 
         if (shouldReadProps) {
           // Full read from dynamic properties
           armySize = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
           tier = (player.getDynamicProperty("mk:current_tier") as number) ?? 0;
+          armyBonus = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
           this.cachedPlayerArmySize.set(name, armySize);
           this.cachedPlayerTier.set(name, tier);
+          this.cachedPlayerArmyBonus.set(name, armyBonus);
         } else {
           // Use cached values
           armySize = this.cachedPlayerArmySize.get(name) ?? 0;
           tier = this.cachedPlayerTier.get(name) ?? 0;
+          armyBonus = this.cachedPlayerArmyBonus.get(name) ?? 0;
         }
 
+        // Effective army cap — scales down in multiplayer
+        const armyCap = ArmySystem.getEffectiveCap(armyBonus, players.length);
+
         // Use numeric composite key to detect changes without allocating a string
-        // Packs day (0-100), filled (0-20), armySize (0-50), tier (0-4) into one number
-        const key = (currentDay << 18) | (filled << 10) | (armySize << 3) | tier;
+        // Packs day(7), filled(5), armySize(6), armyCap(6), tier(3) = 27 bits
+        const key = (currentDay << 20) | (filled << 15) | (armySize << 9) | (armyCap << 3) | tier;
         const lastKey = this.lastHudKeys.get(name);
 
         if (key !== lastKey) {
           const tierName = TIER_NAMES[tier] ?? "Page";
-          const hudString = HUD_ACTION_BAR(currentDay, bar, armySize, tierName);
+          const hudString = HUD_ACTION_BAR(currentDay, bar, armySize, armyCap, tierName);
           player.onScreenDisplay.setActionBar(hudString);
           this.lastHudKeys.set(name, key);
         }

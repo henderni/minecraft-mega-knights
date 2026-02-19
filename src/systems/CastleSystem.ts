@@ -109,55 +109,163 @@ export class CastleSystem {
     const y = Math.floor(origin.y);
     const z = Math.floor(origin.z);
 
-    if (blueprintId === "small_tower") {
-      return [
-        // 3x3 stone brick tower, 6 blocks tall with crenellations
-        `fill ${x - 1} ${y} ${z - 1} ${x + 1} ${y + 5} ${z + 1} stonebrick hollow`,
-        `setblock ${x} ${y} ${z - 1} air`,
-        `setblock ${x} ${y + 1} ${z - 1} air`,
-        `setblock ${x - 1} ${y + 6} ${z - 1} stonebrick`,
-        `setblock ${x + 1} ${y + 6} ${z - 1} stonebrick`,
-        `setblock ${x - 1} ${y + 6} ${z + 1} stonebrick`,
-        `setblock ${x + 1} ${y + 6} ${z + 1} stonebrick`,
-        `setblock ${x} ${y + 3} ${z} torch`,
-      ];
-    } else if (blueprintId === "gatehouse") {
-      const cmds = [
-        // 5x5 stone brick gatehouse with archway
-        `fill ${x - 2} ${y} ${z - 2} ${x + 2} ${y + 5} ${z + 2} stonebrick hollow`,
-        `fill ${x - 1} ${y} ${z - 2} ${x + 1} ${y + 3} ${z - 2} air`,
-        `fill ${x - 1} ${y} ${z + 2} ${x + 1} ${y + 3} ${z + 2} air`,
-        `fill ${x - 1} ${y} ${z - 1} ${x + 1} ${y} ${z + 1} stone`,
-      ];
-      // Crenellations
-      for (let dx = -2; dx <= 2; dx += 2) {
-        for (let dz = -2; dz <= 2; dz += 2) {
-          cmds.push(`setblock ${x + dx} ${y + 6} ${z + dz} stonebrick`);
-        }
-      }
-      cmds.push(`setblock ${x - 1} ${y + 2} ${z - 1} torch`);
-      cmds.push(`setblock ${x + 1} ${y + 2} ${z + 1} torch`);
-      return cmds;
-    } else if (blueprintId === "great_hall") {
-      const cmds = [
-        // 9x7 stone brick hall
-        `fill ${x - 4} ${y} ${z - 3} ${x + 4} ${y + 6} ${z + 3} stonebrick hollow`,
-        `fill ${x - 3} ${y} ${z - 2} ${x + 3} ${y} ${z + 2} polished_deepslate`,
-        `fill ${x - 1} ${y + 1} ${z - 3} ${x + 1} ${y + 3} ${z - 3} air`,
-        `setblock ${x - 4} ${y + 3} ${z} glass`,
-        `setblock ${x + 4} ${y + 3} ${z} glass`,
-        `setblock ${x} ${y + 1} ${z + 2} oak_stairs ["weirdo_direction":2]`,
-      ];
-      // Torches along wall
-      for (let dx = -3; dx <= 3; dx += 2) {
-        cmds.push(`setblock ${x + dx} ${y + 3} ${z - 2} torch`);
-      }
-      cmds.push(
-        `setblock ${x} ${y + 3} ${z + 2} wall_banner ["facing_direction":3]`
-      );
-      return cmds;
+    switch (blueprintId) {
+      case "small_tower":
+        return this.buildSmallTower(x, y, z);
+      case "gatehouse":
+        return this.buildGatehouse(x, y, z);
+      case "great_hall":
+        return this.buildGreatHall(x, y, z);
+      default:
+        return [];
+    }
+  }
+
+  /** Small Watchtower: 5×5 stone tower with two floors, ladder, windows, and crenellations */
+  private buildSmallTower(x: number, y: number, z: number): string[] {
+    const cmds: string[] = [];
+
+    // Foundation
+    cmds.push(`fill ${x - 2} ${y - 1} ${z - 2} ${x + 2} ${y - 1} ${z + 2} cobblestone`);
+
+    // Walls: 5×5 hollow stone brick, 8 tall
+    cmds.push(`fill ${x - 2} ${y} ${z - 2} ${x + 2} ${y + 7} ${z + 2} stonebrick hollow`);
+
+    // Ground floor
+    cmds.push(`fill ${x - 1} ${y} ${z - 1} ${x + 1} ${y} ${z + 1} oak_planks`);
+
+    // Door opening (south face)
+    cmds.push(`setblock ${x} ${y} ${z - 2} air`);
+    cmds.push(`setblock ${x} ${y + 1} ${z - 2} air`);
+
+    // Upper floor at y+4
+    cmds.push(`fill ${x - 1} ${y + 4} ${z - 1} ${x + 1} ${y + 4} ${z + 1} oak_planks`);
+
+    // Ladder up east wall (y+1 to y+6, overwrites floor plank at y+4 to create hole)
+    for (let ly = y + 1; ly <= y + 6; ly++) {
+      cmds.push(`setblock ${x + 1} ${ly} ${z + 1} ladder ["facing_direction":4]`);
     }
 
-    return [];
+    // Windows: glass panes in walls
+    cmds.push(`setblock ${x - 2} ${y + 2} ${z} glass_pane`);
+    cmds.push(`setblock ${x + 2} ${y + 2} ${z} glass_pane`);
+    cmds.push(`setblock ${x - 2} ${y + 5} ${z} glass_pane`);
+    cmds.push(`setblock ${x + 2} ${y + 5} ${z} glass_pane`);
+    cmds.push(`setblock ${x} ${y + 5} ${z + 2} glass_pane`);
+
+    // Crenellations at y+8 (corners and midpoints)
+    for (const dx of [-2, 0, 2]) {
+      cmds.push(`setblock ${x + dx} ${y + 8} ${z - 2} stonebrick`);
+      cmds.push(`setblock ${x + dx} ${y + 8} ${z + 2} stonebrick`);
+    }
+    cmds.push(`setblock ${x - 2} ${y + 8} ${z} stonebrick`);
+    cmds.push(`setblock ${x + 2} ${y + 8} ${z} stonebrick`);
+
+    // Lighting
+    cmds.push(`setblock ${x} ${y + 1} ${z} lantern`);
+    cmds.push(`setblock ${x - 1} ${y + 5} ${z - 1} lantern`);
+
+    return cmds;
+  }
+
+  /** Gatehouse: 9×7 fortified passage with archways, iron bars portcullis, and roof walkway */
+  private buildGatehouse(x: number, y: number, z: number): string[] {
+    const cmds: string[] = [];
+
+    // Foundation
+    cmds.push(`fill ${x - 4} ${y - 1} ${z - 3} ${x + 4} ${y - 1} ${z + 3} cobblestone`);
+
+    // Walls: 9×7 hollow stone brick, 7 tall
+    cmds.push(`fill ${x - 4} ${y} ${z - 3} ${x + 4} ${y + 6} ${z + 3} stonebrick hollow`);
+
+    // Passage floor
+    cmds.push(`fill ${x - 3} ${y} ${z - 2} ${x + 3} ${y} ${z + 2} cobblestone`);
+
+    // Front archway (south face): 3 wide, 4 tall
+    cmds.push(`fill ${x - 1} ${y} ${z - 3} ${x + 1} ${y + 3} ${z - 3} air`);
+
+    // Rear archway (north face): 3 wide, 4 tall
+    cmds.push(`fill ${x - 1} ${y} ${z + 3} ${x + 1} ${y + 3} ${z + 3} air`);
+
+    // Iron bars portcullis at top of front archway
+    cmds.push(`fill ${x - 1} ${y + 3} ${z - 3} ${x + 1} ${y + 3} ${z - 3} iron_bars`);
+
+    // Crenellations at y+7 — alternating merlons around perimeter
+    for (const dx of [-4, -2, 0, 2, 4]) {
+      cmds.push(`setblock ${x + dx} ${y + 7} ${z - 3} stonebrick`);
+      cmds.push(`setblock ${x + dx} ${y + 7} ${z + 3} stonebrick`);
+    }
+    for (const dz of [-1, 1]) {
+      cmds.push(`setblock ${x - 4} ${y + 7} ${z + dz} stonebrick`);
+      cmds.push(`setblock ${x + 4} ${y + 7} ${z + dz} stonebrick`);
+    }
+
+    // Ladder to roof walkway (inside east wall, climbs through ceiling)
+    for (let ly = y + 1; ly <= y + 6; ly++) {
+      cmds.push(`setblock ${x + 3} ${ly} ${z + 2} ladder ["facing_direction":4]`);
+    }
+
+    // Passage lighting
+    cmds.push(`setblock ${x} ${y + 1} ${z - 1} lantern`);
+    cmds.push(`setblock ${x} ${y + 1} ${z + 1} lantern`);
+
+    return cmds;
+  }
+
+  /** Great Hall: 13×9 grand hall with pillars, windows, throne, and chandeliers */
+  private buildGreatHall(x: number, y: number, z: number): string[] {
+    const cmds: string[] = [];
+
+    // Foundation
+    cmds.push(`fill ${x - 6} ${y - 1} ${z - 4} ${x + 6} ${y - 1} ${z + 4} cobblestone`);
+
+    // Walls: 13×9 hollow stone brick, 7 tall
+    cmds.push(`fill ${x - 6} ${y} ${z - 4} ${x + 6} ${y + 6} ${z + 4} stonebrick hollow`);
+
+    // Floor: polished deepslate with center aisle
+    cmds.push(`fill ${x - 5} ${y} ${z - 3} ${x + 5} ${y} ${z + 3} polished_deepslate`);
+    cmds.push(`fill ${x} ${y} ${z - 3} ${x} ${y} ${z + 3} deepslate_tiles`);
+
+    // Entrance (south face): 3 wide, 4 tall
+    cmds.push(`fill ${x - 1} ${y} ${z - 4} ${x + 1} ${y + 3} ${z - 4} air`);
+
+    // Windows along east and west walls
+    for (const dz of [-2, 0, 2]) {
+      cmds.push(`setblock ${x - 6} ${y + 3} ${z + dz} glass_pane`);
+      cmds.push(`setblock ${x + 6} ${y + 3} ${z + dz} glass_pane`);
+      cmds.push(`setblock ${x - 6} ${y + 4} ${z + dz} glass_pane`);
+      cmds.push(`setblock ${x + 6} ${y + 4} ${z + dz} glass_pane`);
+    }
+
+    // Oak log pillars (4 columns)
+    for (const dx of [-4, 4]) {
+      for (const dz of [-2, 2]) {
+        cmds.push(`fill ${x + dx} ${y + 1} ${z + dz} ${x + dx} ${y + 5} ${z + dz} oak_log`);
+      }
+    }
+
+    // Raised throne platform at back
+    cmds.push(`fill ${x - 2} ${y + 1} ${z + 2} ${x + 2} ${y + 1} ${z + 3} stonebrick`);
+
+    // Throne with armrests
+    cmds.push(`setblock ${x} ${y + 2} ${z + 3} oak_stairs ["weirdo_direction":2]`);
+    cmds.push(`setblock ${x - 1} ${y + 2} ${z + 3} oak_stairs ["weirdo_direction":0]`);
+    cmds.push(`setblock ${x + 1} ${y + 2} ${z + 3} oak_stairs ["weirdo_direction":1]`);
+
+    // Chandeliers (chain + hanging lantern)
+    for (const dx of [-3, 3]) {
+      cmds.push(`setblock ${x + dx} ${y + 5} ${z} chain`);
+      cmds.push(`setblock ${x + dx} ${y + 4} ${z} lantern ["hanging":true]`);
+    }
+
+    // Floor lighting along walls
+    cmds.push(`setblock ${x - 5} ${y + 1} ${z} lantern`);
+    cmds.push(`setblock ${x + 5} ${y + 1} ${z} lantern`);
+    cmds.push(`setblock ${x - 4} ${y + 1} ${z - 3} lantern`);
+    cmds.push(`setblock ${x + 4} ${y + 1} ${z - 3} lantern`);
+    cmds.push(`setblock ${x - 4} ${y + 1} ${z + 3} lantern`);
+    cmds.push(`setblock ${x + 4} ${y + 1} ${z + 3} lantern`);
+
+    return cmds;
   }
 }

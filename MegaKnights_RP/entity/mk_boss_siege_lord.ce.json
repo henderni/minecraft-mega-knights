@@ -15,12 +15,14 @@
       "animations": {
         "walk": "animation.humanoid.move",
         "look_at_target": "animation.humanoid.look_at_target.default",
-        "attack": "animation.humanoid.attack.rotations"
+        "idle": "animation.mk.boss_idle",
+        "attack": "animation.mk.boss_attack"
       },
       "scripts": {
         "animate": [
           "walk",
           "look_at_target",
+          "idle",
           { "attack": "q.is_delayed_attacking" }
         ]
       },

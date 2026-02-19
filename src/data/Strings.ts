@@ -25,6 +25,8 @@ export const TIER_UNLOCKED = (name: string) =>
 
 // --- Army ---
 export const ARMY_FULL = "§cYour army is at maximum capacity!";
+export const ARMY_FULL_SHARED = (cap: number) =>
+  `§cThe realm cannot sustain more warriors! §7(Limit: ${cap} per player in multiplayer)`;
 export const ALLY_RECRUITED = (displayName: string) =>
   `§a+ A ${displayName} has joined your army!`;
 export const ALLY_NOT_YOURS = (ownerName: string) =>
@@ -37,8 +39,9 @@ export const HUD_ACTION_BAR = (
   day: number,
   bar: string,
   armySize: number,
+  armyCap: number,
   tierName: string
-) => `§6Day ${day}/100 §7[${bar}] §bArmy: ${armySize} §d${tierName}`;
+) => `§6Day ${day}/100 §7[${bar}] §bArmy: ${armySize}/${armyCap} §d${tierName}`;
 
 // --- Castle ---
 export const CASTLE_LOOK_AT_GROUND =

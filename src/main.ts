@@ -42,6 +42,36 @@ system.runInterval(() => {
   dayCounter.updateHUD();
 }, 10);
 
+// Gate natural enemy spawns behind quest progress
+// Enemies spawned by milestones have "mk_script_spawned" tag; siege mobs have "mk_siege_mob".
+// Naturally-spawned enemies (via spawn rules) are despawned if the quest hasn't progressed enough.
+const ENEMY_SPAWN_DAY: Record<string, number> = {
+  "mk:mk_enemy_knight": 10,
+  "mk:mk_enemy_archer": 10,
+  "mk:mk_enemy_wizard": 50,
+  "mk:mk_enemy_dark_knight": 70,
+};
+
+world.afterEvents.entitySpawn.subscribe((event) => {
+  const entity = event.entity;
+  if (!entity.isValid) return;
+
+  const minDay = ENEMY_SPAWN_DAY[entity.typeId];
+  if (minDay === undefined) return; // Not one of our enemies
+
+  // Script-spawned entities are tagged before afterEvents fire — don't touch them
+  if (entity.hasTag("mk_script_spawned") || entity.hasTag("mk_siege_mob")) return;
+
+  // Despawn if quest not active or day too early
+  if (!dayCounter.isActive() || dayCounter.getCurrentDay() < minDay) {
+    try {
+      entity.remove();
+    } catch {
+      // Entity may already be invalid
+    }
+  }
+});
+
 // Player spawn
 world.afterEvents.playerSpawn.subscribe((event) => {
   if (event.initialSpawn) {
@@ -65,7 +95,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((event) => {
   army.onPlayerInteract(event);
 });
 
-// Debug commands via /scriptevent
+// Debug commands via /scriptevent (requires operator permissions)
+let lastArmySpawnTick = 0;
 system.afterEvents.scriptEventReceive.subscribe((event) => {
   if (event.id === "mk:setday") {
     const day = parseInt(event.message);
@@ -83,7 +114,10 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     siege.startSiege();
   } else if (event.id === "mk:army") {
     const count = parseInt(event.message);
-    if (!isNaN(count) && count > 0 && count <= 50 && event.sourceEntity && event.sourceEntity.typeId === "minecraft:player") {
+    const now = system.currentTick;
+    // Rate limit: 5-second cooldown between debug spawns to prevent entity exhaustion
+    if (!isNaN(count) && count > 0 && count <= 50 && event.sourceEntity && event.sourceEntity.typeId === "minecraft:player" && now - lastArmySpawnTick >= 100) {
+      lastArmySpawnTick = now;
       army.debugSpawnAllies(event.sourceEntity as import("@minecraft/server").Player, count);
     }
   }

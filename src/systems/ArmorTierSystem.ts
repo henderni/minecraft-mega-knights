@@ -25,9 +25,9 @@ export class ArmorTierSystem {
       try {
         player.setDynamicProperty(`mk:tier_unlocked_${tierIndex}`, true);
 
-        // Give the unlock token item
+        // Give unlock tokens — 4 per tier (one for each armor piece)
         if (tier.tokenItem) {
-          player.runCommand(`give @s ${tier.tokenItem}`);
+          player.runCommand(`give @s ${tier.tokenItem} 4`);
         }
 
         player.sendMessage(TIER_UNLOCKED(tier.name));

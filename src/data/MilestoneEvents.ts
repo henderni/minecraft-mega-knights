@@ -11,8 +11,8 @@ export interface Milestone {
 /** How many entities to spawn per tick during staggered milestone spawning — low for Switch */
 const SPAWNS_PER_TICK = 1;
 
-/** Max milestone entities across all players — prevents exceeding entity budget */
-const MAX_MILESTONE_ENTITIES = 40;
+/** Max milestone entities across all players — keeps total near 40 entity budget with allies */
+const MAX_MILESTONE_ENTITIES = 20;
 
 interface SpawnRequest {
   entityId: string;
@@ -73,7 +73,8 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
             y: loc.y,
             z: loc.z + Math.sin(angle) * dist,
           };
-          cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
+          const entity = cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
+          entity.addTag("mk_script_spawned");
         } catch {
           // Chunk not loaded or entity limit reached
         }

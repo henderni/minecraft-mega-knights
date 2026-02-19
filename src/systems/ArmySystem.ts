@@ -10,14 +10,19 @@ import {
 } from "@minecraft/server";
 import {
   ARMY_FULL,
+  ARMY_FULL_SHARED,
   ALLY_RECRUITED,
   ALLY_NOT_YOURS,
   ALLY_INFO,
   DEBUG_ALLIES_SPAWNED,
 } from "../data/Strings";
 
-/** Max castle troop bonus a player can accumulate (+30 = all 3 structures) */
-const MAX_ARMY_BONUS = 30;
+/** Max castle troop bonus a player can accumulate (+20 = all 3 structures) */
+const MAX_ARMY_BONUS = 20;
+
+/** Global army entity budget — in multiplayer, each player gets floor(GLOBAL/playerCount).
+ *  Must satisfy: GLOBAL_ARMY_CAP + MAX_ACTIVE_SIEGE_MOBS (25) ≤ 60 (Switch siege budget). */
+const GLOBAL_ARMY_CAP = 35;
 
 /** Cache for sanitized player tags — player names don't change during a session */
 const tagCache = new Map<string, string>();
@@ -25,10 +30,14 @@ const tagCache = new Map<string, string>();
 /** Cache for fully-built owner tags (e.g. "mk_owner_PlayerName") — avoids string concat per use */
 const ownerTagCache = new Map<string, string>();
 
+/** Max cached player names — prevents unbounded growth on long-running servers */
+const MAX_TAG_CACHE = 100;
+
 /** Sanitize player name for use in entity tags (only alphanum, underscore, hyphen allowed) */
 function sanitizePlayerTag(name: string): string {
   let cached = tagCache.get(name);
   if (cached !== undefined) return cached;
+  if (tagCache.size >= MAX_TAG_CACHE) tagCache.clear();
   cached = name.replace(/[^a-zA-Z0-9_\-]/g, "_");
   tagCache.set(name, cached);
   return cached;
@@ -38,6 +47,7 @@ function sanitizePlayerTag(name: string): string {
 function getOwnerTag(name: string): string {
   let cached = ownerTagCache.get(name);
   if (cached !== undefined) return cached;
+  if (ownerTagCache.size >= MAX_TAG_CACHE) ownerTagCache.clear();
   cached = `mk_owner_${sanitizePlayerTag(name)}`;
   ownerTagCache.set(name, cached);
   return cached;
@@ -52,7 +62,7 @@ const ALLY_DISPLAY_NAMES = new Map<string, string>([
 ]);
 
 export class ArmySystem {
-  private static readonly BASE_ARMY_SIZE = 20;
+  private static readonly BASE_ARMY_SIZE = 15;
 
   /** Cached player map — refreshed on every army recount tick (~10s). Keyed by name for O(1) lookup in death listener. */
   private cachedPlayerMap = new Map<string, Player>();
@@ -71,11 +81,18 @@ export class ArmySystem {
     return name;
   }
 
-  /** Get the current max army size for a player (base + castle bonuses) */
+  /** Get the current max army size for a player (base + castle bonuses, clamped) */
   getMaxArmySize(player: Player): number {
     const bonus =
       (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
-    return ArmySystem.BASE_ARMY_SIZE + bonus;
+    return ArmySystem.BASE_ARMY_SIZE + Math.min(bonus, MAX_ARMY_BONUS);
+  }
+
+  /** Compute effective army cap accounting for multiplayer scaling — used by HUD */
+  static getEffectiveCap(armyBonus: number, playerCount: number): number {
+    const personalCap = ArmySystem.BASE_ARMY_SIZE + Math.min(armyBonus, MAX_ARMY_BONUS);
+    if (playerCount <= 1) return personalCap;
+    return Math.min(personalCap, Math.floor(GLOBAL_ARMY_CAP / playerCount));
   }
 
   /** Add troop capacity from placing a castle structure (capped) */
@@ -97,8 +114,20 @@ export class ArmySystem {
     const armySize =
       (player.getDynamicProperty("mk:army_size") as number) ?? 0;
     const maxSize = this.getMaxArmySize(player);
-    if (armySize >= maxSize) {
-      player.sendMessage(ARMY_FULL);
+
+    // Dynamic cap: in multiplayer, scale per-player limit to stay within global entity budget
+    // Uses cachedPlayerMap (refreshed every 10s in tick()) to avoid bridge call
+    const playerCount = Math.max(1, this.cachedPlayerMap.size);
+    const effectiveCap = playerCount > 1
+      ? Math.min(maxSize, Math.floor(GLOBAL_ARMY_CAP / playerCount))
+      : maxSize;
+
+    if (armySize >= effectiveCap) {
+      if (effectiveCap < maxSize && playerCount > 1) {
+        player.sendMessage(ARMY_FULL_SHARED(effectiveCap));
+      } else {
+        player.sendMessage(ARMY_FULL);
+      }
       return;
     }
 

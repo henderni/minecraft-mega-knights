@@ -19,13 +19,13 @@ export const CASTLE_BLUEPRINTS: Record<string, CastleBlueprint> = {
     displayName: "Gatehouse",
     structureId: "megaknights:gatehouse",
     unlockDay: 35,
-    troopBonus: 10,
+    troopBonus: 7,
   },
   great_hall: {
     id: "great_hall",
     displayName: "Great Hall",
     structureId: "megaknights:great_hall",
     unlockDay: 50,
-    troopBonus: 15,
+    troopBonus: 8,
   },
 };
