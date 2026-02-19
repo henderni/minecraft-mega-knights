@@ -1,12 +1,15 @@
 import { EntityDieAfterEvent, Player, system } from "@minecraft/server";
 import { ArmySystem } from "./ArmySystem";
+import { BestiarySystem } from "./BestiarySystem";
 
 export class CombatSystem {
   private static readonly RECRUIT_CHANCE = 0.3;
   private army: ArmySystem;
+  private bestiary: BestiarySystem;
 
-  constructor(army: ArmySystem) {
+  constructor(army: ArmySystem, bestiary: BestiarySystem) {
     this.army = army;
+    this.bestiary = bestiary;
   }
 
   onEntityDie(event: EntityDieAfterEvent): void {
@@ -30,6 +33,7 @@ export class CombatSystem {
     // Track kill count
     const kills = Math.max(0, (player.getDynamicProperty("mk:kills") as number) ?? 0) + 1;
     player.setDynamicProperty("mk:kills", kills);
+    this.bestiary.onKill(player, dead.typeId);
 
     // Roll for recruitment — defer to next tick to avoid mutating world during death event.
     // Capture entity properties before the entity object is invalidated by the engine.

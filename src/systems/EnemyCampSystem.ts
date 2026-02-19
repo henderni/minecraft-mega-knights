@@ -10,6 +10,7 @@ import {
   CampTierDef,
 } from "../data/CampDefinitions";
 import { CAMP_SPAWNED, CAMP_CLEARED, CAMP_DEBUG_SPAWNED } from "../data/Strings";
+import { getFactionForBiome, FACTION_GUARD_WEIGHTS, FactionDef, FactionId } from "../data/FactionDefinitions";
 
 const CMDS_PER_TICK = 2;
 const SPAWNS_PER_TICK = 1;
@@ -29,6 +30,7 @@ interface CampState {
   guardCount: number;
   daySpawned: number;
   spawningComplete: boolean;
+  factionId: FactionId | undefined;
 }
 
 export class EnemyCampSystem {
@@ -148,6 +150,18 @@ export class EnemyCampSystem {
       z: Math.floor(rawZ),
     };
 
+    // Faction selection based on biome
+    let faction: FactionDef | undefined;
+    let displayName = tier.name;
+    try {
+      const biome = dimension.getBiome(campLocation);
+      const selected = getFactionForBiome((biome as { id?: string }).id ?? "");
+      faction = selected;
+      displayName = `${selected.campPrefix} ${tier.name}`;
+    } catch {
+      // Biome API unavailable — use default tier name
+    }
+
     const camp: CampState = {
       campId,
       playerName: player.name,
@@ -157,16 +171,17 @@ export class EnemyCampSystem {
       guardCount: 0,
       daySpawned: day,
       spawningComplete: false,
+      factionId: faction?.id,
     };
 
     this.activeCamps.set(player.name, camp);
     this.lastCampDay.set(player.name, day);
 
     const direction = this.getCompassDirection(angle);
-    player.sendMessage(CAMP_SPAWNED(tier.name, direction));
+    player.sendMessage(CAMP_SPAWNED(displayName, direction));
 
     this.buildCampStructure(dimension, campLocation, tier.structureSize, () => {
-      this.spawnGuards(camp, scaleFactor);
+      this.spawnGuards(camp, scaleFactor, faction);
     });
   }
 
@@ -289,14 +304,21 @@ export class EnemyCampSystem {
     return cmds;
   }
 
-  private spawnGuards(camp: CampState, scaleFactor: number): void {
+  private spawnGuards(camp: CampState, scaleFactor: number, faction?: FactionDef): void {
     const spawnQueue: string[] = [];
+    const weights = faction ? FACTION_GUARD_WEIGHTS[faction.id] : {};
     for (const guardDef of camp.tier.guards) {
-      const scaledCount = Math.max(1, Math.round(guardDef.count * scaleFactor));
+      const factionWeight = weights[guardDef.entityId] ?? 1.0;
+      const scaledCount = Math.max(0, Math.round(guardDef.count * scaleFactor * factionWeight));
       for (let i = 0; i < scaledCount; i++) {
         spawnQueue.push(guardDef.entityId);
       }
     }
+    // Ensure at least 1 guard even with aggressive faction weights
+    if (spawnQueue.length === 0 && camp.tier.guards.length > 0) {
+      spawnQueue.push(camp.tier.guards[0].entityId);
+    }
+
     if (spawnQueue.length > MAX_CAMP_GUARDS) {
       spawnQueue.length = MAX_CAMP_GUARDS;
     }

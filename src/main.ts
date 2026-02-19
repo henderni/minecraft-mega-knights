@@ -6,15 +6,19 @@ import { CombatSystem } from "./systems/CombatSystem";
 import { CastleSystem } from "./systems/CastleSystem";
 import { SiegeSystem } from "./systems/SiegeSystem";
 import { EnemyCampSystem } from "./systems/EnemyCampSystem";
+import { BestiarySystem } from "./systems/BestiarySystem";
+import { MerchantSystem } from "./systems/MerchantSystem";
 import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET } from "./data/Strings";
 
 const dayCounter = new DayCounterSystem();
 const armorTier = new ArmorTierSystem();
 const army = new ArmySystem();
-const combat = new CombatSystem(army);
+const bestiary = new BestiarySystem();
+const combat = new CombatSystem(army, bestiary);
 const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
 const campSystem = new EnemyCampSystem();
+const merchant = new MerchantSystem();
 
 // Wire up event-driven death tracking
 army.setupDeathListener(); // Instant army recount on ally death
@@ -27,6 +31,7 @@ dayCounter.onDayChanged((day) => {
     siege.startSiege();
   }
   campSystem.onDayChanged(day, siege.isActive());
+  merchant.onDayChanged(day);
 });
 
 // Main game tick (every 20 ticks = 1 second)
@@ -40,6 +45,7 @@ system.runInterval(() => {
 system.runInterval(() => {
   army.tick();
   campSystem.tick(); // Camp guard recount safety net (same cadence)
+  bestiary.tick();  // Reapply earned bestiary effects to all players
 }, 200);
 
 // HUD update (every 10 ticks = 0.5 seconds — action bar text persists ~2s so no flicker)
@@ -93,6 +99,7 @@ world.afterEvents.playerSpawn.subscribe((event) => {
   if (event.initialSpawn) {
     dayCounter.initializePlayer(event.player);
     armorTier.initializePlayer(event.player);
+    bestiary.onPlayerSpawn(event.player); // Reapply earned bestiary effects on join
   }
 });
 
@@ -101,9 +108,12 @@ world.afterEvents.entityDie.subscribe((event) => {
   combat.onEntityDie(event);
 });
 
-// Item use (blueprints)
+// Item use (blueprints + standard bearer scroll)
 world.afterEvents.itemUse.subscribe((event) => {
   castle.onItemUse(event);
+  if (event.itemStack?.typeId === "mk:standard_bearer_scroll") {
+    merchant.onScrollUse(event.source);
+  }
 });
 
 // Player interact with entity (army management)

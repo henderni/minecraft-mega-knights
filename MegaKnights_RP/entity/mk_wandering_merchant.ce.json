@@ -1,0 +1,26 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "mk:mk_wandering_merchant",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/entity/mk_wandering_merchant"
+      },
+      "geometry": {
+        "default": "geometry.humanoid.custom"
+      },
+      "animations": {
+        "walk": "animation.humanoid.move",
+        "look_at_target": "animation.humanoid.look_at_target.default",
+        "idle": "animation.mk.idle"
+      },
+      "scripts": {
+        "animate": ["walk", "look_at_target", "idle"]
+      },
+      "render_controllers": ["controller.render.mk_entity"]
+    }
+  }
+}

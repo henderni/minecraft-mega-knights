@@ -1,4 +1,4 @@
-import { world, system, Player } from "@minecraft/server";
+import { world, system, Player, Entity, EntityHealthComponent } from "@minecraft/server";
 import { WAVE_DEFINITIONS } from "../data/WaveDefinitions";
 import {
   SIEGE_BEGIN,
@@ -12,6 +12,8 @@ import {
   SIEGE_DEFEAT_1,
   SIEGE_DEFEAT_2,
   SIEGE_DEFEAT_3,
+  SIEGE_BOSS_PHASE_2,
+  SIEGE_BOSS_PHASE_3,
 } from "../data/Strings";
 
 /** How many entities to spawn per tick during staggered wave spawning — kept low for Switch */
@@ -50,6 +52,11 @@ export class SiegeSystem {
    *  victory if siegeMobCount briefly hits 0 mid-spawn. */
   private activeSpawnJobs = 0;
 
+  /** Reference to the Siege Lord entity for phase tracking */
+  private bossEntity: Entity | null = null;
+  /** Current phase: 0=normal, 1=phase2 (66%), 2=phase3 (33%) */
+  private siegePhase = 0;
+
   /** Check if siege is currently active — used by camp system to avoid spawning during siege */
   isActive(): boolean {
     return this.siegeActive;
@@ -67,6 +74,8 @@ export class SiegeSystem {
     this.ticksSinceRecount = 0;
     this.siegeMobCount = 0;
     this.activeSpawnJobs = 0;
+    this.bossEntity = null;
+    this.siegePhase = 0;
 
     world.sendMessage(SIEGE_BEGIN);
     world.sendMessage(SIEGE_DEFEND);
@@ -170,6 +179,11 @@ export class SiegeSystem {
         }
       }
     }
+
+    // Boss phase check — only when boss has been spawned
+    if (this.bossEntity !== null) {
+      this.checkBossPhase();
+    }
   }
 
   private spawnWave(): void {
@@ -243,6 +257,11 @@ export class SiegeSystem {
               const entity = cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
               entity.addTag("mk_siege_mob");
               siegeRef.siegeMobCount++;
+
+              // Capture boss entity reference for phase tracking
+              if (entry.entityId === "mk:mk_boss_siege_lord") {
+                siegeRef.bossEntity = entity;
+              }
             } catch {
               // Chunk not loaded or entity limit reached
             }
@@ -291,6 +310,8 @@ export class SiegeSystem {
   }
 
   private endSiege(victory: boolean): void {
+    this.bossEntity = null;
+    this.siegePhase = 0;
     this.siegeActive = false;
 
     if (victory) {
@@ -313,6 +334,31 @@ export class SiegeSystem {
       world.sendMessage(SIEGE_DEFEAT_1);
       world.sendMessage(SIEGE_DEFEAT_2);
       world.sendMessage(SIEGE_DEFEAT_3);
+    }
+  }
+
+  private checkBossPhase(): void {
+    if (!this.bossEntity) return;
+    try {
+      if (!this.bossEntity.isValid) {
+        this.bossEntity = null;
+        return;
+      }
+      const hp = this.bossEntity.getComponent("minecraft:health") as EntityHealthComponent | undefined;
+      if (!hp) return;
+      const ratio = hp.currentValue / hp.effectiveMax;
+      if (ratio <= 0.33 && this.siegePhase < 2) {
+        this.siegePhase = 2;
+        this.bossEntity.triggerEvent("mk:enter_phase_3");
+        world.sendMessage(SIEGE_BOSS_PHASE_3);
+      } else if (ratio <= 0.66 && this.siegePhase < 1) {
+        this.siegePhase = 1;
+        this.bossEntity.triggerEvent("mk:enter_phase_2");
+        world.sendMessage(SIEGE_BOSS_PHASE_2);
+      }
+    } catch {
+      // Entity removed or in unloaded chunk
+      this.bossEntity = null;
     }
   }
 }

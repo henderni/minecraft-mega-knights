@@ -14,6 +14,7 @@ import {
   ALLY_RECRUITED,
   ALLY_NOT_YOURS,
   ALLY_INFO,
+  ALLY_MODE_SET,
   DEBUG_ALLIES_SPAWNED,
 } from "../data/Strings";
 
@@ -118,10 +119,28 @@ export class ArmySystem {
       return;
     }
 
-    const armySize = Math.max(
-      0,
-      Math.min(GLOBAL_ARMY_CAP, (player.getDynamicProperty("mk:army_size") as number) ?? 0),
-    );
+    // Count actual live entities rather than trusting the cached dynamic property.
+    // This prevents the cap from being bypassed via externally modified player data.
+    // recruitAlly() is not a hot path (30% kill-chance trigger) so getEntities() is acceptable here.
+    const ownerTag = getOwnerTag(player.name);
+    let actualCount: number;
+    try {
+      const allies = player.dimension.getEntities({
+        tags: ["mk_army", ownerTag],
+        location: player.location,
+        maxDistance: 96,
+      });
+      actualCount = allies.length;
+    } catch {
+      // Dimension query failed — fall back to the stored value, clamped conservatively
+      actualCount = Math.max(
+        0,
+        Math.min(GLOBAL_ARMY_CAP, (player.getDynamicProperty("mk:army_size") as number) ?? 0),
+      );
+    }
+    // Sync the cache with reality so the HUD and death listener start from a correct baseline
+    player.setDynamicProperty("mk:army_size", actualCount);
+
     const maxSize = this.getMaxArmySize(player);
 
     // Dynamic cap: in multiplayer, scale per-player limit to stay within global entity budget
@@ -130,7 +149,7 @@ export class ArmySystem {
     const effectiveCap =
       playerCount > 1 ? Math.min(maxSize, Math.floor(GLOBAL_ARMY_CAP / playerCount)) : maxSize;
 
-    if (armySize >= effectiveCap) {
+    if (actualCount >= effectiveCap) {
       if (effectiveCap < maxSize && playerCount > 1) {
         player.sendMessage(ARMY_FULL_SHARED(effectiveCap));
       } else {
@@ -142,7 +161,6 @@ export class ArmySystem {
     // Map enemy type to ally type
     const allyTypeId = enemyTypeId.replace("_enemy_", "_ally_");
     const displayName = ArmySystem.allyDisplayName(allyTypeId);
-    const ownerTag = getOwnerTag(player.name);
 
     try {
       const ally = dimension.spawnEntity(allyTypeId, location);
@@ -153,7 +171,7 @@ export class ArmySystem {
       const safeName = player.name.replace(/§./g, "");
       ally.nameTag = `§a${safeName}'s ${displayName}`;
 
-      player.setDynamicProperty("mk:army_size", armySize + 1);
+      player.setDynamicProperty("mk:army_size", actualCount + 1);
       player.sendMessage(ALLY_RECRUITED(displayName));
     } catch (e) {
       console.warn(`[MegaKnights] Failed to spawn ally: ${e}`);
@@ -213,6 +231,22 @@ export class ArmySystem {
           maxDistance: 96,
         });
         player.setDynamicProperty("mk:army_size", allies.length);
+
+        // Standard Bearer aura: apply Strength I to allies within 8 blocks of each bearer
+        // Reuses the allies array — no extra getEntities() call
+        for (const bearer of allies) {
+          if (!bearer.isValid || bearer.typeId !== "mk:mk_ally_standard_bearer") continue;
+          const bLoc = bearer.location;
+          for (const ally of allies) {
+            if (!ally.isValid) continue;
+            const dx = ally.location.x - bLoc.x;
+            const dy = ally.location.y - bLoc.y;
+            const dz = ally.location.z - bLoc.z;
+            if (dx * dx + dy * dy + dz * dz <= 64) {
+              try { ally.addEffect("strength", 300, { amplifier: 0, showParticles: false }); } catch {}
+            }
+          }
+        }
       } catch {
         // Dimension query may fail if player is transitioning
       }
@@ -222,6 +256,29 @@ export class ArmySystem {
   onPlayerInteract(event: PlayerInteractWithEntityAfterEvent): void {
     const entity = event.target;
     if (!entity.hasTag("mk_army")) {
+      return;
+    }
+
+    if (event.player.isSneaking) {
+      const ownerName = entity.getDynamicProperty("mk:owner_name") as string;
+      if (ownerName !== event.player.name) {
+        event.player.sendMessage(ALLY_NOT_YOURS(ownerName));
+        return;
+      }
+      const currentStance = Math.max(0, Math.min(2, (entity.getDynamicProperty("mk:stance") as number) ?? 0));
+      const nextStance = (currentStance + 1) % 3;
+      entity.setDynamicProperty("mk:stance", nextStance);
+      const [eventName, modeName] = nextStance === 0
+        ? ["mk:set_mode_follow", "Follow"]
+        : nextStance === 1
+        ? ["mk:set_mode_guard", "Guard"]
+        : ["mk:set_mode_hold", "Hold"];
+      try {
+        entity.triggerEvent(eventName);
+        event.player.sendMessage(ALLY_MODE_SET(modeName));
+      } catch {
+        // Entity may have despawned
+      }
       return;
     }
 

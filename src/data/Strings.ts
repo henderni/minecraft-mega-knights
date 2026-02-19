@@ -29,6 +29,7 @@ export const ALLY_RECRUITED = (displayName: string) => `§a+ A ${displayName} ha
 export const ALLY_NOT_YOURS = (ownerName: string) => `§7This warrior serves ${ownerName}.`;
 export const ALLY_INFO = (nameTag: string, hp: string | number, maxHp: string | number) =>
   `§b${nameTag} §7- HP: ${hp}/${maxHp}`;
+export const ALLY_MODE_SET = (mode: string) => `§7Ally stance set to: §b${mode}`;
 
 // --- HUD ---
 export const HUD_ACTION_BAR = (
@@ -58,6 +59,8 @@ export const SIEGE_VICTORY_SUBTITLE = "§eThe kingdom is saved!";
 export const SIEGE_DEFEAT_1 = "§4§l=== DEFEAT ===";
 export const SIEGE_DEFEAT_2 = "§cThe siege has overwhelmed your defenses...";
 export const SIEGE_DEFEAT_3 = '§7Use "/scriptevent mk:reset" to try again.';
+export const SIEGE_BOSS_PHASE_2 = "§6§lThe Siege Lord grows desperate — he moves faster and strikes harder!";
+export const SIEGE_BOSS_PHASE_3 = "§4§lThe Siege Lord is enraged — FINISH HIM!";
 
 // --- Enemy Camps ---
 export const CAMP_SPAWNED = (tierName: string, direction: string) =>

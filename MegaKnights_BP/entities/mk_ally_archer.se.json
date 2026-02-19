@@ -10,48 +10,44 @@
     "component_groups": {
       "mk:despawn": {
         "minecraft:instant_despawn": {}
+      },
+      "mk:mode_guard": {
+        "minecraft:behavior.follow_owner": {
+          "priority": 4,
+          "speed_multiplier": 0.0,
+          "start_distance": 9999,
+          "stop_distance": 9998
+        }
+      },
+      "mk:mode_hold": {
+        "minecraft:behavior.follow_owner": {
+          "priority": 4,
+          "speed_multiplier": 0.0,
+          "start_distance": 9999,
+          "stop_distance": 9998
+        },
+        "minecraft:behavior.random_stroll": {
+          "priority": 6,
+          "speed_multiplier": 0.0,
+          "interval": 99999
+        }
       }
     },
     "components": {
-      "minecraft:type_family": {
-        "family": ["mk_ally", "mob"]
-      },
-      "minecraft:health": {
-        "value": 20,
-        "max": 20
-      },
-      "minecraft:attack": {
-        "damage": 3
-      },
-      "minecraft:movement": {
-        "value": 0.3
-      },
-      "minecraft:collision_box": {
-        "width": 0.6,
-        "height": 1.9
-      },
+      "minecraft:type_family": { "family": ["mk_ally", "mob"] },
+      "minecraft:health": { "value": 20, "max": 20 },
+      "minecraft:attack": { "damage": 3 },
+      "minecraft:movement": { "value": 0.3 },
+      "minecraft:collision_box": { "width": 0.6, "height": 1.9 },
       "minecraft:physics": {},
-      "minecraft:pushable": {
-        "is_pushable": true,
-        "is_pushable_by_piston": true
-      },
-      "minecraft:navigation.walk": {
-        "can_walk": true,
-        "avoid_water": true,
-        "can_pass_doors": true
-      },
+      "minecraft:pushable": { "is_pushable": true, "is_pushable_by_piston": true },
+      "minecraft:navigation.walk": { "can_walk": true, "avoid_water": true, "can_pass_doors": true },
       "minecraft:movement.basic": {},
       "minecraft:jump.static": {},
-      "minecraft:follow_range": {
-        "value": 16
-      },
+      "minecraft:follow_range": { "value": 16 },
       "minecraft:is_tamed": {},
-      "minecraft:shooter": {
-        "def": "minecraft:arrow"
-      },
-      "minecraft:behavior.float": {
-        "priority": 0
-      },
+      "minecraft:shooter": { "def": "minecraft:arrow" },
+      "minecraft:behavior.float": { "priority": 0 },
       "minecraft:behavior.ranged_attack": {
         "priority": 3,
         "burst_shots": 1,
@@ -62,54 +58,31 @@
         "attack_radius": 10.0,
         "speed_multiplier": 1.0
       },
-      "minecraft:behavior.follow_owner": {
-        "priority": 4,
-        "speed_multiplier": 1.0,
-        "start_distance": 10,
-        "stop_distance": 2
-      },
-      "minecraft:behavior.random_stroll": {
-        "priority": 6,
-        "speed_multiplier": 0.6,
-        "interval": 120
-      },
-      "minecraft:behavior.random_look_around": {
-        "priority": 7
-      },
-      "minecraft:behavior.hurt_by_target": {
-        "priority": 1
-      },
+      "minecraft:behavior.follow_owner": { "priority": 4, "speed_multiplier": 1.0, "start_distance": 10, "stop_distance": 2 },
+      "minecraft:behavior.random_stroll": { "priority": 6, "speed_multiplier": 0.6, "interval": 120 },
+      "minecraft:behavior.random_look_around": { "priority": 7 },
+      "minecraft:behavior.hurt_by_target": { "priority": 1 },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 2,
-        "entity_types": [
-          {
-            "filters": {
-              "test": "is_family",
-              "subject": "other",
-              "value": "mk_enemy"
-            },
-            "max_dist": 16
-          }
-        ],
+        "entity_types": [{ "filters": { "test": "is_family", "subject": "other", "value": "mk_enemy" }, "max_dist": 16 }],
         "scan_interval": 10,
         "must_see": true,
         "must_see_forget_duration": 8.0
       },
-      "minecraft:nameable": {
-        "always_show": false,
-        "allow_name_tag_renaming": false
-      },
-      "minecraft:despawn": {
-        "despawn_from_distance": {
-          "max_distance": 128,
-          "min_distance": 96
-        }
-      }
+      "minecraft:nameable": { "always_show": false, "allow_name_tag_renaming": false },
+      "minecraft:despawn": { "despawn_from_distance": { "max_distance": 128, "min_distance": 96 } }
     },
     "events": {
       "minecraft:entity_spawned": {},
-      "mk:despawn": {
-        "add": { "component_groups": ["mk:despawn"] }
+      "mk:despawn": { "add": { "component_groups": ["mk:despawn"] } },
+      "mk:set_mode_follow": { "remove": { "component_groups": ["mk:mode_guard", "mk:mode_hold"] } },
+      "mk:set_mode_guard": {
+        "remove": { "component_groups": ["mk:mode_hold"] },
+        "add": { "component_groups": ["mk:mode_guard"] }
+      },
+      "mk:set_mode_hold": {
+        "remove": { "component_groups": ["mk:mode_guard"] },
+        "add": { "component_groups": ["mk:mode_hold"] }
       }
     }
   }

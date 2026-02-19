@@ -1,0 +1,69 @@
+{
+  "tiers": [
+    {
+      "trades": [
+        {
+          "wants": [
+            { "item": "minecraft:iron_ingot", "quantity": 8 }
+          ],
+          "gives": [
+            { "item": "minecraft:chainmail_chestplate", "quantity": 1 }
+          ],
+          "max_uses": 3
+        },
+        {
+          "wants": [
+            { "item": "minecraft:arrow", "quantity": 24 },
+            { "item": "minecraft:gold_ingot", "quantity": 2 }
+          ],
+          "gives": [
+            { "item": "minecraft:crossbow", "quantity": 1 }
+          ],
+          "max_uses": 2
+        },
+        {
+          "wants": [
+            { "item": "minecraft:iron_sword", "quantity": 2 }
+          ],
+          "gives": [
+            { "item": "minecraft:iron_ingot", "quantity": 6 },
+            { "item": "minecraft:gold_ingot", "quantity": 2 }
+          ],
+          "max_uses": 5
+        }
+      ]
+    },
+    {
+      "trades": [
+        {
+          "wants": [
+            { "item": "minecraft:diamond", "quantity": 3 }
+          ],
+          "gives": [
+            { "item": "minecraft:iron_chestplate", "quantity": 1 }
+          ],
+          "max_uses": 2
+        },
+        {
+          "wants": [
+            { "item": "minecraft:diamond", "quantity": 5 },
+            { "item": "minecraft:gold_ingot", "quantity": 5 }
+          ],
+          "gives": [
+            { "item": "minecraft:mk_standard_bearer_scroll", "quantity": 1 }
+          ],
+          "max_uses": 1
+        },
+        {
+          "wants": [
+            { "item": "minecraft:experience_bottle", "quantity": 10 }
+          ],
+          "gives": [
+            { "item": "minecraft:enchanted_golden_apple", "quantity": 1 }
+          ],
+          "max_uses": 1
+        }
+      ]
+    }
+  ]
+}
