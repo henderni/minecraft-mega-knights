@@ -11,13 +11,11 @@ import {
 } from "../data/CampDefinitions";
 import { CAMP_SPAWNED, CAMP_CLEARED, CAMP_DEBUG_SPAWNED } from "../data/Strings";
 import { getFactionForBiome, FACTION_GUARD_WEIGHTS, FactionDef, FactionId } from "../data/FactionDefinitions";
+import { MILESTONE_DAYS } from "../data/MilestoneEvents";
 
 const CMDS_PER_TICK = 2;
 const SPAWNS_PER_TICK = 1;
 const GROUND_SCAN_RANGE = 15;
-
-/** Days that already have milestone events — no camps on these days */
-const MILESTONE_DAYS = new Set([1, 5, 10, 20, 25, 35, 40, 50, 60, 70, 85, 90]);
 
 let nextCampId = 1;
 

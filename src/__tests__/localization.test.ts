@@ -127,4 +127,99 @@ describe("Localization & i18n", () => {
       expect(matches.length).toBeLessThan(5);
     });
   });
+
+  it("BP lang contains all entity name keys for all entities/", () => {
+    const bpLang = path.join(__dirname, "../../MegaKnights_BP/texts/en_US.lang");
+    const langContent = fs.readFileSync(bpLang, "utf-8");
+    const entityDir = path.join(__dirname, "../../MegaKnights_BP/entities");
+    const entityFiles = fs.readdirSync(entityDir).filter((f) => f.endsWith(".json"));
+
+    entityFiles.forEach((file) => {
+      const entity = JSON.parse(fs.readFileSync(path.join(entityDir, file), "utf-8"));
+      const id: string | undefined = entity["minecraft:entity"]?.description?.identifier;
+      if (!id?.startsWith("mk:")) return;
+      const langKey = `entity.${id}.name`;
+      expect(langContent, `BP lang missing key "${langKey}" for entity ${file}`).toContain(langKey);
+    });
+  });
+
+  it("BP lang contains all item name keys for all items/", () => {
+    const bpLang = path.join(__dirname, "../../MegaKnights_BP/texts/en_US.lang");
+    const langContent = fs.readFileSync(bpLang, "utf-8");
+    const itemDirs = [
+      path.join(__dirname, "../../MegaKnights_BP/items/armor"),
+      path.join(__dirname, "../../MegaKnights_BP/items/tools"),
+    ];
+
+    for (const dir of itemDirs) {
+      if (!fs.existsSync(dir)) continue;
+      fs.readdirSync(dir).filter((f) => f.endsWith(".json")).forEach((file) => {
+        const item = JSON.parse(fs.readFileSync(path.join(dir, file), "utf-8"));
+        const id: string | undefined = item["minecraft:item"]?.description?.identifier;
+        if (!id?.startsWith("mk:")) return;
+        const langKey = `item.${id}.name`;
+        expect(langContent, `BP lang missing key "${langKey}" for item ${file}`).toContain(langKey);
+      });
+    }
+  });
+
+  it("RP lang contains all entity name keys for all BP entities/", () => {
+    const rpLang = path.join(__dirname, "../../MegaKnights_RP/texts/en_US.lang");
+    const langContent = fs.readFileSync(rpLang, "utf-8");
+    const entityDir = path.join(__dirname, "../../MegaKnights_BP/entities");
+    const entityFiles = fs.readdirSync(entityDir).filter((f) => f.endsWith(".json"));
+
+    entityFiles.forEach((file) => {
+      const entity = JSON.parse(fs.readFileSync(path.join(entityDir, file), "utf-8"));
+      const id: string | undefined = entity["minecraft:entity"]?.description?.identifier;
+      if (!id?.startsWith("mk:")) return;
+      const langKey = `entity.${id}.name`;
+      expect(langContent, `RP lang missing key "${langKey}" for entity ${file}`).toContain(langKey);
+    });
+  });
+
+  it("RP lang contains all item name keys for all BP items/", () => {
+    const rpLang = path.join(__dirname, "../../MegaKnights_RP/texts/en_US.lang");
+    const langContent = fs.readFileSync(rpLang, "utf-8");
+    const itemDirs = [
+      path.join(__dirname, "../../MegaKnights_BP/items/armor"),
+      path.join(__dirname, "../../MegaKnights_BP/items/tools"),
+    ];
+
+    for (const dir of itemDirs) {
+      if (!fs.existsSync(dir)) continue;
+      fs.readdirSync(dir).filter((f) => f.endsWith(".json")).forEach((file) => {
+        const item = JSON.parse(fs.readFileSync(path.join(dir, file), "utf-8"));
+        const id: string | undefined = item["minecraft:item"]?.description?.identifier;
+        if (!id?.startsWith("mk:")) return;
+        const langKey = `item.${id}.name`;
+        expect(langContent, `RP lang missing key "${langKey}" for item ${file}`).toContain(langKey);
+      });
+    }
+  });
+
+  it("BP and RP lang files have identical values for all shared keys", () => {
+    const parseKeys = (content: string): Map<string, string> => {
+      const map = new Map<string, string>();
+      for (const line of content.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eq = trimmed.indexOf("=");
+        if (eq === -1) continue;
+        map.set(trimmed.slice(0, eq), trimmed.slice(eq + 1));
+      }
+      return map;
+    };
+
+    const bpLang = fs.readFileSync(path.join(__dirname, "../../MegaKnights_BP/texts/en_US.lang"), "utf-8");
+    const rpLang = fs.readFileSync(path.join(__dirname, "../../MegaKnights_RP/texts/en_US.lang"), "utf-8");
+    const bp = parseKeys(bpLang);
+    const rp = parseKeys(rpLang);
+
+    for (const [key, bpVal] of bp) {
+      if (rp.has(key)) {
+        expect(rp.get(key), `Key "${key}" differs: BP="${bpVal}" vs RP="${rp.get(key)}"`).toBe(bpVal);
+      }
+    }
+  });
 });

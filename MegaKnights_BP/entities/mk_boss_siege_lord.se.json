@@ -14,7 +14,7 @@
       "mk:phase_2": {
         "minecraft:attack": { "damage": 16 },
         "minecraft:movement": { "value": 0.35 },
-        "minecraft:follow_range": { "value": 40 },
+        "minecraft:follow_range": { "value": 32 },
         "minecraft:behavior.nearest_attackable_target": {
           "priority": 2,
           "entity_types": [{
@@ -22,7 +22,7 @@
               { "test": "is_family", "subject": "other", "value": "player" },
               { "test": "is_family", "subject": "other", "value": "mk_ally" }
             ]},
-            "max_dist": 32
+            "max_dist": 28
           }],
           "must_see": true,
           "must_see_forget_duration": 20.0,
@@ -32,7 +32,7 @@
       "mk:phase_3": {
         "minecraft:attack": { "damage": 20 },
         "minecraft:movement": { "value": 0.42 },
-        "minecraft:follow_range": { "value": 48 },
+        "minecraft:follow_range": { "value": 32 },
         "minecraft:behavior.nearest_attackable_target": {
           "priority": 2,
           "entity_types": [{
@@ -40,7 +40,7 @@
               { "test": "is_family", "subject": "other", "value": "player" },
               { "test": "is_family", "subject": "other", "value": "mk_ally" }
             ]},
-            "max_dist": 40
+            "max_dist": 32
           }],
           "must_see": true,
           "must_see_forget_duration": 30.0,

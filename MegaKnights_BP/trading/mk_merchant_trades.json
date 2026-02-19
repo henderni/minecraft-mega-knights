@@ -50,7 +50,7 @@
             { "item": "minecraft:gold_ingot", "quantity": 5 }
           ],
           "gives": [
-            { "item": "minecraft:mk_standard_bearer_scroll", "quantity": 1 }
+            { "item": "mk:mk_standard_bearer_scroll", "quantity": 1 }
           ],
           "max_uses": 1
         },

@@ -59,6 +59,56 @@ describe("Wandering Merchant: entity files", () => {
     const tradesJson = JSON.stringify(raw);
     expect(tradesJson).toContain("standard_bearer_scroll");
   });
+
+  it("trade table uses mk: namespace (not minecraft:) for all custom item gives", () => {
+    const raw = fs.readFileSync(path.join(TRADING_DIR, "mk_merchant_trades.json"), "utf-8");
+    const trades = JSON.parse(raw);
+    for (const tier of (trades["tiers"] as any[])) {
+      for (const trade of (tier["trades"] as any[])) {
+        for (const give of (trade["gives"] as any[])) {
+          const itemId: string = give["item"];
+          if (!itemId.startsWith("minecraft:")) {
+            expect(
+              itemId,
+              `Trade gives "${itemId}" — custom items must use mk: namespace, not minecraft:`,
+            ).toMatch(/^mk:/);
+          }
+        }
+      }
+    }
+  });
+});
+
+describe("Standard Bearer Scroll: item definition", () => {
+  const ITEMS_DIR = path.join(__dirname, "../../MegaKnights_BP/items/tools");
+  const TEXTURES_DIR = path.join(__dirname, "../../MegaKnights_RP/textures/items");
+  const ATLAS_PATH = path.join(__dirname, "../../MegaKnights_RP/textures/item_texture.json");
+
+  it("scroll item definition file exists", () => {
+    expect(fs.existsSync(path.join(ITEMS_DIR, "mk_standard_bearer_scroll.json"))).toBe(true);
+  });
+
+  it("scroll identifier matches mk: naming convention (mk:mk_standard_bearer_scroll)", () => {
+    const raw = fs.readFileSync(path.join(ITEMS_DIR, "mk_standard_bearer_scroll.json"), "utf-8");
+    const item = JSON.parse(raw);
+    const id = item["minecraft:item"]?.description?.identifier;
+    expect(id).toBe("mk:mk_standard_bearer_scroll");
+  });
+
+  it("scroll texture PNG exists", () => {
+    expect(fs.existsSync(path.join(TEXTURES_DIR, "mk_standard_bearer_scroll.png"))).toBe(true);
+  });
+
+  it("scroll icon key is registered in item_texture.json atlas", () => {
+    const atlas = JSON.parse(fs.readFileSync(ATLAS_PATH, "utf-8"));
+    expect(atlas["texture_data"]).toHaveProperty("mk_standard_bearer_scroll");
+  });
+
+  it("scroll max_stack_size is 1 (non-stackable consumable)", () => {
+    const raw = fs.readFileSync(path.join(ITEMS_DIR, "mk_standard_bearer_scroll.json"), "utf-8");
+    const item = JSON.parse(raw);
+    expect(item["minecraft:item"]?.components?.["minecraft:max_stack_size"]).toBe(1);
+  });
 });
 
 describe("Wandering Merchant: MerchantSystem wiring", () => {

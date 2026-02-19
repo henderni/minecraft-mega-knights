@@ -82,6 +82,9 @@
     },
     "mk_blueprint_great_hall": {
       "textures": "textures/items/mk_blueprint_great_hall"
+    },
+    "mk_standard_bearer_scroll": {
+      "textures": "textures/items/mk_standard_bearer_scroll"
     }
   }
 }

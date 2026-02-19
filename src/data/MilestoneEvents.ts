@@ -232,4 +232,10 @@ export const MILESTONES: Record<number, Milestone> = {
     },
   },
 };
+
+/**
+ * Set of days that have milestone events. Derived from MILESTONES keys so
+ * EnemyCampSystem stays in sync automatically when new milestones are added.
+ */
+export const MILESTONE_DAYS = new Set(Object.keys(MILESTONES).map(Number));
 // Day 100 siege is triggered directly by DayCounterSystem -> SiegeSystem

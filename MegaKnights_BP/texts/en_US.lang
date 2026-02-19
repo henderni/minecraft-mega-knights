@@ -42,6 +42,9 @@ item.mk:mk_knight_token.name=Knight's Oath
 item.mk:mk_champion_token.name=Champion's Medal
 item.mk:mk_mega_knight_token.name=Mega Knight's Crest
 
+## Special Items
+item.mk:mk_standard_bearer_scroll.name=Standard Bearer Scroll
+
 ## Entities
 entity.mk:mk_enemy_knight.name=Enemy Knight
 entity.mk:mk_enemy_archer.name=Enemy Archer
@@ -52,3 +55,5 @@ entity.mk:mk_ally_archer.name=Allied Archer
 entity.mk:mk_ally_wizard.name=Allied Wizard
 entity.mk:mk_ally_dark_knight.name=Allied Dark Knight
 entity.mk:mk_boss_siege_lord.name=The Siege Lord
+entity.mk:mk_ally_standard_bearer.name=Standard Bearer
+entity.mk:mk_wandering_merchant.name=Wandering Merchant

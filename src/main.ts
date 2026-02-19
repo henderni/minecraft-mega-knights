@@ -111,7 +111,7 @@ world.afterEvents.entityDie.subscribe((event) => {
 // Item use (blueprints + standard bearer scroll)
 world.afterEvents.itemUse.subscribe((event) => {
   castle.onItemUse(event);
-  if (event.itemStack?.typeId === "mk:standard_bearer_scroll") {
+  if (event.itemStack?.typeId === "mk:mk_standard_bearer_scroll") {
     merchant.onScrollUse(event.source);
   }
 });

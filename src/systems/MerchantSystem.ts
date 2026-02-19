@@ -96,7 +96,7 @@ export class MerchantSystem {
         const safeName = player.name.replace(/§./g, "");
         bearer.nameTag = `§a${safeName}'s Standard Bearer`;
         // Remove scroll from inventory
-        player.runCommand("clear @s mk:standard_bearer_scroll 0 1");
+        player.runCommand("clear @s mk:mk_standard_bearer_scroll 0 1");
         player.sendMessage("§a+ A Standard Bearer has joined your army, raising morale!");
       } catch (e) {
         console.warn(`[MegaKnights] Standard Bearer spawn failed: ${e}`);

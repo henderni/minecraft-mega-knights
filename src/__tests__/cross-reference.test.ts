@@ -256,3 +256,45 @@ describe("Recipe crafting table tag", () => {
     });
   });
 });
+
+describe("Item texture atlas cross-reference", () => {
+  const atlasPath = path.join(__dirname, "../../MegaKnights_RP/textures/item_texture.json");
+  const texturesDir = path.join(__dirname, "../../MegaKnights_RP/textures/items");
+
+  it("item_texture.json exists", () => {
+    expect(fs.existsSync(atlasPath)).toBe(true);
+  });
+
+  it("every icon key in item_texture.json points to an existing PNG", () => {
+    const atlas = JSON.parse(fs.readFileSync(atlasPath, "utf-8"));
+    const entries = atlas["texture_data"] as Record<string, { textures: string }>;
+    Object.entries(entries).forEach(([key, entry]) => {
+      const texPath = entry.textures;
+      // textures value is e.g. "textures/items/mk_page_helmet" — PNG exists in RP
+      const pngPath = path.join(__dirname, "../../MegaKnights_RP", `${texPath}.png`);
+      expect(
+        fs.existsSync(pngPath),
+        `Atlas key "${key}" references "${texPath}" but "${texPath}.png" not found`,
+      ).toBe(true);
+    });
+  });
+
+  it("every mk: item's icon component is registered in item_texture.json", () => {
+    const atlas = JSON.parse(fs.readFileSync(atlasPath, "utf-8"));
+    const atlasKeys = new Set(Object.keys(atlas["texture_data"]));
+    const dirs = [itemsArmorDir, itemsToolsDir];
+
+    dirs.forEach((dir) => {
+      if (!fs.existsSync(dir)) return;
+      fs.readdirSync(dir).filter((f) => f.endsWith(".json")).forEach((file) => {
+        const item = JSON.parse(fs.readFileSync(path.join(dir, file), "utf-8"));
+        const iconKey: string | undefined = item["minecraft:item"]?.components?.["minecraft:icon"];
+        if (!iconKey) return;
+        expect(
+          atlasKeys.has(iconKey),
+          `Item ${file} uses icon "${iconKey}" which is not in item_texture.json`,
+        ).toBe(true);
+      });
+    });
+  });
+});
