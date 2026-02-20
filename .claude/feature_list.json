@@ -192,7 +192,7 @@
       "Tests verify each recipe's ingredients are obtainable by the recipe's unlock day",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 16,
@@ -219,7 +219,7 @@
       "Tests verify required schema fields",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 18,
@@ -232,6 +232,6 @@
       "Tests verify difficulty wiring is complete",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   }
 ]

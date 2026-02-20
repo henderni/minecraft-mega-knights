@@ -456,3 +456,152 @@ describe("Recipe Unlock Conditions", () => {
     });
   });
 });
+
+// ─── Ingredient obtainability by unlock day ─────────────────────────────────
+
+import { ARMOR_TIERS } from "../data/ArmorTiers";
+import { CASTLE_BLUEPRINTS } from "../data/CastleBlueprints";
+import { CAMP_TIERS } from "../data/CampDefinitions";
+
+/**
+ * Determines the earliest day a given item becomes available to the player.
+ * - Vanilla items (leather, iron, cobblestone, paper, etc.) are always available (day 0).
+ * - Camp reward items become available on the first camp tier's minDay that drops them.
+ * - Custom mk: tokens become available on the associated armor tier's unlockDay.
+ */
+function earliestDayForItem(itemId: string): number {
+  // Custom tokens are available when their tier unlocks
+  const tokenTier = ARMOR_TIERS.find((t) => t.tokenItem === itemId);
+  if (tokenTier) return tokenTier.unlockDay;
+
+  // Camp reward items — find earliest camp tier that rewards this item
+  for (const tier of CAMP_TIERS) {
+    if (tier.rewards.some((r) => r.itemId === itemId)) {
+      return tier.minDay;
+    }
+  }
+
+  // Vanilla crafting staples are always available (day 0)
+  return 0;
+}
+
+/**
+ * Maps recipe filename to the day it becomes relevant (unlock day).
+ * - Armor recipes → corresponding armor tier's unlockDay
+ * - Blueprint recipes → corresponding blueprint's unlockDay
+ * - Token recipes → corresponding armor tier's unlockDay
+ */
+function recipeUnlockDay(filename: string): number {
+  const base = filename.replace(".json", "");
+
+  // Blueprint recipes
+  for (const [key, bp] of Object.entries(CASTLE_BLUEPRINTS)) {
+    if (base === `mk_blueprint_${key}`) return bp.unlockDay;
+  }
+
+  // Armor and token recipes — match against tier prefix
+  for (const tier of ARMOR_TIERS) {
+    if (base.startsWith(tier.prefix)) return tier.unlockDay;
+  }
+
+  return 0;
+}
+
+/** Extract all unique ingredient item IDs from a recipe JSON object. */
+function extractIngredientItems(recipe: any): string[] {
+  const items: string[] = [];
+
+  // Shaped recipes: key map in ingredients object
+  const shaped = recipe["minecraft:recipe_shaped"];
+  if (shaped?.key) {
+    for (const val of Object.values(shaped.key) as any[]) {
+      if (val?.item) items.push(val.item);
+    }
+  }
+
+  // Shapeless recipes: ingredients array of { item } objects
+  const shapeless = recipe["minecraft:recipe_shapeless"];
+  if (shapeless?.ingredients) {
+    for (const ing of shapeless.ingredients) {
+      if (ing?.item) items.push(ing.item);
+    }
+  }
+
+  return [...new Set(items)];
+}
+
+describe("Recipe Ingredient Obtainability by Unlock Day", () => {
+  const recipesDir = path.join(__dirname, "../../MegaKnights_BP/recipes");
+  const files = fs.readdirSync(recipesDir).filter((f) => f.endsWith(".json"));
+
+  for (const file of files) {
+    it(`${file}: all ingredients obtainable by unlock day`, () => {
+      const content = fs.readFileSync(path.join(recipesDir, file), "utf-8");
+      const recipe = JSON.parse(content);
+      const unlockDay = recipeUnlockDay(file);
+      const ingredients = extractIngredientItems(recipe);
+
+      for (const itemId of ingredients) {
+        const availableDay = earliestDayForItem(itemId);
+        expect(
+          availableDay,
+          `${file} unlocks day ${unlockDay}, but ingredient ${itemId} not available until day ${availableDay}`,
+        ).toBeLessThanOrEqual(unlockDay);
+      }
+    });
+  }
+
+  it("page armor (day 0) uses only vanilla materials", () => {
+    for (const file of files.filter((f) => f.startsWith("mk_page_"))) {
+      const content = fs.readFileSync(path.join(recipesDir, file), "utf-8");
+      const ingredients = extractIngredientItems(JSON.parse(content));
+      for (const item of ingredients) {
+        expect(item).toMatch(/^minecraft:/);
+      }
+    }
+  });
+
+  it("mega knight token requires netherite — available from Elite Outpost (day 85)", () => {
+    const content = fs.readFileSync(
+      path.join(recipesDir, "mk_mega_knight_token.json"),
+      "utf-8",
+    );
+    const ingredients = extractIngredientItems(JSON.parse(content));
+    expect(ingredients).toContain("minecraft:netherite_ingot");
+
+    // netherite_scrap drops from Elite Outpost starting day 85
+    const eliteTier = CAMP_TIERS.find((t) => t.name === "Elite Outpost");
+    expect(eliteTier).toBeDefined();
+    expect(eliteTier!.minDay).toBeLessThanOrEqual(85);
+  });
+
+  it("champion recipes don't require netherite", () => {
+    for (const file of files.filter((f) => f.startsWith("mk_champion_"))) {
+      const content = fs.readFileSync(path.join(recipesDir, file), "utf-8");
+      const ingredients = extractIngredientItems(JSON.parse(content));
+      for (const item of ingredients) {
+        expect(item).not.toContain("netherite");
+      }
+    }
+  });
+
+  it("diamond first available from War Camp (day 40), champion unlocks day 60", () => {
+    const warCamp = CAMP_TIERS.find((t) => t.name === "War Camp");
+    expect(warCamp).toBeDefined();
+    expect(warCamp!.rewards.some((r) => r.itemId === "minecraft:diamond")).toBe(true);
+
+    const championTier = ARMOR_TIERS.find((t) => t.name === "Champion");
+    expect(championTier).toBeDefined();
+    expect(warCamp!.minDay).toBeLessThanOrEqual(championTier!.unlockDay);
+  });
+
+  it("blueprint ingredients use only vanilla items available from day 0", () => {
+    for (const file of files.filter((f) => f.includes("blueprint"))) {
+      const content = fs.readFileSync(path.join(recipesDir, file), "utf-8");
+      const ingredients = extractIngredientItems(JSON.parse(content));
+      for (const item of ingredients) {
+        expect(item).toMatch(/^minecraft:/);
+      }
+    }
+  });
+});
