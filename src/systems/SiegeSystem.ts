@@ -18,6 +18,7 @@ import {
   ENDLESS_DESC,
   ENDLESS_WAVE,
   ENDLESS_WAVE_CLEARED,
+  ENDLESS_DEFEAT,
 } from "../data/Strings";
 
 /** How many entities to spawn per tick during staggered wave spawning — kept low for Switch */
@@ -482,8 +483,9 @@ export class SiegeSystem {
     if (wasEndless) {
       if (victory) {
         world.sendMessage(ENDLESS_WAVE_CLEARED);
+      } else {
+        world.sendMessage(ENDLESS_DEFEAT);
       }
-      // No defeat handling for endless — player just respawns and continues
       return;
     }
 

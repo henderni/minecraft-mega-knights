@@ -12,6 +12,7 @@ export const QUEST_START_TITLE = "§6§lThe Mega Knight Quest Begins!";
 export const QUEST_START_DESC =
   "§eYou have 100 days to prepare your army for the siege.";
 export const DAY_CHANGE = (day: number) => `§6=== Day ${day} of 100 ===`;
+export const DAY_CHANGE_ENDLESS = (day: number) => `§6=== Day ${day} ===`;
 
 // --- Milestones ---
 export const MILESTONE_TITLE = (title: string) => `§e§l[Milestone] ${title}`;
@@ -42,6 +43,13 @@ export const HUD_ACTION_BAR = (
   armyCap: number,
   tierName: string,
 ) => `§6Day ${day}/100 §7[${bar}] §bArmy: ${armySize}/${armyCap} §d${tierName}`;
+
+export const HUD_ACTION_BAR_ENDLESS = (
+  day: number,
+  armySize: number,
+  armyCap: number,
+  tierName: string,
+) => `§6Day ${day} §dEndless §bArmy: ${armySize}/${armyCap} §d${tierName}`;
 
 // --- Castle ---
 export const CASTLE_LOOK_AT_GROUND = "§cLook at the ground where you want to place the structure!";
@@ -122,6 +130,7 @@ export const ENDLESS_UNLOCKED = "§d§l=== ENDLESS MODE UNLOCKED ===";
 export const ENDLESS_DESC = "§7The kingdom is saved, but new threats emerge. Mini-sieges will test you every 20 days!";
 export const ENDLESS_WAVE = (day: number) => `§4§l=== ENDLESS SIEGE — Day ${day}! ===`;
 export const ENDLESS_WAVE_CLEARED = "§a✓ Endless wave cleared! The realm rests... for now.";
+export const ENDLESS_DEFEAT = "§c✗ The endless horde was too much... but legends never stay down.";
 
 // --- Debug ---
 export const DEBUG_DAY_SET = (day: number) => `§e[Debug] Day set to ${day}`;

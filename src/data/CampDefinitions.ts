@@ -108,5 +108,10 @@ export function getCampTierForDay(day: number): CampTierDef | undefined {
       return tier;
     }
   }
+  // Endless mode: days beyond the last tier's maxDay use the highest tier
+  const lastTier = CAMP_TIERS[CAMP_TIERS.length - 1];
+  if (lastTier && day > lastTier.maxDay) {
+    return lastTier;
+  }
   return undefined;
 }

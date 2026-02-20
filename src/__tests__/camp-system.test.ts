@@ -152,9 +152,10 @@ describe("getCampTierForDay()", () => {
     expect(getCampTierForDay(CAMP_START_DAY - 1)).toBeUndefined();
   });
 
-  it("returns undefined for day 100+ (siege territory)", () => {
-    expect(getCampTierForDay(100)).toBeUndefined();
-    expect(getCampTierForDay(150)).toBeUndefined();
+  it("returns last tier for day 100+ (endless mode support)", () => {
+    const lastTier = CAMP_TIERS[CAMP_TIERS.length - 1];
+    expect(getCampTierForDay(100)).toBe(lastTier);
+    expect(getCampTierForDay(150)).toBe(lastTier);
   });
 
   it("returns Scout Camp for day 6", () => {

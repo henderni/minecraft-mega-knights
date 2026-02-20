@@ -492,9 +492,12 @@ describe("Camp tier day range contiguity", () => {
     }
   });
 
-  it("getCampTierForDay returns undefined for day 5 and day 100", () => {
+  it("getCampTierForDay returns undefined for day 5, returns last tier for days >= 100 (endless mode)", () => {
     expect(getCampTierForDay(5)).toBeUndefined();
-    expect(getCampTierForDay(100)).toBeUndefined();
+    // Days beyond last tier's maxDay use the highest tier (Elite Outpost) for endless mode
+    const lastTier = CAMP_TIERS[CAMP_TIERS.length - 1];
+    expect(getCampTierForDay(100)).toBe(lastTier);
+    expect(getCampTierForDay(150)).toBe(lastTier);
   });
 
   it("structure size escalates: early tiers use 7, later tiers use 9", () => {

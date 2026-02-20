@@ -7,9 +7,11 @@ import {
   QUEST_START_TITLE,
   QUEST_START_DESC,
   DAY_CHANGE,
+  DAY_CHANGE_ENDLESS,
   MILESTONE_TITLE,
   MILESTONE_MESSAGE,
   HUD_ACTION_BAR,
+  HUD_ACTION_BAR_ENDLESS,
   TUTORIAL_1_SURVIVE,
   TUTORIAL_2_RECRUIT,
   TUTORIAL_3_ARMY,
@@ -353,7 +355,9 @@ export class DayCounterSystem {
 
         if (key !== lastKey) {
           const tierName = TIER_NAMES[tier] ?? "Page";
-          const hudString = HUD_ACTION_BAR(currentDay, bar, armySize, armyCap, tierName);
+          const hudString = this.cachedEndless && currentDay > 100
+            ? HUD_ACTION_BAR_ENDLESS(currentDay, armySize, armyCap, tierName)
+            : HUD_ACTION_BAR(currentDay, bar, armySize, armyCap, tierName);
           player.onScreenDisplay.setActionBar(hudString);
           this.lastHudKeys.set(name, key);
         }
@@ -364,7 +368,7 @@ export class DayCounterSystem {
   }
 
   private onDayChange(day: number): void {
-    world.sendMessage(DAY_CHANGE(day));
+    world.sendMessage(this.cachedEndless && day > 100 ? DAY_CHANGE_ENDLESS(day) : DAY_CHANGE(day));
     this.fireMilestone(day);
     for (const cb of this.onDayChangeCallbacks) {
       cb(day);

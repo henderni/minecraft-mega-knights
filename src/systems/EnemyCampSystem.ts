@@ -54,7 +54,7 @@ export class EnemyCampSystem {
    * Called from dayCounter.onDayChanged() in main.ts.
    */
   onDayChanged(day: number, siegeActive: boolean): void {
-    if (day < CAMP_START_DAY || day >= 100) {return;}
+    if (day < CAMP_START_DAY) {return;}
     if (siegeActive) {return;}
     if (MILESTONE_DAYS.has(day)) {return;}
 

@@ -387,11 +387,11 @@ describe("[All platforms] Manifest engine version alignment", () => {
     expect(bp.header.min_engine_version).toEqual(rp.header.min_engine_version);
   });
 
-  it("min_engine_version is [1, 26, 0] — requires Minecraft 26.0+ for @minecraft/server 2.5.0", () => {
+  it("min_engine_version is [1, 21, 50] — requires Minecraft 1.21.50+ for @minecraft/server 2.5.0", () => {
     const bp = JSON.parse(
       fs.readFileSync(path.join(BP_ROOT, "manifest.json"), "utf-8"),
     );
-    expect(bp.header.min_engine_version).toEqual([1, 26, 0]);
+    expect(bp.header.min_engine_version).toEqual([1, 21, 50]);
   });
 
   it("both manifests use format_version 2", () => {

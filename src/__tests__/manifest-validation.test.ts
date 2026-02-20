@@ -12,7 +12,7 @@ describe("Pack Configuration", () => {
 
     expect(manifest.format_version).toBe(2);
     expect(manifest.header).toBeDefined();
-    expect(manifest.header.min_engine_version).toEqual([1, 26, 0]);
+    expect(manifest.header.min_engine_version).toEqual([1, 21, 50]);
   });
 
   it("should have resource pack manifest with correct format version", () => {

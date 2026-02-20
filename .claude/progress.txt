@@ -20,3 +20,34 @@ Key gaps identified:
 
 Next: Start with task #1 (fix manifest versions), then #2-#3 (endless mode fixes)
 ===
+
+--- checkpoint 7bc4208e-b34a-486b-8915-48cbdc1c08fc @ 2026-02-20 08:23:37 ---
+Progress: 0/18 tasks complete
+---
+
+=== Session 2026-02-20 08:29 ===
+Task #1: Fix manifest min_engine_version
+Status: COMPLETED
+Changes: MegaKnights_BP/manifest.json, MegaKnights_RP/manifest.json, tests updated
+Verification: All passed (manifests show [1,21,50], build succeeds, 1800 tests pass)
+
+Task #2: Add endless mode defeat feedback
+Status: COMPLETED
+Changes: src/data/Strings.ts (ENDLESS_DEFEAT), src/systems/SiegeSystem.ts (endSiege else branch)
+Verification: All passed
+
+Task #3: Extend camp system for endless mode
+Status: COMPLETED
+Changes: src/data/CampDefinitions.ts, src/systems/EnemyCampSystem.ts, 3 test files updated
+Verification: All passed (getCampTierForDay(150) returns Elite Outpost, day>=100 guard removed)
+
+Task #4: Fix HUD display for endless mode
+Status: COMPLETED
+Changes: src/data/Strings.ts (HUD_ACTION_BAR_ENDLESS, DAY_CHANGE_ENDLESS), src/systems/DayCounterSystem.ts
+Verification: All passed (HUD shows Endless label, day change message uses endless variant)
+
+Task #16: DAY_CHANGE_ENDLESS string (completed as part of task #4)
+Status: COMPLETED
+
+Next: Tasks #5-7 (test coverage: castle commands, difficulty scaling, endless waves)
+===

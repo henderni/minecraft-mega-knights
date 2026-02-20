@@ -511,8 +511,9 @@ describe("Camp exclusion logic completeness", () => {
     expect(campSrc).toContain("day < CAMP_START_DAY");
   });
 
-  it("camps blocked at day >= 100", () => {
-    expect(campSrc).toContain("day >= 100");
+  it("camps continue in endless mode (no day >= 100 guard)", () => {
+    // Camp system no longer blocks at day 100 — endless mode uses the last camp tier
+    expect(campSrc).not.toContain("day >= 100");
   });
 
   it("camps blocked during siege", () => {
