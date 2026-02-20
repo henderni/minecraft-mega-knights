@@ -46,6 +46,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash .claude/hooks/progress-save.sh",
+            "timeout": 15,
+            "statusMessage": "Saving progress..."
+          },
+          {
+            "type": "command",
             "command": "bash .claude/hooks/build-check.sh",
             "timeout": 30,
             "statusMessage": "Verifying TypeScript build..."

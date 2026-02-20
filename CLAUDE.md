@@ -160,6 +160,28 @@ When context is compacted, ALWAYS preserve:
 
 Do NOT stop work early due to context budget concerns. Save progress to task state and memory files, then continue. Be as persistent and autonomous as possible.
 
+## Autonomous Harness
+
+For long-running autonomous work across multiple sessions:
+
+```bash
+./harness.sh                        # Default: 10 sessions, opus model
+./harness.sh --init                 # Generate feature_list.json from codebase analysis
+./harness.sh --sessions 20          # Run up to 20 sessions
+./harness.sh --model sonnet         # Faster/cheaper model
+./harness.sh --continue             # Continue last session
+```
+
+**Files:**
+- `.claude/feature_list.json` — prioritized task list (only `passes` field is mutable)
+- `.claude/progress.txt` — append-only session log
+- `.claude/prompts/initializer_prompt.md` — first-session prompt (generates feature list)
+- `.claude/prompts/coding_prompt.md` — continuation prompt (works through tasks)
+
+**How it works:** The harness runs `claude -p` in a loop. Each session reads progress.txt and feature_list.json, works on the next incomplete task, verifies it, marks it done, commits, and moves on. The Stop hook saves progress and nudges Claude to keep working if tasks remain. Sessions chain automatically — each fresh context picks up where the last left off via the progress file.
+
+**In-session usage:** Use `/harness init` to generate a feature list, `/harness status` to check progress, or `/harness add <description>` to add tasks.
+
 ## BDS Deployment
 
 ```bash
