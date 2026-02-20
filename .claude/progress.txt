@@ -1,0 +1,22 @@
+=== Initializer Session — 2026-02-20 ===
+Generated feature_list.json with 18 tasks (3 high, 9 medium, 6 low priority)
+Categories: 6 functional, 8 test, 1 performance, 2 content, 1 polish
+
+Codebase state at initialization:
+- Build: PASSES (tsc clean)
+- Tests: 43 files, 1800 tests, ALL PASSING
+- 11 systems fully implemented, no TODOs/FIXMEs in source
+- Entity/item/localization parity: PERFECT (11 entities, 31 items, all lang keys synced)
+- Performance: Well-optimized (cached HUD, staggered spawns, event-driven counters)
+
+Critical finding: min_engine_version [1, 26, 0] in both manifests — no such Bedrock version exists, add-on cannot load on any device. Must fix to [1, 21, 50].
+
+Key gaps identified:
+- Endless mode has no defeat feedback, no camps, broken HUD display
+- QuestJournalSystem reads world property directly instead of through DayCounterSystem
+- Standard Bearer naming bypasses shared generateAllyName() utility
+- No boss bestiary tracking
+- Test coverage gaps: castle commands, difficulty scaling, endless waves, camp tier coverage
+
+Next: Start with task #1 (fix manifest versions), then #2-#3 (endless mode fixes)
+===

@@ -1,0 +1,237 @@
+[
+  {
+    "id": 1,
+    "category": "functional",
+    "priority": "high",
+    "description": "Fix manifest min_engine_version in both BP and RP manifests. Currently set to [1, 26, 0] which does not exist — no Bedrock client can load the add-on. Change to [1, 21, 50] (the minimum version supporting @minecraft/server@2.5.0) in both MegaKnights_BP/manifest.json and MegaKnights_RP/manifest.json. Update CLAUDE.md if it references the wrong version.",
+    "verification": [
+      "Both manifest.json files have min_engine_version: [1, 21, 50]",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 2,
+    "category": "functional",
+    "priority": "high",
+    "description": "Add endless mode defeat feedback. When all players die during an endless mini-siege, endSiege(false) is called but the endless branch has no player-facing message (comment: 'no defeat handling'). Add a message like '§c⚔ Your defenses fell... but legends never truly die. The endless siege pauses until the next cycle.' so players understand what happened. Add new string constants to Strings.ts.",
+    "verification": [
+      "SiegeSystem.endSiege(false) with wasEndless=true sends a world message",
+      "New string constants exist in src/data/Strings.ts for endless defeat",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 3,
+    "category": "functional",
+    "priority": "high",
+    "description": "Extend camp system to support endless mode (days > 100). Currently EnemyCampSystem.onDayChanged() returns early for day >= 100 and getCampTierForDay() returns undefined for days > 99. In endless mode, camps should continue spawning using the highest tier (Elite Outpost) for all days >= 85. Modify CampDefinitions.getCampTierForDay to handle days >= 100 by returning the last tier, and update EnemyCampSystem.onDayChanged to allow camps in endless mode.",
+    "verification": [
+      "getCampTierForDay(150) returns the Elite Outpost tier instead of undefined",
+      "EnemyCampSystem.onDayChanged does not early-return for day >= 100 when in endless mode",
+      "Camp system tests cover days > 100",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 4,
+    "category": "functional",
+    "priority": "medium",
+    "description": "Fix HUD display for endless mode. The HUD string shows 'Day X/100' which looks wrong when day > 100 in endless mode. When in endless mode and day > 100, the HUD should show 'Day X §7(Endless)' instead of 'Day X/100'. Requires either a new HUD_ACTION_BAR_ENDLESS string in Strings.ts or modifying the existing HUD logic to detect endless mode. The progress bar should show full (all filled) in endless mode.",
+    "verification": [
+      "HUD shows 'Endless' instead of '/100' when day > 100",
+      "Progress bar is fully filled in endless mode",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 5,
+    "category": "test",
+    "priority": "medium",
+    "description": "Add unit tests for castle build command generation. CastleSystem uses fallback fill/setblock command arrays when .mcstructure files aren't present. These command arrays (buildSmallTower, buildGatehouse, buildGreatHall) are generated from pure logic and can be tested by reading the source as text and verifying the command patterns. Test that: commands reference valid block types, fill coordinates form valid cuboids, structure dimensions match CastleBlueprints definitions.",
+    "verification": [
+      "New test file src/__tests__/castle-commands.test.ts exists",
+      "Tests verify command arrays contain valid Minecraft fill/setblock commands",
+      "Tests verify structure dimensions match blueprint definitions",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 6,
+    "category": "test",
+    "priority": "medium",
+    "description": "Add unit tests for difficulty multiplier scaling on siege wave counts. Test that: (1) Normal difficulty (multiplier 1.0) uses base wave counts from WAVE_DEFINITIONS, (2) Hard difficulty (multiplier 1.5) correctly scales non-boss entity counts (boss always stays at count 1), (3) scaled counts are integers (Math.round or Math.ceil), (4) total per-wave entities with Hard multiplier still stay reasonable. Use source-as-text pattern since SiegeSystem imports @minecraft/server.",
+    "verification": [
+      "New test file src/__tests__/difficulty-scaling.test.ts exists",
+      "Tests verify Normal and Hard multiplier math",
+      "Tests verify boss count is never multiplied",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 7,
+    "category": "test",
+    "priority": "medium",
+    "description": "Add unit tests for endless mode wave escalation logic. Verify: (1) ENDLESS_WAVES array has the expected number of wave sets, (2) wave sets escalate in total entity count, (3) the wave index selection formula ((day - 100) / 20) maps correctly to wave sets, (4) wave set index is clamped to array bounds for very high days, (5) entity IDs in endless waves are valid mk: namespace IDs that match defined entities.",
+    "verification": [
+      "New test file src/__tests__/endless-mode.test.ts exists",
+      "Tests verify wave escalation across day ranges",
+      "Tests verify wave index clamping for day 500+",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 8,
+    "category": "functional",
+    "priority": "medium",
+    "description": "Decouple QuestJournalSystem from direct world.getDynamicProperty() reads. QuestJournalSystem currently calls world.getDynamicProperty('mk:current_day') directly instead of going through DayCounterSystem.getCurrentDay(). This bypasses the cached value and adds an extra coupling to the property key string. Either pass DayCounterSystem to QuestJournalSystem constructor or expose a getCurrentDay() getter that QuestJournalSystem uses.",
+    "verification": [
+      "QuestJournalSystem no longer directly calls world.getDynamicProperty for the current day",
+      "QuestJournalSystem receives the day value from DayCounterSystem (via constructor injection or method call)",
+      "main.ts wires the dependency",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 9,
+    "category": "test",
+    "priority": "medium",
+    "description": "Add tests for camp tier day range coverage and faction guard scaling. Verify: (1) CAMP_TIERS covers all days from CAMP_START_DAY (6) through 99 with no gaps, (2) each tier's guard count after faction weight scaling does not exceed MAX_CAMP_GUARDS, (3) FACTION_GUARD_WEIGHTS for all 3 factions produce integer guard counts when applied to each tier, (4) getCampTierForDay boundary values (day 6, 19, 20, 99) return correct tiers.",
+    "verification": [
+      "New test file src/__tests__/camp-tier-coverage.test.ts exists or tests added to existing camp-system.test.ts",
+      "Tests verify no day gaps in tier ranges",
+      "Tests verify faction scaling stays within MAX_CAMP_GUARDS",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 10,
+    "category": "functional",
+    "priority": "medium",
+    "description": "Standard Bearer naming consistency. MerchantSystem.onScrollUse() constructs the Standard Bearer name as '${safeName}\\'s Standard Bearer' instead of using generateAllyName() from AllyNames.ts like all other ally types. Update to use the shared naming utility so Standard Bearers get the same styled name format as other allies (or document clearly why the deviation is intentional).",
+    "verification": [
+      "MerchantSystem uses generateAllyName or a shared naming pattern for Standard Bearer",
+      "Standard Bearer test verifies the name format matches ally naming conventions",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 11,
+    "category": "test",
+    "priority": "medium",
+    "description": "Add tests for HUD composite key bit-packing correctness. The DayCounterSystem.updateHUD() method uses a 27-bit composite key packed as (day << 20) | (filled << 15) | (armySize << 9) | (armyCap << 3) | tier. Verify: (1) key is unique for different input combinations, (2) field widths accommodate max values (day=100+, filled=20, armySize=35, armyCap=35, tier=4), (3) no bit overflow between adjacent fields, (4) endless mode day values (100-300) produce valid keys.",
+    "verification": [
+      "New tests verify HUD key uniqueness for distinct inputs",
+      "Tests verify no bit collision at max values",
+      "Tests cover endless mode day ranges",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 12,
+    "category": "performance",
+    "priority": "medium",
+    "description": "Add performance budget tests for endless mode entity counts. The existing performance-budget.test.ts tests siege entity counts for the base game. Add tests that verify: (1) endless wave total spawns per wave never exceed MAX_ACTIVE_SIEGE_MOBS, (2) with Hard difficulty multiplier, endless wave counts are still bounded, (3) the mid-wave cap gating mechanism is referenced in SiegeSystem source. These ensure the Switch performance budget holds in endless mode too.",
+    "verification": [
+      "New tests in performance-budget.test.ts or endless-mode.test.ts verify endless entity caps",
+      "Tests verify Hard difficulty doesn't exceed entity budget",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 13,
+    "category": "content",
+    "priority": "low",
+    "description": "Add boss kill tracking to the bestiary. Currently the boss (mk:mk_boss_siege_lord) is excluded from bestiary tracking by the comment in CombatSystem. Add a BESTIARY entry for the Siege Lord with a single milestone (e.g., 1 kill = permanent Absorption I effect). This rewards players for beating the siege with a meaningful persistent buff.",
+    "verification": [
+      "BestiaryDefinitions.ts has an entry for mk:mk_boss_siege_lord",
+      "Milestone at 1 kill grants a reasonable passive effect",
+      "Bestiary tests cover the boss entry",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 14,
+    "category": "content",
+    "priority": "low",
+    "description": "Add Endless Mode section to Quest Journal. After the player wins the siege and enters endless mode, the Quest Journal should show a new section explaining endless mechanics: mini-sieges every 20 days, camp spawning continues, no more milestones, just survival. Add JOURNAL_ENDLESS_TITLE and JOURNAL_ENDLESS_BODY to Strings.ts and wire it into QuestJournalSystem to show conditionally when endless mode is active.",
+    "verification": [
+      "New string constants for endless journal section in Strings.ts",
+      "QuestJournalSystem shows the Endless section when day > 100 or endless mode is active",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 15,
+    "category": "test",
+    "priority": "low",
+    "description": "Validate all recipe ingredients are obtainable at the expected game stage. Read all recipe JSON files and cross-reference ingredients against: (1) vanilla Minecraft items that are always available, (2) custom mk: items that are given at specific milestones/days, (3) camp reward drops. Ensure no recipe requires an item that the player cannot obtain by the time the recipe becomes relevant (e.g., a Day 35 blueprint recipe shouldn't require netherite which is a Day 85+ camp reward).",
+    "verification": [
+      "New test file or tests added to recipes-loot.test.ts",
+      "Tests verify each recipe's ingredients are obtainable by the recipe's unlock day",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 16,
+    "category": "polish",
+    "priority": "low",
+    "description": "Add DAY_CHANGE string variant for endless mode. Currently DAY_CHANGE shows '=== Day X of 100 ===' for all days including endless mode. When day > 100, this should show '=== Day X (Endless) ===' or similar. Add a DAY_CHANGE_ENDLESS constant to Strings.ts and update DayCounterSystem.onDayChange to use it when in endless mode.",
+    "verification": [
+      "New DAY_CHANGE_ENDLESS string in Strings.ts",
+      "DayCounterSystem uses endless variant for day > 100",
+      "Existing DAY_CHANGE tests still pass",
+      "npm run build succeeds",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 17,
+    "category": "test",
+    "priority": "low",
+    "description": "Add tests verifying all entity JSON files have required Bedrock fields. Check every .se.json (BP) and .ce.json (RP) file for: (1) valid format_version string, (2) minecraft:entity with description.identifier matching mk:mk_* pattern, (3) required component groups are present, (4) event handlers reference valid component groups, (5) no duplicate component group names. This catches content authoring errors before testing in-game.",
+    "verification": [
+      "New test file or tests added to entity-validation.test.ts",
+      "Tests check all .se.json and .ce.json files",
+      "Tests verify required schema fields",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": 18,
+    "category": "test",
+    "priority": "low",
+    "description": "Add integration-style tests for main.ts system wiring completeness. Verify by reading main.ts source that: (1) all 11 systems are instantiated, (2) all death listeners are set up (army, siege, camp), (3) all event subscriptions cover itemUse for all expected item typeIds, (4) the difficulty multiplier is wired to siege, camp, and milestones, (5) the onVictory callback enables endless mode. Some of these may already exist in system-wiring.test.ts — extend if gaps found.",
+    "verification": [
+      "Tests verify all systems are instantiated in main.ts",
+      "Tests verify all event subscriptions are registered",
+      "Tests verify difficulty wiring is complete",
+      "npm run test:run passes"
+    ],
+    "passes": false
+  }
+]
