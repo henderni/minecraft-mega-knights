@@ -24,7 +24,7 @@ const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
 const campSystem = new EnemyCampSystem();
 const merchant = new MerchantSystem(army);
-const journal = new QuestJournalSystem();
+const journal = new QuestJournalSystem(dayCounter);
 
 // Wire difficulty system to all systems that scale enemy spawns
 dayCounter.setDifficultySystem(difficulty);

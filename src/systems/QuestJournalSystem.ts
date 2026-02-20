@@ -3,6 +3,7 @@ import { ActionFormData, MessageFormData } from "@minecraft/server-ui";
 import { BESTIARY } from "../data/BestiaryDefinitions";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
 import { ArmySystem } from "./ArmySystem";
+import { DayCounterSystem } from "./DayCounterSystem";
 import {
   JOURNAL_TITLE,
   JOURNAL_OVERVIEW_TITLE,
@@ -20,6 +21,12 @@ import {
 const TIER_NAMES = ["Page", "Squire", "Knight", "Champion", "Mega Knight"];
 
 export class QuestJournalSystem {
+  private dayCounter: DayCounterSystem;
+
+  constructor(dayCounter: DayCounterSystem) {
+    this.dayCounter = dayCounter;
+  }
+
   async onItemUse(player: Player): Promise<void> {
     try {
       await this.showTOC(player);
@@ -29,7 +36,7 @@ export class QuestJournalSystem {
   }
 
   private async showTOC(player: Player): Promise<void> {
-    const day = (world.getDynamicProperty("mk:current_day") as number) ?? 0;
+    const day = this.dayCounter.getCurrentDay();
     const armySize = Math.max(0, (player.getDynamicProperty("mk:army_size") as number) ?? 0);
     const armyBonus = Math.max(0, (player.getDynamicProperty("mk:army_bonus") as number) ?? 0);
     const tier = Math.max(

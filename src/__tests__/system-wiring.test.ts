@@ -61,6 +61,10 @@ describe("main.ts: system instantiation", () => {
     expect(mainSrc).toMatch(/new CombatSystem\(\s*army\s*,\s*bestiary\s*,\s*difficulty/);
   });
 
+  it("passes dayCounter to QuestJournalSystem", () => {
+    expect(mainSrc).toMatch(/new QuestJournalSystem\(\s*dayCounter/);
+  });
+
   it("wires difficulty system to day counter", () => {
     expect(mainSrc).toContain("dayCounter.setDifficultySystem(difficulty)");
   });

@@ -102,7 +102,7 @@
       "npm run build succeeds",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 9,

@@ -115,17 +115,17 @@ if [ "$NEED_INIT" = true ]; then
 
     INIT_PROMPT=$(cat "$PROMPTS_DIR/initializer_prompt.md")
 
-    INIT_OUTPUT=$(claude -p "$INIT_PROMPT" \
+    # Run claude without output capture — streams live to terminal
+    echo "init:$(date -Iseconds)" >> "$SESSION_LOG"
+    claude -p "$INIT_PROMPT" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --output-format json 2>&1) || true
+        --max-budget-usd "$BUDGET_PER_SESSION" || true
 
-    INIT_SESSION=$(echo "$INIT_OUTPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "unknown")
-    echo "init:$INIT_SESSION:$(date -Iseconds)" >> "$SESSION_LOG"
-
+    echo ""
     if [ ! -f "$FEATURE_FILE" ]; then
-        error "Initializer did not create feature_list.json. Check session output."
+        error "Initializer did not create feature_list.json. Check session output above."
         exit 1
     fi
 
@@ -137,15 +137,15 @@ fi
 # Continue last session if requested
 if [ "$CONTINUE_LAST" = true ]; then
     log "Continuing last session..."
-    CONTINUE_OUTPUT=$(claude --continue -p "$(cat "$PROMPTS_DIR/coding_prompt.md")" \
+    echo "continue:$(date -Iseconds)" >> "$SESSION_LOG"
+    claude --continue -p "$(cat "$PROMPTS_DIR/coding_prompt.md")" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --output-format json 2>&1) || true
+        --max-budget-usd "$BUDGET_PER_SESSION" || true
 
-    SESSION_ID=$(echo "$CONTINUE_OUTPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "unknown")
-    echo "continue:$SESSION_ID:$(date -Iseconds)" >> "$SESSION_LOG"
-    success "Continue session complete: $SESSION_ID"
+    echo ""
+    success "Continue session complete."
     exit 0
 fi
 
@@ -167,17 +167,17 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
         fi
     fi
 
-    # Run coding session
+    # Run coding session — streams live to terminal
     CODING_PROMPT=$(cat "$PROMPTS_DIR/coding_prompt.md")
+    echo "coding:session-$i:$(date -Iseconds)" >> "$SESSION_LOG"
 
-    SESSION_OUTPUT=$(claude -p "$CODING_PROMPT" \
+    claude -p "$CODING_PROMPT" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --output-format json 2>&1) || true
+        --max-budget-usd "$BUDGET_PER_SESSION" || true
 
-    SESSION_ID=$(echo "$SESSION_OUTPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "unknown")
-    echo "coding:$SESSION_ID:$(date -Iseconds)" >> "$SESSION_LOG"
+    echo ""
 
     # Post-session status
     if [ -f "$FEATURE_FILE" ]; then
