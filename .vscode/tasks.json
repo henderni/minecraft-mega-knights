@@ -1,0 +1,113 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "BDS: Start Server",
+      "type": "shell",
+      "command": "docker compose up -d && echo '\\n✅ Server starting on port 19132/udp' && echo 'Run \"BDS: View Logs\" to watch startup progress'",
+      "problemMatcher": [],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "BDS: Stop Server",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "BDS: Restart Server",
+      "type": "shell",
+      "command": "docker compose restart",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "BDS: View Logs",
+      "type": "shell",
+      "command": "docker compose logs -f",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "BDS: Enable Packs (run once)",
+      "type": "shell",
+      "command": "bash tools/bds-enable-packs.sh",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "BDS: Server Console",
+      "type": "shell",
+      "command": "docker attach minecraft-mega-knights-bds-1",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Build",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": ["$tsc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Watch",
+      "type": "npm",
+      "script": "watch",
+      "problemMatcher": ["$tsc-watch"],
+      "isBackground": true,
+      "group": "build"
+    },
+    {
+      "label": "Test",
+      "type": "npm",
+      "script": "test:run",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "BDS: Build & Restart",
+      "dependsOn": ["Build", "BDS: Restart Server"],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Show My IP (for iPad)",
+      "type": "shell",
+      "command": "echo '\\nYour Mac\\'s local IP address:' && ipconfig getifaddr en0 || echo 'Wi-Fi not connected — check en1:' && ipconfig getifaddr en1 2>/dev/null; echo '\\nUse this IP + port 19132 to connect from iPad'",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

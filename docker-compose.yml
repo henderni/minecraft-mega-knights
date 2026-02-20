@@ -1,0 +1,24 @@
+services:
+  bds:
+    image: itzg/minecraft-bedrock-server
+    platform: linux/amd64
+    environment:
+      EULA: "TRUE"
+      SERVER_NAME: "Mega Knights Dev"
+      GAMEMODE: survival
+      DIFFICULTY: normal
+      ONLINE_MODE: "false"
+      ALLOW_CHEATS: "true"
+      LEVEL_NAME: "MegaKnightsWorld"
+      MAX_PLAYERS: 4
+    ports:
+      - "19132:19132/udp"
+    volumes:
+      - bds-data:/data
+      - ./MegaKnights_BP:/data/development_behavior_packs/MegaKnights_BP:ro
+      - ./MegaKnights_RP:/data/development_resource_packs/MegaKnights_RP:ro
+    stdin_open: true
+    tty: true
+
+volumes:
+  bds-data:
