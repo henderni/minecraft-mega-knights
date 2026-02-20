@@ -26,56 +26,26 @@ interface EndlessSpawn {
 }
 
 function parseEndlessWaves(): EndlessSpawn[][] {
-  // Extract the ENDLESS_WAVES array block from source
-  const startMarker = "const ENDLESS_WAVES";
-  const startIdx = siegeSrc.indexOf(startMarker);
+  // Extract the ENDLESS_WAVES block from source
+  const startIdx = siegeSrc.indexOf("const ENDLESS_WAVES");
   if (startIdx === -1) throw new Error("ENDLESS_WAVES not found in source");
+  const endIdx = siegeSrc.indexOf("];", startIdx);
+  if (endIdx === -1) throw new Error("ENDLESS_WAVES closing not found");
+  const block = siegeSrc.slice(startIdx, endIdx + 2);
 
-  // Find the assignment '= [' — skip past type annotation brackets like }[][]
-  const eqIdx = siegeSrc.indexOf("= [", startIdx);
-  if (eqIdx === -1) throw new Error("ENDLESS_WAVES assignment not found");
-  let outerStart = siegeSrc.indexOf("[", eqIdx + 1);
-  // Find matching closing bracket
-  let depth = 0;
-  let outerEnd = outerStart;
-  for (let i = outerStart; i < siegeSrc.length; i++) {
-    if (siegeSrc[i] === "[") depth++;
-    if (siegeSrc[i] === "]") depth--;
-    if (depth === 0) {
-      outerEnd = i;
-      break;
-    }
-  }
-  const arrText = siegeSrc.slice(outerStart + 1, outerEnd); // contents inside outer []
-
-  // Parse each inner array by tracking bracket depth
+  // Each inner array [...] contains only {…} objects — no nested brackets
+  const innerArrayRegex = /\[[^\[\]]+\]/g;
   const waves: EndlessSpawn[][] = [];
-  let inInner = false;
-  let innerDepth = 0;
-  let innerStart = 0;
-
-  for (let i = 0; i < arrText.length; i++) {
-    if (arrText[i] === "[" && !inInner) {
-      inInner = true;
-      innerDepth = 1;
-      innerStart = i;
-    } else if (arrText[i] === "[" && inInner) {
-      innerDepth++;
-    } else if (arrText[i] === "]" && inInner) {
-      innerDepth--;
-      if (innerDepth === 0) {
-        const innerText = arrText.slice(innerStart, i + 1);
-        const spawns: EndlessSpawn[] = [];
-        const spawnRegex = /entityId:\s*"([^"]+)".*?count:\s*(\d+)/g;
-        let m;
-        while ((m = spawnRegex.exec(innerText)) !== null) {
-          spawns.push({ entityId: m[1], count: parseInt(m[2]) });
-        }
-        if (spawns.length > 0) {
-          waves.push(spawns);
-        }
-        inInner = false;
-      }
+  let m;
+  while ((m = innerArrayRegex.exec(block)) !== null) {
+    const spawns: EndlessSpawn[] = [];
+    const spawnRegex = /entityId:\s*"([^"]+)".*?count:\s*(\d+)/g;
+    let sm;
+    while ((sm = spawnRegex.exec(m[0])) !== null) {
+      spawns.push({ entityId: sm[1], count: parseInt(sm[2]) });
+    }
+    if (spawns.length > 0) {
+      waves.push(spawns);
     }
   }
   return waves;

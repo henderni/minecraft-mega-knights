@@ -51,3 +51,29 @@ Status: COMPLETED
 
 Next: Tasks #5-7 (test coverage: castle commands, difficulty scaling, endless waves)
 ===
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 08:32:48 ---
+Progress: 5/18 tasks complete
+---
+
+=== Session 2026-02-20 08:39 ===
+Task #5: Add castle build command tests
+Status: COMPLETED
+Changes: src/__tests__/castle-commands.test.ts (new, 31 tests)
+Verification: All passed (blueprint data, command generation, valid blocks, structure dimensions, staggered build)
+
+Task #6: Add difficulty scaling tests
+Status: COMPLETED
+Changes: src/__tests__/difficulty-scaling.test.ts (new, 16 tests)
+Verification: All passed (normal/hard multiplier math, boss count, multiplayer scaling, source wiring)
+
+Task #7: Add endless mode wave escalation tests
+Status: COMPLETED
+Changes: src/__tests__/endless-mode.test.ts (new, 21 tests)
+Verification: All passed (wave structure, escalation, wave index formula, entity budget, source patterns)
+
+Full suite: 46 files, 1868 tests, ALL PASSING
+Build: tsc clean
+
+Next: Task #8 (decouple QuestJournalSystem), #9 (camp tier coverage), #10 (Standard Bearer naming)
+===
