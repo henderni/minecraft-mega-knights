@@ -221,7 +221,7 @@ describe("System constant relationships", () => {
 
   it("MAX_DAY (100) matches the siege trigger day in main.ts", () => {
     expect(daySrc).toMatch(/MAX_DAY\s*=\s*100/);
-    expect(mainSrc).toContain("day >= 100");
+    expect(mainSrc).toContain("day === 100");
   });
 
   it("Tick write persistence (every 60 calls = ~60s crash recovery window)", () => {
@@ -394,9 +394,10 @@ describe("String color code consistency", () => {
   // Get all exported string constants and functions from Strings
   const allStringValues: string[] = [];
 
-  // Constants
+  // Constants (exclude form UI and non-chat strings)
+  const EXCLUDE_PREFIXES = ["JOURNAL_", "DIFFICULTY_"];
   for (const [key, val] of Object.entries(Strings)) {
-    if (typeof val === "string") {
+    if (typeof val === "string" && !EXCLUDE_PREFIXES.some((p) => key.startsWith(p))) {
       allStringValues.push(val);
     }
   }
@@ -420,6 +421,10 @@ describe("String color code consistency", () => {
     Strings.CAMP_CLEARED("Scout Camp"),
     Strings.DEBUG_DAY_SET(50),
     Strings.DEBUG_ALLIES_SPAWNED(10),
+    Strings.ALLY_DIED("Knight"),
+    Strings.TIER_UP_TITLE("Knight"),
+    Strings.DIFFICULTY_SET("Normal"),
+    Strings.ENDLESS_WAVE(120),
   ];
   allStringValues.push(...funcOutputs);
 

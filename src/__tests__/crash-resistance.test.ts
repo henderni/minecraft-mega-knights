@@ -702,7 +702,8 @@ describe("State machine integrity", () => {
       combatSrc.lastIndexOf("}"),
     );
     const bestiaryIdx = onDie.indexOf("this.bestiary.onKill(");
-    const recruitIdx = onDie.indexOf("RECRUIT_CHANCE");
+    // Recruit chance is now dynamic via difficulty system
+    const recruitIdx = onDie.indexOf("getRecruitChance()");
     expect(bestiaryIdx).toBeGreaterThan(-1);
     expect(recruitIdx).toBeGreaterThan(-1);
     expect(bestiaryIdx).toBeLessThan(recruitIdx);

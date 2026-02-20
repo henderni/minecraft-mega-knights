@@ -130,13 +130,13 @@ export const MILESTONES: Record<number, Milestone> = {
   1: {
     day: 1,
     title: "The Journey Begins",
-    message: "Build your strength, gather allies, and prepare for what is to come...",
+    message: "The land whispers of a coming darkness. Build your strength, gather allies, and prepare for what lies ahead...",
     execute: () => {},
   },
   5: {
     day: 5,
     title: "Small Tower Blueprint Unlocked!",
-    message: "Use the blueprint to place a small watchtower.",
+    message: "A weathered blueprint found among the ruins. Build a watchtower to see threats coming from afar.",
     execute: () => {
       giveBlueprintToPlayers("mk:mk_blueprint_small_tower");
     },
@@ -144,18 +144,18 @@ export const MILESTONES: Record<number, Milestone> = {
   10: {
     day: 10,
     title: "Enemy Scouts Spotted!",
-    message: "A scouting party approaches! Defeat them to recruit soldiers.",
+    message: "Scouts bearing the Siege Lord's banner emerge from the treeline. They're testing your defenses — defeat them, and some may pledge loyalty to you.",
     execute: () => {
       spawnEnemiesNearPlayersBatched([
-        { entityId: "mk:mk_enemy_knight", count: 3 },
-        { entityId: "mk:mk_enemy_archer", count: 2 },
+        { entityId: "mk:mk_enemy_knight", count: 2 },
+        { entityId: "mk:mk_enemy_archer", count: 1 },
       ]);
     },
   },
   20: {
     day: 20,
     title: "Squire Promotion!",
-    message: "You've proven yourself. Squire armor is now available!",
+    message: "Your deeds have earned recognition among the remaining knights. The rank of Squire is yours — stronger armor awaits!",
     execute: () => {
       ArmorTierSystem.unlockTier(1);
     },
@@ -163,7 +163,7 @@ export const MILESTONES: Record<number, Milestone> = {
   25: {
     day: 25,
     title: "Raiders at the Gates!",
-    message: "A raiding party attacks!",
+    message: "A raiding party crashes through the countryside! The Siege Lord grows bolder. Stand and fight!",
     execute: () => {
       spawnEnemiesNearPlayersBatched([
         { entityId: "mk:mk_enemy_knight", count: 6 },
@@ -174,7 +174,7 @@ export const MILESTONES: Record<number, Milestone> = {
   35: {
     day: 35,
     title: "Gatehouse Blueprint Unlocked!",
-    message: "Fortify your position with a proper gatehouse.",
+    message: "Ancient fortification plans recovered from a fallen fortress. A gatehouse will channel enemies into killzones.",
     execute: () => {
       giveBlueprintToPlayers("mk:mk_blueprint_gatehouse");
     },
@@ -182,7 +182,7 @@ export const MILESTONES: Record<number, Milestone> = {
   40: {
     day: 40,
     title: "Knight's Oath!",
-    message: "Your valor is recognized. Knight armor is now available!",
+    message: "You kneel before the fading banners of the old order and rise as a true Knight. The enemy will learn to fear your name.",
     execute: () => {
       ArmorTierSystem.unlockTier(2);
     },
@@ -190,7 +190,7 @@ export const MILESTONES: Record<number, Milestone> = {
   50: {
     day: 50,
     title: "A Dark Force Gathers...",
-    message: "Dark wizards have joined the enemy ranks!",
+    message: "The sky crackles with arcane energy. Dark wizards have joined the Siege Lord's army, bending magic to his will. Build the Great Hall to marshal your forces!",
     execute: () => {
       spawnEnemiesNearPlayersBatched([
         { entityId: "mk:mk_enemy_knight", count: 8 },
@@ -203,7 +203,7 @@ export const MILESTONES: Record<number, Milestone> = {
   60: {
     day: 60,
     title: "Champion's Trial!",
-    message: "Only the strongest earn the Champion's armor!",
+    message: "The old Champions tested their mettle against impossible odds. Today, you join their legacy. Only the worthy may wear the Champion's plate.",
     execute: () => {
       ArmorTierSystem.unlockTier(3);
     },
@@ -211,7 +211,7 @@ export const MILESTONES: Record<number, Milestone> = {
   70: {
     day: 70,
     title: "The Enemy Army Marches!",
-    message: "A massive force approaches your position!",
+    message: "The ground trembles beneath ten thousand boots. The Siege Lord's full army marches upon your position. The final battle draws near!",
     execute: () => {
       spawnEnemiesNearPlayersBatched([
         { entityId: "mk:mk_enemy_knight", count: 10 },
@@ -224,7 +224,7 @@ export const MILESTONES: Record<number, Milestone> = {
   85: {
     day: 85,
     title: "Mega Knight Ascension!",
-    message: "The ultimate armor is now within your grasp. Prepare for the siege!",
+    message: "The ancient armor of the Mega Knight responds to your will. Forged in dragonfire, quenched in starlight — this is the armor of legends. The siege is nigh!",
     execute: () => {
       ArmorTierSystem.unlockTier(4);
     },
@@ -232,7 +232,7 @@ export const MILESTONES: Record<number, Milestone> = {
   90: {
     day: 90,
     title: "The Siege Lord's Vanguard!",
-    message: "The Siege Lord sends his elite forces to test you!",
+    message: "The Siege Lord sends his most feared warriors as a final test. Dark knights and battlemages pour through the breach — only 10 days remain!",
     execute: () => {
       spawnEnemiesNearPlayersBatched([
         { entityId: "mk:mk_enemy_dark_knight", count: 5 },

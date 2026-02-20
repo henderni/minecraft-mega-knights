@@ -50,6 +50,39 @@ import {
   DEBUG_QUEST_STARTED,
   DEBUG_QUEST_RESET,
   DEBUG_ALLIES_SPAWNED,
+  TUTORIAL_1_SURVIVE,
+  TUTORIAL_2_RECRUIT,
+  TUTORIAL_3_ARMY,
+  TUTORIAL_4_MILESTONES,
+  TUTORIAL_5_TIP,
+  TUTORIAL_6_BESTIARY,
+  FRIENDLY_FIRE_BLOCKED,
+  RECRUIT_FAILED,
+  ALLY_DIED,
+  JOURNAL_TITLE,
+  JOURNAL_OVERVIEW_TITLE,
+  JOURNAL_OVERVIEW_BODY,
+  JOURNAL_ARMY_TITLE,
+  JOURNAL_ARMY_BODY,
+  JOURNAL_STANCES_TITLE,
+  JOURNAL_STANCES_BODY,
+  JOURNAL_BESTIARY_TITLE,
+  JOURNAL_CASTLES_TITLE,
+  JOURNAL_CASTLES_BODY,
+  TIER_UP_TITLE,
+  TIER_UP_SUBTITLE,
+  TIER_UP_MEGA_SUBTITLE,
+  DIFFICULTY_TITLE,
+  DIFFICULTY_BODY,
+  DIFFICULTY_NORMAL_LABEL,
+  DIFFICULTY_NORMAL_DESC,
+  DIFFICULTY_HARD_LABEL,
+  DIFFICULTY_HARD_DESC,
+  DIFFICULTY_SET,
+  ENDLESS_UNLOCKED,
+  ENDLESS_DESC,
+  ENDLESS_WAVE,
+  ENDLESS_WAVE_CLEARED,
 } from "../data/Strings";
 
 const BP_ROOT = path.join(__dirname, "../../MegaKnights_BP");
@@ -83,6 +116,31 @@ const STATIC_STRINGS: Array<[string, string]> = [
   ["SIEGE_DEFEAT_3", SIEGE_DEFEAT_3],
   ["DEBUG_QUEST_STARTED", DEBUG_QUEST_STARTED],
   ["DEBUG_QUEST_RESET", DEBUG_QUEST_RESET],
+  ["TUTORIAL_1_SURVIVE", TUTORIAL_1_SURVIVE],
+  ["TUTORIAL_2_RECRUIT", TUTORIAL_2_RECRUIT],
+  ["TUTORIAL_3_ARMY", TUTORIAL_3_ARMY],
+  ["TUTORIAL_4_MILESTONES", TUTORIAL_4_MILESTONES],
+  ["TUTORIAL_5_TIP", TUTORIAL_5_TIP],
+  ["TUTORIAL_6_BESTIARY", TUTORIAL_6_BESTIARY],
+  ["FRIENDLY_FIRE_BLOCKED", FRIENDLY_FIRE_BLOCKED],
+  ["RECRUIT_FAILED", RECRUIT_FAILED],
+  ["JOURNAL_TITLE", JOURNAL_TITLE],
+  ["JOURNAL_OVERVIEW_TITLE", JOURNAL_OVERVIEW_TITLE],
+  ["JOURNAL_ARMY_TITLE", JOURNAL_ARMY_TITLE],
+  ["JOURNAL_STANCES_TITLE", JOURNAL_STANCES_TITLE],
+  ["JOURNAL_BESTIARY_TITLE", JOURNAL_BESTIARY_TITLE],
+  ["JOURNAL_CASTLES_TITLE", JOURNAL_CASTLES_TITLE],
+  ["TIER_UP_SUBTITLE", TIER_UP_SUBTITLE],
+  ["TIER_UP_MEGA_SUBTITLE", TIER_UP_MEGA_SUBTITLE],
+  ["DIFFICULTY_TITLE", DIFFICULTY_TITLE],
+  ["DIFFICULTY_BODY", DIFFICULTY_BODY],
+  ["DIFFICULTY_NORMAL_LABEL", DIFFICULTY_NORMAL_LABEL],
+  ["DIFFICULTY_NORMAL_DESC", DIFFICULTY_NORMAL_DESC],
+  ["DIFFICULTY_HARD_LABEL", DIFFICULTY_HARD_LABEL],
+  ["DIFFICULTY_HARD_DESC", DIFFICULTY_HARD_DESC],
+  ["ENDLESS_UNLOCKED", ENDLESS_UNLOCKED],
+  ["ENDLESS_DESC", ENDLESS_DESC],
+  ["ENDLESS_WAVE_CLEARED", ENDLESS_WAVE_CLEARED],
 ];
 
 /** Pre-built progress bar strings (mirrors DayCounterSystem.ts exactly). */
@@ -263,6 +321,10 @@ describe("[UI] Template function output content", () => {
   it("CASTLE_PLACED embeds the structure name", () => {
     expect(CASTLE_PLACED("Small Tower")).toContain("Small Tower");
   });
+
+  it("ALLY_DIED embeds the display name", () => {
+    expect(ALLY_DIED("Knight")).toContain("Knight");
+  });
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -439,6 +501,48 @@ describe("[UI] en_US.lang quality", () => {
   it("pack.name is 'Mega Knights' (shown in pack selection UI)", () => {
     const lang = parseLang();
     expect(lang.get("pack.name")).toBe("Mega Knights");
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// JOURNAL STRINGS
+// Body strings intentionally contain \n for MessageFormData rendering.
+// Title strings must not contain newlines.
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe("[UI] Journal strings", () => {
+  const JOURNAL_TITLES = [
+    JOURNAL_TITLE,
+    JOURNAL_OVERVIEW_TITLE,
+    JOURNAL_ARMY_TITLE,
+    JOURNAL_STANCES_TITLE,
+    JOURNAL_BESTIARY_TITLE,
+    JOURNAL_CASTLES_TITLE,
+  ];
+
+  const JOURNAL_BODIES = [
+    ["JOURNAL_OVERVIEW_BODY", JOURNAL_OVERVIEW_BODY],
+    ["JOURNAL_ARMY_BODY", JOURNAL_ARMY_BODY],
+    ["JOURNAL_STANCES_BODY", JOURNAL_STANCES_BODY],
+    ["JOURNAL_CASTLES_BODY", JOURNAL_CASTLES_BODY],
+  ] as const;
+
+  it("no journal title contains a raw newline", () => {
+    JOURNAL_TITLES.forEach((s) => {
+      expect(s, `Title "${s}" should not contain \\n`).not.toContain("\n");
+    });
+  });
+
+  it("journal body strings are non-empty", () => {
+    JOURNAL_BODIES.forEach(([name, s]) => {
+      expect(s.trim().length, `${name} is empty`).toBeGreaterThan(0);
+    });
+  });
+
+  it("journal body strings contain newlines for multi-paragraph layout", () => {
+    JOURNAL_BODIES.forEach(([name, s]) => {
+      expect(s, `${name} should contain \\n for paragraph breaks`).toContain("\n");
+    });
   });
 });
 

@@ -2,6 +2,7 @@ import { world, system, Player } from "@minecraft/server";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
 import { MILESTONES } from "../data/MilestoneEvents";
 import { ArmySystem } from "./ArmySystem";
+import { DifficultySystem } from "./DifficultySystem";
 import {
   QUEST_START_TITLE,
   QUEST_START_DESC,
@@ -9,6 +10,12 @@ import {
   MILESTONE_TITLE,
   MILESTONE_MESSAGE,
   HUD_ACTION_BAR,
+  TUTORIAL_1_SURVIVE,
+  TUTORIAL_2_RECRUIT,
+  TUTORIAL_3_ARMY,
+  TUTORIAL_4_MILESTONES,
+  TUTORIAL_5_TIP,
+  TUTORIAL_6_BESTIARY,
 } from "../data/Strings";
 
 /** Pre-built progress bar strings to avoid string allocations every HUD tick */
@@ -34,6 +41,7 @@ export class DayCounterSystem {
   private cachedActive = false;
   private cachedDay = 0;
   private cachedTickCounter = 0;
+  private cachedEndless = false;
   private initialized = false;
 
   /** Per-player HUD key cache — uses numeric composite key to avoid string allocation */
@@ -41,6 +49,9 @@ export class DayCounterSystem {
 
   /** Tick counter for throttling dynamic property persistence */
   private tickWriteCounter = 0;
+
+  /** Reference to difficulty system — set via setDifficultySystem() */
+  private difficultySystem: DifficultySystem | null = null;
 
   /** Reusable Set for HUD prune — avoids allocation every 4s */
   private activeNames = new Set<string>();
@@ -54,6 +65,11 @@ export class DayCounterSystem {
     this.onDayChangeCallbacks.push(callback);
   }
 
+  /** Set the difficulty system reference for quest start form */
+  setDifficultySystem(ds: DifficultySystem): void {
+    this.difficultySystem = ds;
+  }
+
   /** Load cached values from dynamic properties (call once on first use) */
   private ensureInitialized(): void {
     if (this.initialized) {
@@ -63,6 +79,7 @@ export class DayCounterSystem {
     this.cachedActive = (world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE) as boolean) ?? false;
     this.cachedDay = (world.getDynamicProperty(DayCounterSystem.KEY_DAY) as number) ?? 0;
     this.cachedTickCounter = (world.getDynamicProperty(DayCounterSystem.KEY_TICK) as number) ?? 0;
+    this.cachedEndless = (world.getDynamicProperty("mk:endless_mode") as boolean) ?? false;
   }
 
   getCurrentDay(): number {
@@ -85,6 +102,45 @@ export class DayCounterSystem {
     this.initialized = true;
     world.sendMessage(QUEST_START_TITLE);
     world.sendMessage(QUEST_START_DESC);
+
+    // Starter kit + clear nearby hostiles for each player
+    const allPlayers = world.getAllPlayers();
+    for (const player of allPlayers) {
+      try {
+        player.runCommand("give @s iron_sword");
+        player.runCommand("give @s shield");
+        player.runCommand("give @s bread 1 0 8");
+        player.runCommand("give @s bed");
+        player.runCommand("give @s mk:mk_quest_journal");
+        player.runCommand("kill @e[type=!player,family=monster,r=48]");
+      } catch {
+        // Player may be in unloaded chunk or disconnected
+      }
+    }
+
+    // Show difficulty selection to the first valid player
+    if (this.difficultySystem) {
+      const firstPlayer = allPlayers.find((p) => p.isValid);
+      if (firstPlayer) {
+        this.difficultySystem.showDifficultySelect(firstPlayer);
+      }
+    }
+
+    // Tutorial message sequence — staggered at ~5s intervals
+    const tutorials = [
+      TUTORIAL_1_SURVIVE,
+      TUTORIAL_2_RECRUIT,
+      TUTORIAL_3_ARMY,
+      TUTORIAL_4_MILESTONES,
+      TUTORIAL_5_TIP,
+      TUTORIAL_6_BESTIARY,
+    ];
+    for (let i = 0; i < tutorials.length; i++) {
+      const msg = tutorials[i];
+      system.runTimeout(() => {
+        world.sendMessage(msg);
+      }, 200 * (i + 1));
+    }
   }
 
   /**
@@ -139,9 +195,11 @@ export class DayCounterSystem {
     world.setDynamicProperty(DayCounterSystem.KEY_ACTIVE, false);
     world.setDynamicProperty(DayCounterSystem.KEY_DAY, 0);
     world.setDynamicProperty(DayCounterSystem.KEY_TICK, 0);
+    world.setDynamicProperty("mk:endless_mode", false);
     this.cachedActive = false;
     this.cachedDay = 0;
     this.cachedTickCounter = 0;
+    this.cachedEndless = false;
     this.tickWriteCounter = 0;
     this.lastHudKeys.clear();
   }
@@ -161,12 +219,24 @@ export class DayCounterSystem {
     }
   }
 
+  /** Enable endless mode — called after siege victory */
+  enableEndlessMode(): void {
+    this.cachedEndless = true;
+    world.setDynamicProperty("mk:endless_mode", true);
+  }
+
+  isEndlessMode(): boolean {
+    this.ensureInitialized();
+    return this.cachedEndless;
+  }
+
   tick(): void {
     this.ensureInitialized();
     if (!this.cachedActive) {
       return;
     }
-    if (this.cachedDay >= DayCounterSystem.MAX_DAY) {
+    // Stop at day 100 unless endless mode is active
+    if (this.cachedDay >= DayCounterSystem.MAX_DAY && !this.cachedEndless) {
       return;
     }
 

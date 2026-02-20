@@ -557,19 +557,16 @@ describe("Camp exclusion logic completeness", () => {
 // ─── 10. Nameplate formatting safety ────────────────────────────────────────
 
 describe("Nameplate formatting safety", () => {
-  it("ally nametag strips § codes from player name", () => {
+  it("ally nametag uses procedural name with green color §a", () => {
     const armySrc = readSource("systems/ArmySystem.ts");
-    expect(armySrc).toContain('player.name.replace(/§./g, "")');
+    // Recruited allies get procedural names: "§aSir Marcus §7(Knight)"
+    expect(armySrc).toContain("generateAllyName");
+    expect(armySrc).toContain("`§a${allyName}");
   });
 
   it("merchant nametag uses gold color §6", () => {
     const merchantSrc = readSource("systems/MerchantSystem.ts");
     expect(merchantSrc).toContain('§6Wandering Merchant');
-  });
-
-  it("ally nametag uses green color §a", () => {
-    const armySrc = readSource("systems/ArmySystem.ts");
-    expect(armySrc).toContain("`§a${safeName}'s");
   });
 
   it("debug spawn also strips § codes", () => {

@@ -1,35 +1,50 @@
 import { world, system } from "@minecraft/server";
 import { DayCounterSystem } from "./systems/DayCounterSystem";
 import { ArmorTierSystem } from "./systems/ArmorTierSystem";
-import { ArmySystem, GLOBAL_ARMY_CAP } from "./systems/ArmySystem";
+import { ArmySystem, GLOBAL_ARMY_CAP, getOwnerTag } from "./systems/ArmySystem";
 import { CombatSystem } from "./systems/CombatSystem";
 import { CastleSystem } from "./systems/CastleSystem";
 import { SiegeSystem } from "./systems/SiegeSystem";
 import { EnemyCampSystem } from "./systems/EnemyCampSystem";
 import { BestiarySystem } from "./systems/BestiarySystem";
 import { MerchantSystem } from "./systems/MerchantSystem";
-import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET } from "./data/Strings";
+import { QuestJournalSystem } from "./systems/QuestJournalSystem";
+import { DifficultySystem } from "./systems/DifficultySystem";
+import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET, FRIENDLY_FIRE_BLOCKED } from "./data/Strings";
 import { ENEMY_SPAWN_DAY } from "./data/WaveDefinitions";
 
 const dayCounter = new DayCounterSystem();
 const armorTier = new ArmorTierSystem();
 const army = new ArmySystem();
 const bestiary = new BestiarySystem();
-const combat = new CombatSystem(army, bestiary);
+const difficulty = new DifficultySystem();
+const combat = new CombatSystem(army, bestiary, difficulty);
 const castle = new CastleSystem(army);
 const siege = new SiegeSystem();
 const campSystem = new EnemyCampSystem();
 const merchant = new MerchantSystem(army);
+const journal = new QuestJournalSystem();
+
+// Wire difficulty system to day counter for quest start form
+dayCounter.setDifficultySystem(difficulty);
 
 // Wire up event-driven death tracking
 army.setupDeathListener(); // Instant army recount on ally death
 siege.setupDeathListener(); // Decrement siege mob counter on enemy death
 campSystem.setupDeathListener(); // Decrement camp guard counter on kill
 
+// Wire siege victory to enable endless mode
+siege.onVictory(() => {
+  dayCounter.enableEndlessMode();
+});
+
 // Auto-trigger siege on Day 100; spawn enemy camps on off-days
 dayCounter.onDayChanged((day) => {
-  if (day >= 100) {
+  if (day === 100) {
     siege.startSiege();
+  } else if (day > 100 && dayCounter.isEndlessMode() && (day - 100) % 20 === 0) {
+    // Endless mode: mini-siege every 20 days
+    siege.startEndlessSiege(day);
   }
   campSystem.onDayChanged(day, siege.isActive());
   merchant.onDayChanged(day);
@@ -89,6 +104,65 @@ world.afterEvents.entitySpawn.subscribe((event) => {
   }
 });
 
+// Friendly fire protection — prevent players from damaging their own allies
+const MAX_FRIENDLY_FIRE_CACHE = 200;
+const lastFriendlyFireMsg = new Map<string, number>();
+const friendlyFireInsertionOrder: string[] = [];
+
+function recordFriendlyFireMsg(playerName: string, tick: number): void {
+  lastFriendlyFireMsg.set(playerName, tick);
+  const existingIndex = friendlyFireInsertionOrder.indexOf(playerName);
+  if (existingIndex >= 0) {
+    friendlyFireInsertionOrder.splice(existingIndex, 1);
+  }
+  friendlyFireInsertionOrder.push(playerName);
+  while (lastFriendlyFireMsg.size > MAX_FRIENDLY_FIRE_CACHE) {
+    const oldest = friendlyFireInsertionOrder.shift();
+    if (oldest) {
+      lastFriendlyFireMsg.delete(oldest);
+    }
+  }
+}
+
+world.afterEvents.entityHurt.subscribe((event) => {
+  const entity = event.hurtEntity;
+  if (!entity.isValid || !entity.hasTag("mk_army")) {
+    return;
+  }
+  const source = event.damageSource.damagingEntity;
+  if (!source || source.typeId !== "minecraft:player") {
+    return;
+  }
+  const player = source as import("@minecraft/server").Player;
+  if (!entity.hasTag(getOwnerTag(player.name))) {
+    return;
+  }
+  // Heal back the damage
+  system.run(() => {
+    try {
+      if (!entity.isValid) return;
+      const health = entity.getComponent("health") as import("@minecraft/server").EntityHealthComponent;
+      if (health) {
+        const newHp = Math.min(health.currentValue + event.damage, health.effectiveMax);
+        health.setCurrentValue(newHp);
+      }
+    } catch {
+      // Entity may have despawned
+    }
+  });
+  // Throttled message — once per 3 seconds (60 ticks) per player
+  const now = system.currentTick;
+  const lastMsg = lastFriendlyFireMsg.get(player.name) ?? 0;
+  if (now - lastMsg >= 60) {
+    recordFriendlyFireMsg(player.name, now);
+    try {
+      player.sendMessage(FRIENDLY_FIRE_BLOCKED);
+    } catch {
+      // Player may have disconnected
+    }
+  }
+});
+
 // Player spawn
 world.afterEvents.playerSpawn.subscribe((event) => {
   if (event.initialSpawn) {
@@ -103,11 +177,14 @@ world.afterEvents.entityDie.subscribe((event) => {
   combat.onEntityDie(event);
 });
 
-// Item use (blueprints + standard bearer scroll)
+// Item use (blueprints, standard bearer scroll, quest journal)
 world.afterEvents.itemUse.subscribe((event) => {
   castle.onItemUse(event);
   if (event.itemStack?.typeId === "mk:mk_standard_bearer_scroll") {
     merchant.onScrollUse(event.source);
+  }
+  if (event.itemStack?.typeId === "mk:mk_quest_journal") {
+    journal.onItemUse(event.source);
   }
 });
 
@@ -156,6 +233,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     world.sendMessage(DEBUG_QUEST_STARTED);
   } else if (event.id === "mk:reset") {
     dayCounter.reset();
+    difficulty.reset();
     world.sendMessage(DEBUG_QUEST_RESET);
   } else if (event.id === "mk:siege") {
     siege.startSiege();

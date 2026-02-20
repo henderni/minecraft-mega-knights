@@ -1,13 +1,14 @@
 import { Player, world } from "@minecraft/server";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
-import { ARMOR_GIVEN, TIER_UNLOCKED } from "../data/Strings";
+import { ARMOR_GIVEN, TIER_UNLOCKED, TIER_UP_TITLE, TIER_UP_SUBTITLE, TIER_UP_MEGA_SUBTITLE } from "../data/Strings";
 
-const VALID_TOKEN_ITEMS = new Set([
-  "mk:mk_squire_token",
-  "mk:mk_knight_token",
-  "mk:mk_champion_token",
-  "mk:mk_mega_knight_token",
-]);
+/** Hardcoded token give commands by tier index — avoids string interpolation in runCommand */
+const TOKEN_COMMANDS: Record<number, string> = {
+  1: "give @s mk:mk_squire_token 4",
+  2: "give @s mk:mk_knight_token 4",
+  3: "give @s mk:mk_champion_token 4",
+  4: "give @s mk:mk_mega_knight_token 4",
+};
 
 export class ArmorTierSystem {
   initializePlayer(player: Player): void {
@@ -35,10 +36,26 @@ export class ArmorTierSystem {
 
       try {
         player.setDynamicProperty(`mk:tier_unlocked_${tierIndex}`, true);
+        player.setDynamicProperty("mk:current_tier", tierIndex);
 
         // Give unlock tokens — 4 per tier (one for each armor piece)
-        if (tier.tokenItem && VALID_TOKEN_ITEMS.has(tier.tokenItem)) {
-          player.runCommand(`give @s ${tier.tokenItem} 4`);
+        const tokenCmd = TOKEN_COMMANDS[tierIndex];
+        if (tokenCmd) {
+          player.runCommand(tokenCmd);
+        }
+
+        // Dramatic fanfare — title screen + sound
+        const subtitle = tierIndex === 4 ? TIER_UP_MEGA_SUBTITLE : TIER_UP_SUBTITLE;
+        player.onScreenDisplay.setTitle(TIER_UP_TITLE(tier.name), {
+          subtitle,
+          fadeInDuration: 10,
+          stayDuration: 60,
+          fadeOutDuration: 20,
+        });
+        player.runCommand("playsound random.levelup @s ~ ~ ~ 1 1");
+        if (tierIndex === 4) {
+          // Extra fanfare for Mega Knight — totem of undying sound
+          player.runCommand("playsound random.totem @s ~ ~ ~ 1 1");
         }
 
         player.sendMessage(TIER_UNLOCKED(tier.name));

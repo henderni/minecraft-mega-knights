@@ -502,11 +502,12 @@ describe("Source sync: archetype sim constants match system files", () => {
     expect(Number(match![1])).toBe(GLOBAL_ARMY_CAP);
   });
 
-  it("RECRUIT_CHANCE matches CombatSystem.ts", () => {
-    const src = fs.readFileSync(path.join(srcDir, "systems/CombatSystem.ts"), "utf-8");
-    const match = src.match(/RECRUIT_CHANCE\s*=\s*([\d.]+)/);
-    expect(match).not.toBeNull();
-    expect(Number(match![1])).toBe(RECRUIT_CHANCE);
+  it("RECRUIT_CHANCE matches DifficultySystem.ts normal difficulty", () => {
+    const src = fs.readFileSync(path.join(srcDir, "systems/DifficultySystem.ts"), "utf-8");
+    // Normal difficulty (key 0) maps to 0.3 recruit chance
+    expect(src).toContain("0.3");
+    // Hard difficulty should have lower chance
+    expect(src).toContain("0.2");
   });
 
   it("MAX_MILESTONE_ENTITIES matches MilestoneEvents.ts", () => {

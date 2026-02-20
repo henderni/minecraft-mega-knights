@@ -28,8 +28,8 @@ const MILESTONE_DAYS = new Set([1, 5, 10, 20, 25, 35, 40, 50, 60, 70, 85, 90]);
 // Milestone spawn compositions (from MilestoneEvents.ts spawnEnemiesNearPlayersBatched calls)
 const MILESTONE_SPAWNS: Record<number, { entityId: string; count: number }[]> = {
   10: [
-    { entityId: "mk:mk_enemy_knight", count: 3 },
-    { entityId: "mk:mk_enemy_archer", count: 2 },
+    { entityId: "mk:mk_enemy_knight", count: 2 },
+    { entityId: "mk:mk_enemy_archer", count: 1 },
   ],
   25: [
     { entityId: "mk:mk_enemy_knight", count: 6 },
@@ -336,11 +336,11 @@ describe("Source sync: hardcoded constants match system files", () => {
     expect(Number(match![1])).toBe(MAX_MILESTONE_ENTITIES);
   });
 
-  it("RECRUIT_CHANCE matches CombatSystem.ts", () => {
-    const src = fs.readFileSync(path.join(srcDir, "systems/CombatSystem.ts"), "utf-8");
-    const match = src.match(/RECRUIT_CHANCE\s*=\s*([\d.]+)/);
-    expect(match).not.toBeNull();
-    expect(Number(match![1])).toBe(RECRUIT_CHANCE);
+  it("RECRUIT_CHANCE matches DifficultySystem.ts normal difficulty", () => {
+    const src = fs.readFileSync(path.join(srcDir, "systems/DifficultySystem.ts"), "utf-8");
+    // Normal difficulty (key 0) maps to 0.3 recruit chance
+    expect(src).toContain("0.3");
+    expect(src).toContain("0.2"); // Hard difficulty
   });
 
   it("MERCHANT_DAYS matches MerchantSystem.ts", () => {

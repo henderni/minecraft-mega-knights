@@ -15,8 +15,10 @@ import {
   ALLY_NOT_YOURS,
   ALLY_INFO,
   ALLY_MODE_SET,
+  ALLY_DIED,
   DEBUG_ALLIES_SPAWNED,
 } from "../data/Strings";
+import { generateAllyName } from "../data/AllyNames";
 
 /** Max castle troop bonus a player can accumulate (+20 = all 3 structures) */
 const MAX_ARMY_BONUS = 20;
@@ -167,12 +169,13 @@ export class ArmySystem {
       ally.addTag("mk_army");
       ally.addTag(ownerTag);
       ally.setDynamicProperty("mk:owner_name", player.name);
-      // Strip § codes from player name — BDS/offline servers may allow unusual names
-      const safeName = player.name.replace(/§./g, "");
-      ally.nameTag = `§a${safeName}'s ${displayName}`;
+      // Give the ally a procedural name (e.g., "Sir Marcus")
+      const allyName = generateAllyName(allyTypeId);
+      ally.nameTag = `§a${allyName} §7(${displayName})`;
+      ally.setDynamicProperty("mk:ally_name", allyName);
 
       player.setDynamicProperty("mk:army_size", actualCount + 1);
-      player.sendMessage(ALLY_RECRUITED(displayName));
+      player.sendMessage(ALLY_RECRUITED(allyName));
     } catch (e) {
       console.warn(`[MegaKnights] Failed to spawn ally: ${e}`);
     }
@@ -201,6 +204,8 @@ export class ArmySystem {
         if (current > 0) {
           player.setDynamicProperty("mk:army_size", current - 1);
         }
+        const allyName = (dead.getDynamicProperty("mk:ally_name") as string) ?? ArmySystem.allyDisplayName(dead.typeId);
+        player.sendMessage(ALLY_DIED(allyName));
       }
     });
   }
@@ -293,7 +298,8 @@ export class ArmySystem {
       const hp = entity.getComponent("minecraft:health") as EntityHealthComponent | undefined;
       const healthValue = hp ? Math.floor(hp.currentValue) : "?";
       const healthMax = hp ? Math.floor(hp.effectiveMax) : "?";
-      event.player.sendMessage(ALLY_INFO(entity.nameTag, healthValue, healthMax));
+      const allyName = (entity.getDynamicProperty("mk:ally_name") as string) ?? entity.nameTag;
+      event.player.sendMessage(ALLY_INFO(allyName, healthValue, healthMax));
     } catch {
       // Entity became invalid before we could read its health
     }

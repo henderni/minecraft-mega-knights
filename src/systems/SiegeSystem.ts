@@ -14,6 +14,10 @@ import {
   SIEGE_DEFEAT_3,
   SIEGE_BOSS_PHASE_2,
   SIEGE_BOSS_PHASE_3,
+  ENDLESS_UNLOCKED,
+  ENDLESS_DESC,
+  ENDLESS_WAVE,
+  ENDLESS_WAVE_CLEARED,
 } from "../data/Strings";
 
 /** How many entities to spawn per tick during staggered wave spawning — kept low for Switch */
@@ -36,6 +40,28 @@ const RECOUNT_INTERVAL = 600;
 /** Maximum active siege mobs before delaying next wave — keeps total custom entities under 60 on Switch */
 const MAX_ACTIVE_SIEGE_MOBS = 25;
 
+/** Endless mode mini-siege wave definitions — escalate with day count */
+const ENDLESS_WAVES: { entityId: string; count: number }[][] = [
+  // Wave set 0: light (day 120)
+  [
+    { entityId: "mk:mk_enemy_knight", count: 6 },
+    { entityId: "mk:mk_enemy_archer", count: 4 },
+  ],
+  // Wave set 1: medium (day 140)
+  [
+    { entityId: "mk:mk_enemy_knight", count: 8 },
+    { entityId: "mk:mk_enemy_archer", count: 5 },
+    { entityId: "mk:mk_enemy_wizard", count: 3 },
+  ],
+  // Wave set 2: heavy (day 160+)
+  [
+    { entityId: "mk:mk_enemy_knight", count: 10 },
+    { entityId: "mk:mk_enemy_dark_knight", count: 4 },
+    { entityId: "mk:mk_enemy_wizard", count: 4 },
+    { entityId: "mk:mk_enemy_archer", count: 6 },
+  ],
+];
+
 export class SiegeSystem {
   private siegeActive = false;
   private currentWave = 0;
@@ -57,6 +83,17 @@ export class SiegeSystem {
   /** Current phase: 0=normal, 1=phase2 (66%), 2=phase3 (33%) */
   private siegePhase = 0;
 
+  /** Whether this is an endless mode mini-siege (no boss, simpler victory) */
+  private isEndlessSiege = false;
+
+  /** Callback fired on siege victory — used to enable endless mode */
+  private onVictoryCallback: (() => void) | null = null;
+
+  /** Register a callback for siege victory (called from main.ts) */
+  onVictory(callback: () => void): void {
+    this.onVictoryCallback = callback;
+  }
+
   /** Check if siege is currently active — used by camp system to avoid spawning during siege */
   isActive(): boolean {
     return this.siegeActive;
@@ -76,11 +113,38 @@ export class SiegeSystem {
     this.activeSpawnJobs = 0;
     this.bossEntity = null;
     this.siegePhase = 0;
+    this.isEndlessSiege = false;
 
     world.sendMessage(SIEGE_BEGIN);
     world.sendMessage(SIEGE_DEFEND);
 
     this.spawnWave();
+  }
+
+  /** Start an endless mode mini-siege — simpler than the main siege, no boss */
+  startEndlessSiege(day: number): void {
+    if (this.siegeActive) {
+      return;
+    }
+
+    this.siegeActive = true;
+    this.isEndlessSiege = true;
+    this.currentWave = 0;
+    this.ticksSinceWave = 0;
+    this.ticksSinceVictoryCheck = 0;
+    this.ticksSinceRecount = 0;
+    this.siegeMobCount = 0;
+    this.activeSpawnJobs = 0;
+    this.bossEntity = null;
+    this.siegePhase = 0;
+
+    world.sendMessage(ENDLESS_WAVE(day));
+
+    // Select wave set based on day — escalates over time
+    const waveIndex = Math.min(Math.floor((day - 100) / 40), ENDLESS_WAVES.length - 1);
+    const spawns = ENDLESS_WAVES[waveIndex];
+
+    this.spawnEndlessWave(spawns);
   }
 
   /** Subscribe to entity death events to decrement siege mob counter
@@ -306,10 +370,102 @@ export class SiegeSystem {
     this.currentWave++;
   }
 
+  /** Spawn a single endless wave (no multi-wave progression) */
+  private spawnEndlessWave(spawns: { entityId: string; count: number }[]): void {
+    const players = world.getAllPlayers();
+    const playerCount = players.length;
+    const scaleFactor = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
+
+    const spawnQueue: { entityId: string; playerName: string }[] = [];
+    for (const player of players) {
+      if (!player.isValid) {
+        continue;
+      }
+      let playerSpawns = 0;
+      for (const spawn of spawns) {
+        const scaledCount = Math.max(1, Math.round(spawn.count * scaleFactor));
+        for (let i = 0; i < scaledCount; i++) {
+          if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
+            break;
+          }
+          spawnQueue.push({ entityId: spawn.entityId, playerName: player.name });
+          playerSpawns++;
+        }
+        if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
+          break;
+        }
+      }
+    }
+
+    const siegeRef = this;
+    const initialPlayers = players;
+    this.activeSpawnJobs++;
+    system.runJob(
+      (function* () {
+        let spawned = 0;
+        const playerMap = new Map<string, Player>();
+        for (const p of initialPlayers) {
+          if (p.isValid) {
+            playerMap.set(p.name, p);
+          }
+        }
+        for (const entry of spawnQueue) {
+          const cachedPlayer = playerMap.get(entry.playerName);
+          if (cachedPlayer?.isValid) {
+            try {
+              const loc = cachedPlayer.location;
+              const angle = Math.random() * Math.PI * 2;
+              const dist = 20 + Math.random() * 15;
+              const spawnLoc = {
+                x: loc.x + Math.cos(angle) * dist,
+                y: loc.y,
+                z: loc.z + Math.sin(angle) * dist,
+              };
+              const entity = cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
+              entity.addTag("mk_siege_mob");
+              siegeRef.siegeMobCount++;
+            } catch {
+              // Chunk not loaded or entity limit reached
+            }
+          }
+          spawned++;
+          if (spawned % SPAWNS_PER_TICK === 0) {
+            yield;
+            if (spawned % 5 === 0) {
+              playerMap.clear();
+              for (const p of world.getAllPlayers()) {
+                if (p.isValid) {
+                  playerMap.set(p.name, p);
+                }
+              }
+              while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
+                yield;
+              }
+            }
+          }
+        }
+        siegeRef.activeSpawnJobs = Math.max(0, siegeRef.activeSpawnJobs - 1);
+      })(),
+    );
+
+    // Mark that we've used one "wave" so victory check doesn't wait for more
+    this.currentWave = WAVE_DEFINITIONS.length;
+  }
+
   private endSiege(victory: boolean): void {
+    const wasEndless = this.isEndlessSiege;
     this.bossEntity = null;
     this.siegePhase = 0;
     this.siegeActive = false;
+    this.isEndlessSiege = false;
+
+    if (wasEndless) {
+      if (victory) {
+        world.sendMessage(ENDLESS_WAVE_CLEARED);
+      }
+      // No defeat handling for endless — player just respawns and continues
+      return;
+    }
 
     if (victory) {
       world.sendMessage(SIEGE_VICTORY_1);
@@ -326,7 +482,18 @@ export class SiegeSystem {
           stayDuration: 100,
           fadeOutDuration: 20,
         });
+        // Play victory fanfare
+        player.runCommand("playsound random.totem @s ~ ~ ~ 1 1");
       }
+
+      // Enable endless mode after a short delay for dramatic effect
+      system.runTimeout(() => {
+        world.sendMessage(ENDLESS_UNLOCKED);
+        world.sendMessage(ENDLESS_DESC);
+        if (this.onVictoryCallback) {
+          this.onVictoryCallback();
+        }
+      }, 100); // 5 seconds after victory
     } else {
       world.sendMessage(SIEGE_DEFEAT_1);
       world.sendMessage(SIEGE_DEFEAT_2);

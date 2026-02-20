@@ -333,8 +333,8 @@ describe("Cross-System Consistency: Milestone Source", () => {
 describe("Cross-System Consistency: main.ts Wiring", () => {
   const mainSrc = fs.readFileSync(path.join(__dirname, "../main.ts"), "utf-8");
 
-  it("day-change callback triggers siege at day >= 100", () => {
-    expect(mainSrc).toContain("day >= 100");
+  it("day-change callback triggers siege at day === 100", () => {
+    expect(mainSrc).toContain("day === 100");
     expect(mainSrc).toContain("siege.startSiege()");
   });
 

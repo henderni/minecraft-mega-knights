@@ -31,6 +31,8 @@ describe("main.ts: system instantiation", () => {
     "EnemyCampSystem",
     "BestiarySystem",
     "MerchantSystem",
+    "QuestJournalSystem",
+    "DifficultySystem",
   ];
 
   for (const sys of expectedSystems) {
@@ -53,6 +55,23 @@ describe("main.ts: system instantiation", () => {
 
   it("passes bestiary to CombatSystem", () => {
     expect(mainSrc).toMatch(/new CombatSystem\(\s*army\s*,\s*bestiary/);
+  });
+
+  it("passes difficulty to CombatSystem", () => {
+    expect(mainSrc).toMatch(/new CombatSystem\(\s*army\s*,\s*bestiary\s*,\s*difficulty/);
+  });
+
+  it("wires difficulty system to day counter", () => {
+    expect(mainSrc).toContain("dayCounter.setDifficultySystem(difficulty)");
+  });
+
+  it("wires siege victory callback for endless mode", () => {
+    expect(mainSrc).toContain("siege.onVictory(");
+    expect(mainSrc).toContain("dayCounter.enableEndlessMode()");
+  });
+
+  it("resets difficulty on mk:reset", () => {
+    expect(mainSrc).toContain("difficulty.reset()");
   });
 });
 
@@ -81,6 +100,10 @@ describe("main.ts: event subscriptions", () => {
 
   it("subscribes to scriptEventReceive for debug commands", () => {
     expect(mainSrc).toContain("system.afterEvents.scriptEventReceive.subscribe");
+  });
+
+  it("subscribes to entityHurt for friendly fire protection", () => {
+    expect(mainSrc).toContain("world.afterEvents.entityHurt.subscribe");
   });
 });
 
@@ -200,14 +223,28 @@ describe("main.ts: scroll use wiring", () => {
   it("calls merchant.onScrollUse for scroll items", () => {
     expect(mainSrc).toContain("merchant.onScrollUse(");
   });
+
+  it("checks for quest_journal typeId in itemUse handler", () => {
+    expect(mainSrc).toContain("mk:mk_quest_journal");
+  });
+
+  it("calls journal.onItemUse for quest journal", () => {
+    expect(mainSrc).toContain("journal.onItemUse(");
+  });
 });
 
 // ─── Day change callback ───────────────────────────────────────────────────
 
 describe("main.ts: day change callbacks", () => {
   it("triggers siege on day 100", () => {
-    expect(mainSrc).toContain("day >= 100");
+    expect(mainSrc).toContain("day === 100");
     expect(mainSrc).toContain("siege.startSiege()");
+  });
+
+  it("triggers endless mini-siege every 20 days past 100", () => {
+    expect(mainSrc).toContain("siege.startEndlessSiege(");
+    expect(mainSrc).toContain("dayCounter.isEndlessMode()");
+    expect(mainSrc).toContain("(day - 100) % 20 === 0");
   });
 
   it("notifies camp system on day change", () => {
