@@ -4,6 +4,7 @@ services:
     platform: linux/amd64
     environment:
       EULA: "TRUE"
+      VERSION: "1.26.0.2"
       SERVER_NAME: "Mega Knights Dev"
       GAMEMODE: survival
       DIFFICULTY: normal
@@ -11,12 +12,15 @@ services:
       ALLOW_CHEATS: "true"
       LEVEL_NAME: "MegaKnightsWorld"
       MAX_PLAYERS: 4
+      CONTENT_LOG_CONSOLE_OUTPUT_ENABLED: "true"
     ports:
       - "19132:19132/udp"
+      - "19133:19133/udp"
+      - "19132:19132/tcp"
     volumes:
       - bds-data:/data
-      - ./MegaKnights_BP:/data/development_behavior_packs/MegaKnights_BP:ro
-      - ./MegaKnights_RP:/data/development_resource_packs/MegaKnights_RP:ro
+      - ./MegaKnights_BP:/data/development_behavior_packs/MegaKnights_BP
+      - ./MegaKnights_RP:/data/development_resource_packs/MegaKnights_RP
     stdin_open: true
     tty: true
 
