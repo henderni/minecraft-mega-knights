@@ -147,6 +147,19 @@ tools/build.sh         # BDS deploy script
 3. `MegaKnights_RP/textures/entity/<name>.png` — texture PNG
 4. Lang key `entity.mk:mk_<name>.name=...` in BOTH lang files
 
+## Compaction Instructions
+
+When context is compacted, ALWAYS preserve:
+- The full list of files modified in this session with their absolute paths
+- Current task list state (in-progress tasks, next steps, blockers)
+- Key architectural decisions made during this session and their rationale
+- Any test commands run and their pass/fail results
+- Error patterns encountered and their solutions
+- The current feature/bug being worked on and what remains to be done
+- Any entity budget or performance findings from this session
+
+Do NOT stop work early due to context budget concerns. Save progress to task state and memory files, then continue. Be as persistent and autonomous as possible.
+
 ## BDS Deployment
 
 ```bash

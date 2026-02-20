@@ -1,5 +1,21 @@
 {
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
+  },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/reinject-context.sh",
+            "timeout": 10,
+            "statusMessage": "Recovering context after compaction..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -9,6 +25,18 @@
             "prompt": "You are a Nintendo Switch performance reviewer for a Minecraft Bedrock add-on. Review this file change for performance red flags. FAIL if you see: getAllPlayers()/getEntities() in tick/interval callbacks without caching, follow_range or max_dist above 24 for non-boss entities, missing scan_interval on nearest_attackable_target, synchronous entity spawning in loops (not using system.runJob), dynamic property reads (getDynamicProperty) inside runInterval/tick callbacks that should be cached, entity_alphatest material where opaque would work, missing density_limit on spawn rules, missing despawn component on enemies. PASS if the change looks fine or is unrelated to performance. $ARGUMENTS",
             "model": "haiku",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/save-context-on-compact.sh",
+            "timeout": 10,
+            "statusMessage": "Saving context snapshot..."
           }
         ]
       }
