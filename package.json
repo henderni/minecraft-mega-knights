@@ -14,7 +14,14 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:report": "vitest run --coverage --coverage.reporter=html && open coverage/index.html"
+    "test:coverage:report": "vitest run --coverage --coverage.reporter=html && open coverage/index.html",
+    "bds:start": "docker compose up -d && echo 'Server starting on port 19132/udp...'",
+    "bds:stop": "docker compose down",
+    "bds:restart": "docker compose restart",
+    "bds:logs": "docker compose logs -f",
+    "bds:setup": "bash tools/bds-enable-packs.sh",
+    "bds:console": "docker attach $(docker compose ps -q bds)",
+    "bds:ip": "echo \"Your local IP:\" && (ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo 'Not found — check System Settings > Wi-Fi') && echo 'Connect from iPad using this IP + port 19132'"
   },
   "keywords": [
     "minecraft",

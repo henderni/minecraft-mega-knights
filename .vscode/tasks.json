@@ -3,76 +3,61 @@
   "tasks": [
     {
       "label": "BDS: Start Server",
-      "type": "shell",
-      "command": "docker compose up -d && echo '\\n✅ Server starting on port 19132/udp' && echo 'Run \"BDS: View Logs\" to watch startup progress'",
+      "type": "npm",
+      "script": "bds:start",
       "problemMatcher": [],
-      "group": "none",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "BDS: Stop Server",
-      "type": "shell",
-      "command": "docker compose down",
+      "type": "npm",
+      "script": "bds:stop",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "BDS: Restart Server",
-      "type": "shell",
-      "command": "docker compose restart",
+      "type": "npm",
+      "script": "bds:restart",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "BDS: View Logs",
-      "type": "shell",
-      "command": "docker compose logs -f",
+      "type": "npm",
+      "script": "bds:logs",
       "problemMatcher": [],
       "isBackground": true,
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
       "label": "BDS: Enable Packs (run once)",
-      "type": "shell",
-      "command": "bash tools/bds-enable-packs.sh",
+      "type": "npm",
+      "script": "bds:setup",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "BDS: Server Console",
-      "type": "shell",
-      "command": "docker attach minecraft-mega-knights-bds-1",
+      "type": "npm",
+      "script": "bds:console",
       "problemMatcher": [],
       "isBackground": true,
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Show My IP (for iPad)",
+      "type": "npm",
+      "script": "bds:ip",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "Build",
       "type": "npm",
       "script": "build",
       "problemMatcher": ["$tsc"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "group": { "kind": "build", "isDefault": true }
     },
     {
       "label": "Watch",
@@ -87,10 +72,7 @@
       "type": "npm",
       "script": "test:run",
       "problemMatcher": [],
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      }
+      "group": { "kind": "test", "isDefault": true }
     },
     {
       "label": "BDS: Build & Restart",
@@ -98,16 +80,6 @@
       "dependsOrder": "sequence",
       "problemMatcher": [],
       "group": "build"
-    },
-    {
-      "label": "Show My IP (for iPad)",
-      "type": "shell",
-      "command": "echo '\\nYour Mac\\'s local IP address:' && ipconfig getifaddr en0 || echo 'Wi-Fi not connected — check en1:' && ipconfig getifaddr en1 2>/dev/null; echo '\\nUse this IP + port 19132 to connect from iPad'",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
     }
   ]
 }
