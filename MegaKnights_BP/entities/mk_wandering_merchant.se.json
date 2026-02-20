@@ -73,6 +73,12 @@
       "minecraft:nameable": {
         "always_show": false,
         "allow_name_tag_renaming": false
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "max_distance": 128,
+          "min_distance": 96
+        }
       }
     },
     "events": {
