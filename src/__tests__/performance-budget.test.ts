@@ -65,6 +65,73 @@ describe("Entity budget: peak load scenarios", () => {
   });
 });
 
+// ─── Endless mode entity budget ─────────────────────────────────────────────
+
+describe("Entity budget: endless mode wave caps", () => {
+  const siegeSrc = readSource("systems/SiegeSystem.ts");
+
+  // Parse ENDLESS_WAVES from source
+  function parseEndlessWaves(): { entityId: string; count: number }[][] {
+    const startIdx = siegeSrc.indexOf("const ENDLESS_WAVES");
+    const endIdx = siegeSrc.indexOf("];", startIdx);
+    const block = siegeSrc.slice(startIdx, endIdx + 2);
+    const innerArrayRegex = /\[[^\[\]]+\]/g;
+    const waves: { entityId: string; count: number }[][] = [];
+    let m;
+    while ((m = innerArrayRegex.exec(block)) !== null) {
+      const spawns: { entityId: string; count: number }[] = [];
+      const spawnRegex = /entityId:\s*"([^"]+)".*?count:\s*(\d+)/g;
+      let sm;
+      while ((sm = spawnRegex.exec(m[0])) !== null) {
+        spawns.push({ entityId: sm[1], count: parseInt(sm[2]) });
+      }
+      if (spawns.length > 0) waves.push(spawns);
+    }
+    return waves;
+  }
+
+  const endlessWaves = parseEndlessWaves();
+  const HARD_MULTIPLIER = 1.5;
+
+  it("heaviest endless wave (base) fits within MAX_ACTIVE_SIEGE_MOBS (25)", () => {
+    const heaviest = endlessWaves[endlessWaves.length - 1];
+    const total = heaviest.reduce((sum, s) => sum + s.count, 0);
+    expect(total).toBeLessThanOrEqual(MAX_ACTIVE_SIEGE_MOBS);
+  });
+
+  it("heaviest endless wave with Hard multiplier stays under 2x budget", () => {
+    const heaviest = endlessWaves[endlessWaves.length - 1];
+    const total = heaviest.reduce(
+      (sum, s) => sum + Math.max(1, Math.round(s.count * HARD_MULTIPLIER)),
+      0,
+    );
+    // Mid-wave cap gating handles overflow, but verify it's not wildly over
+    expect(total).toBeLessThanOrEqual(MAX_ACTIVE_SIEGE_MOBS * 2);
+  });
+
+  it("mid-wave cap gating pauses spawning at MAX_ACTIVE_SIEGE_MOBS", () => {
+    expect(siegeSrc).toContain("siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS");
+  });
+
+  it("per-player spawn cap (MAX_SPAWNS_PER_PLAYER) exists", () => {
+    expect(siegeSrc).toMatch(/MAX_SPAWNS_PER_PLAYER\s*=\s*\d+/);
+  });
+
+  it("MAX_SPAWNS_PER_PLAYER <= MAX_ACTIVE_SIEGE_MOBS", () => {
+    const match = siegeSrc.match(/MAX_SPAWNS_PER_PLAYER\s*=\s*(\d+)/);
+    expect(match).not.toBeNull();
+    const perPlayer = parseInt(match![1]);
+    expect(perPlayer).toBeLessThanOrEqual(MAX_ACTIVE_SIEGE_MOBS);
+  });
+
+  it("endless army+siege combined stays under 60 (Switch ceiling)", () => {
+    // Max allies + heaviest endless wave at base difficulty
+    const heaviest = endlessWaves[endlessWaves.length - 1];
+    const waveTotal = heaviest.reduce((sum, s) => sum + s.count, 0);
+    expect(GLOBAL_ARMY_CAP + waveTotal).toBeLessThanOrEqual(60);
+  });
+});
+
 // ─── Staggered spawning ─────────────────────────────────────────────────────
 
 describe("Staggered spawning: never synchronous bulk spawn", () => {

@@ -153,12 +153,11 @@ describe("Cross-system entity ID integrity", () => {
     }
   });
 
-  it("boss entity only appears in siege waves, not camps or bestiary", () => {
+  it("boss entity only appears in siege waves, not camps", () => {
     const bossIds = [...waveEnemyIds].filter((id) => id.includes("boss"));
     expect(bossIds.length).toBeGreaterThan(0);
     for (const bossId of bossIds) {
       expect(campGuardIds.has(bossId)).toBe(false);
-      expect(bestiaryEnemyIds.has(bossId)).toBe(false);
     }
   });
 });
@@ -269,9 +268,10 @@ describe("Bestiary invariants", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it("dark knights have lowest tier-1 threshold (hardest enemies, lowest bar)", () => {
-    const dkEntry = BESTIARY.find((e) => e.enemyTypeId.includes("dark_knight"))!;
-    for (const entry of BESTIARY) {
+  it("dark knights have lowest tier-1 threshold among regular enemies (hardest enemies, lowest bar)", () => {
+    const regularEntries = BESTIARY.filter((e) => !e.enemyTypeId.includes("boss"));
+    const dkEntry = regularEntries.find((e) => e.enemyTypeId.includes("dark_knight"))!;
+    for (const entry of regularEntries) {
       if (entry !== dkEntry) {
         expect(dkEntry.milestones[0].kills).toBeLessThanOrEqual(
           entry.milestones[0].kills,

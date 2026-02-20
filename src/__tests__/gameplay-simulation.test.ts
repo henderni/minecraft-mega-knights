@@ -691,7 +691,9 @@ describe("Bestiary feasibility", () => {
   const preSiegeEnemies = countPreSiegeEnemies(1);
   const KILL_RATE = 0.8;
 
-  for (const entry of BESTIARY) {
+  // Regular enemies: verify feasibility with standard kill rate
+  const regularEntries = BESTIARY.filter((e) => !e.enemyTypeId.includes("boss"));
+  for (const entry of regularEntries) {
     const totalAvailable = allEnemies[entry.enemyTypeId] ?? 0;
     const preSiegeAvailable = preSiegeEnemies[entry.enemyTypeId] ?? 0;
 
@@ -710,6 +712,21 @@ describe("Bestiary feasibility", () => {
     it(`${entry.displayName}: tier 1 achievable pre-siege (${preSiegeAvailable} available)`, () => {
       const expectedKills = Math.floor(preSiegeAvailable * KILL_RATE);
       expect(expectedKills).toBeGreaterThanOrEqual(entry.milestones[0].kills);
+    });
+  }
+
+  // Boss: only 1 spawns per siege, tier 1 requires winning siege, tier 2 requires endless mode replays
+  const bossEntry = BESTIARY.find((e) => e.enemyTypeId.includes("boss"));
+  if (bossEntry) {
+    const bossAvailable = allEnemies[bossEntry.enemyTypeId] ?? 0;
+
+    it(`${bossEntry.displayName}: appears in siege waves`, () => {
+      expect(bossAvailable).toBeGreaterThanOrEqual(1);
+    });
+
+    it(`${bossEntry.displayName}: tier 1 (${bossEntry.milestones[0].kills} kill) achievable by winning siege`, () => {
+      // Boss is guaranteed to die if siege is won — kill rate is effectively 1.0
+      expect(bossAvailable).toBeGreaterThanOrEqual(bossEntry.milestones[0].kills);
     });
   }
 

@@ -249,17 +249,26 @@ describe("Multiplayer entity budget safety", () => {
 // ─── Bestiary kill thresholds ────────────────────────────────────────────────
 
 describe("Bestiary: kill threshold structure", () => {
-  it("every entry has exactly 2 milestones (tier 1 and tier 2)", () => {
-    for (const entry of BESTIARY) {
+  const regularEntries = BESTIARY.filter((e) => e.enemyTypeId.startsWith("mk:mk_enemy_"));
+  const bossEntries = BESTIARY.filter((e) => e.enemyTypeId.startsWith("mk:mk_boss_"));
+
+  it("regular enemies have exactly 2 milestones (tier 1 and tier 2)", () => {
+    for (const entry of regularEntries) {
       expect(
         entry.milestones,
-        `${entry.entityId} should have exactly 2 bestiary milestones`,
+        `${entry.enemyTypeId} should have exactly 2 bestiary milestones`,
       ).toHaveLength(2);
     }
   });
 
-  it("tier 1 kill count < tier 2 kill count for every entry", () => {
-    for (const entry of BESTIARY) {
+  it("boss entries have at least 1 milestone", () => {
+    for (const entry of bossEntries) {
+      expect(entry.milestones.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("tier 1 kill count < tier 2 kill count for multi-milestone entries", () => {
+    for (const entry of BESTIARY.filter((e) => e.milestones.length >= 2)) {
       const [t1, t2] = entry.milestones;
       expect(
         t1.kills,
@@ -287,7 +296,7 @@ describe("Bestiary: kill threshold structure", () => {
     const VALID_EFFECTS = new Set([
       "resistance", "strength", "speed", "haste", "regeneration",
       "fire_resistance", "water_breathing", "invisibility", "night_vision",
-      "jump_boost", "slow_falling", "health_boost",
+      "jump_boost", "slow_falling", "health_boost", "absorption",
     ]);
     for (const entry of BESTIARY) {
       for (const m of entry.milestones) {
@@ -299,8 +308,8 @@ describe("Bestiary: kill threshold structure", () => {
     }
   });
 
-  it("effect amplifiers are 0 (tier 1) and 1 (tier 2)", () => {
-    for (const entry of BESTIARY) {
+  it("effect amplifiers are 0 (tier 1) and 1 (tier 2) for regular enemies", () => {
+    for (const entry of regularEntries) {
       const [t1, t2] = entry.milestones;
       expect(t1.amplifier).toBe(0);
       expect(t2.amplifier).toBe(1);

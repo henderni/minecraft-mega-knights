@@ -116,6 +116,11 @@ export const JOURNAL_CASTLES_TITLE = "Castles";
 export const JOURNAL_CASTLES_BODY =
   "Use blueprint items on flat ground to place structures.\n\nDay 5: Small Tower (+5 army cap)\nDay 35: Gatehouse (+7 army cap)\nDay 50: Great Hall (+8 army cap)\n\nLook at the ground and use the blueprint item.";
 
+// --- Journal (Endless) ---
+export const JOURNAL_ENDLESS_TITLE = "Endless Mode";
+export const JOURNAL_ENDLESS_BODY =
+  "You've conquered the siege and entered Endless Mode!\n\n- Mini-sieges strike every 20 days\n- Enemy camps continue spawning\n- No more milestones — just survival\n- Waves escalate the longer you endure\n\nHow long can your legend last?";
+
 // --- Difficulty ---
 export const DIFFICULTY_TITLE = "Choose Your Challenge";
 export const DIFFICULTY_BODY = "Select the difficulty for your quest. This cannot be changed later.";

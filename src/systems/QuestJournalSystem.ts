@@ -15,6 +15,8 @@ import {
   JOURNAL_BESTIARY_TITLE,
   JOURNAL_CASTLES_TITLE,
   JOURNAL_CASTLES_BODY,
+  JOURNAL_ENDLESS_TITLE,
+  JOURNAL_ENDLESS_BODY,
 } from "../data/Strings";
 
 /** Tier names indexed by tier number — matches DayCounterSystem */
@@ -47,14 +49,21 @@ export class QuestJournalSystem {
     const playerCount = world.getAllPlayers().length;
     const armyCap = ArmySystem.getEffectiveCap(armyBonus, playerCount);
 
+    const endless = this.dayCounter.isEndlessMode();
+    const dayLabel = endless ? `Day ${day} (Endless)` : `Day ${day}/100`;
+
     const form = new ActionFormData()
       .title(JOURNAL_TITLE)
-      .body(`Day ${day}/100 | Army: ${armySize}/${armyCap} | ${tierName}`)
+      .body(`${dayLabel} | Army: ${armySize}/${armyCap} | ${tierName}`)
       .button(JOURNAL_OVERVIEW_TITLE)
       .button(JOURNAL_ARMY_TITLE)
       .button(JOURNAL_STANCES_TITLE)
       .button(JOURNAL_BESTIARY_TITLE)
       .button(JOURNAL_CASTLES_TITLE);
+
+    if (endless) {
+      form.button(JOURNAL_ENDLESS_TITLE);
+    }
 
     const response = await form.show(player as any);
     if (response.canceled || response.selection === undefined) {
@@ -76,6 +85,11 @@ export class QuestJournalSystem {
         break;
       case 4:
         await this.showPage(player, JOURNAL_CASTLES_TITLE, JOURNAL_CASTLES_BODY);
+        break;
+      case 5:
+        if (endless) {
+          await this.showPage(player, JOURNAL_ENDLESS_TITLE, JOURNAL_ENDLESS_BODY);
+        }
         break;
     }
   }

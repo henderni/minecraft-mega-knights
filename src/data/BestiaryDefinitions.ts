@@ -103,6 +103,27 @@ export const BESTIARY: BestiaryEntry[] = [
       },
     ],
   },
+  {
+    enemyTypeId: "mk:mk_boss_siege_lord",
+    displayName: "Siege Lord",
+    killKey: "mk:kills_siege_lord",
+    milestones: [
+      {
+        kills: 1,
+        effectId: "health_boost",
+        amplifier: 0,
+        message:
+          "§6[Bestiary] The Siege Lord falls! His essence empowers you — Health Boost I permanently granted!",
+      },
+      {
+        kills: 3,
+        effectId: "health_boost",
+        amplifier: 1,
+        message:
+          "§6[Bestiary] 3 Siege Lords vanquished — Health Boost II permanently unlocked!",
+      },
+    ],
+  },
 ];
 
 /** Duration in ticks to apply per-player bestiary effects (15 seconds, re-applied every 10s) */

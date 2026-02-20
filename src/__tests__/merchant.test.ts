@@ -128,6 +128,28 @@ describe("Wandering Merchant: MerchantSystem wiring", () => {
   });
 });
 
+describe("Standard Bearer: naming consistency", () => {
+  const merchantSrc = fs.readFileSync(path.join(__dirname, "../systems/MerchantSystem.ts"), "utf-8");
+
+  it("uses generateAllyName for Standard Bearer naming", () => {
+    expect(merchantSrc).toContain("generateAllyName");
+  });
+
+  it("uses the shared ally nameTag format (§a name §7 role)", () => {
+    // Matches the pattern: §a${allyName} §7(Standard Bearer)
+    expect(merchantSrc).toMatch(/§a\$\{allyName\}\s*§7\(Standard Bearer\)/);
+  });
+
+  it("sets mk:ally_name dynamic property on spawned bearer", () => {
+    expect(merchantSrc).toContain('setDynamicProperty("mk:ally_name"');
+  });
+
+  it("does not use player name in Standard Bearer nameTag", () => {
+    // Old pattern was: ${safeName}'s Standard Bearer
+    expect(merchantSrc).not.toMatch(/safeName.*Standard Bearer/);
+  });
+});
+
 describe("Wandering Merchant: MerchantSystem spawn days", () => {
   const merchantSrc = fs.readFileSync(path.join(__dirname, "../systems/MerchantSystem.ts"), "utf-8");
 

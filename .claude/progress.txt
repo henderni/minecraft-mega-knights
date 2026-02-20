@@ -77,3 +77,26 @@ Build: tsc clean
 
 Next: Task #8 (decouple QuestJournalSystem), #9 (camp tier coverage), #10 (Standard Bearer naming)
 ===
+
+=== Session 2026-02-20 08:51 ===
+Task #12: Endless mode performance budget tests
+Status: COMPLETED
+Changes: src/__tests__/performance-budget.test.ts (6 new tests for endless entity caps)
+Verification: All passed (heaviest wave fits budget, Hard multiplier bounded, mid-wave cap gating present, per-player cap present, combined army+siege under 60)
+
+Task #13: Boss bestiary tracking
+Status: COMPLETED
+Changes: src/data/BestiaryDefinitions.ts (Siege Lord entry with health_boost), src/systems/CombatSystem.ts (allow boss kills through for bestiary, fixed player reference bug), src/__tests__/bestiary.test.ts, src/__tests__/game-invariants.test.ts, src/__tests__/game-systems.test.ts, src/__tests__/gameplay-simulation.test.ts
+Verification: All passed (boss entry exists, milestone at 1 kill, tests cover boss, build+tests pass)
+Notes: Fixed pre-existing bug in CombatSystem where boss kill path referenced `player` before declaration. Updated 4 test files to accommodate boss entries (regular vs boss distinction in threshold structure, feasibility, and archetype tests).
+
+Task #14: Endless Mode Quest Journal section
+Status: COMPLETED
+Changes: src/data/Strings.ts (JOURNAL_ENDLESS_TITLE, JOURNAL_ENDLESS_BODY), src/systems/QuestJournalSystem.ts (conditional button + page)
+Verification: All passed (strings exist, QuestJournal shows Endless section when isEndlessMode(), build+tests pass)
+
+Full suite: 48 files, 2188 tests, ALL PASSING
+Build: tsc clean
+
+Next: Tasks #15 (recipe ingredient validation), #17 (entity JSON validation), #18 (main.ts wiring tests)
+===

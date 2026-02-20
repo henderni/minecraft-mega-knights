@@ -4,13 +4,13 @@ import * as fs from "fs";
 import * as path from "path";
 
 describe("BestiaryDefinitions: structure", () => {
-  it("has exactly 4 entries (one per enemy type)", () => {
-    expect(BESTIARY).toHaveLength(4);
+  it("has exactly 5 entries (4 enemies + 1 boss)", () => {
+    expect(BESTIARY).toHaveLength(5);
   });
 
-  it("all entries have mk: namespace enemy type IDs", () => {
+  it("all entries have mk: namespace entity type IDs", () => {
     for (const entry of BESTIARY) {
-      expect(entry.enemyTypeId).toMatch(/^mk:mk_enemy_/);
+      expect(entry.enemyTypeId).toMatch(/^mk:mk_(enemy|boss)_/);
     }
   });
 

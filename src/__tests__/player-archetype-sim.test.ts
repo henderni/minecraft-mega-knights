@@ -902,13 +902,21 @@ describe("Bestiary milestone feasibility per archetype", () => {
   });
 
   describe("Expert", () => {
-    for (const entry of BESTIARY) {
+    // Regular enemies: achievable pre-siege through milestones and camps
+    const regularEntries = BESTIARY.filter((e) => !e.enemyTypeId.includes("boss"));
+    for (const entry of regularEntries) {
       it(`achieves tier 1 for ${entry.displayName}`, () => {
         expect(expertSim.killsByType[entry.enemyTypeId] ?? 0).toBeGreaterThanOrEqual(
           entry.milestones[0].kills,
         );
       });
     }
+
+    // Boss: not achievable pre-siege (boss only spawns during siege)
+    it("boss bestiary requires siege victory (not achievable pre-siege)", () => {
+      const bossEntry = BESTIARY.find((e) => e.enemyTypeId.includes("boss"))!;
+      expect(expertSim.killsByType[bossEntry.enemyTypeId] ?? 0).toBe(0);
+    });
 
     it("achieves tier 2 for knights (30 kills) — most common enemy", () => {
       const entry = BESTIARY.find((b) => b.enemyTypeId === "mk:mk_enemy_knight")!;

@@ -23,15 +23,20 @@ export class CombatSystem {
     if (!killer || !(killer instanceof Player)) {
       return;
     }
-    if (!dead.typeId.startsWith("mk:mk_enemy_")) {
-      return;
-    }
-    // Boss entities are not recruitable
-    if (dead.typeId.includes("boss")) {
+    if (
+      !dead.typeId.startsWith("mk:mk_enemy_") &&
+      !dead.typeId.startsWith("mk:mk_boss_")
+    ) {
       return;
     }
 
     const player = killer;
+
+    // Boss entities: track in bestiary but do not recruit
+    if (dead.typeId.startsWith("mk:mk_boss_")) {
+      this.bestiary.onKill(player, dead.typeId);
+      return;
+    }
 
     // Track kill count (capped to prevent unbounded growth from external modification)
     const kills = Math.min(99999, Math.max(0, (player.getDynamicProperty("mk:kills") as number) ?? 0) + 1);
