@@ -85,6 +85,9 @@
     },
     "mk_standard_bearer_scroll": {
       "textures": "textures/items/mk_standard_bearer_scroll"
+    },
+    "mk_quest_journal": {
+      "textures": "textures/items/mk_quest_journal"
     }
   }
 }
