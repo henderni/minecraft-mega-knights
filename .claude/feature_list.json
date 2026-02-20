@@ -62,7 +62,7 @@
       "Tests verify structure dimensions match blueprint definitions",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 6,
@@ -75,7 +75,7 @@
       "Tests verify boss count is never multiplied",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 7,
@@ -88,7 +88,7 @@
       "Tests verify wave index clamping for day 500+",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 8,
