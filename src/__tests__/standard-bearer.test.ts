@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
+import { generateAllyName, ALL_TITLES } from "../data/AllyNames";
 
 const BP_ENTITIES = path.join(__dirname, "../../MegaKnights_BP/entities");
 const RP_ENTITY = path.join(__dirname, "../../MegaKnights_RP/entity");
@@ -63,6 +64,45 @@ describe("Standard Bearer: entity files", () => {
     const desc = (entity["minecraft:client_entity"] as Record<string, unknown>)["description"] as Record<string, unknown>;
     const materials = desc["materials"] as Record<string, unknown>;
     expect(materials["default"]).toBe("entity");
+  });
+});
+
+describe("Standard Bearer: naming consistency", () => {
+  const merchantSrc = fs.readFileSync(path.join(__dirname, "../systems/MerchantSystem.ts"), "utf-8");
+
+  it("MerchantSystem uses generateAllyName for Standard Bearer naming", () => {
+    expect(merchantSrc).toContain("generateAllyName");
+    expect(merchantSrc).toContain('generateAllyName("mk:mk_ally_standard_bearer")');
+  });
+
+  it("MerchantSystem does NOT use player name in Standard Bearer nameTag", () => {
+    // Old pattern was: `${safeName}'s Standard Bearer`
+    expect(merchantSrc).not.toContain("'s Standard Bearer");
+  });
+
+  it("AllyNames has title pool for standard bearer type", () => {
+    const titles = ALL_TITLES["mk:mk_ally_standard_bearer"];
+    expect(titles).toBeDefined();
+    expect(titles.length).toBeGreaterThan(0);
+  });
+
+  it("generateAllyName produces 'Title Name' format for standard bearer", () => {
+    const name = generateAllyName("mk:mk_ally_standard_bearer");
+    expect(name).toMatch(/^\w+ \w+$/);
+  });
+
+  it("standard bearer name format matches other ally types", () => {
+    // All ally types produce "Title Name" format
+    const types = [
+      "mk:mk_ally_knight",
+      "mk:mk_ally_archer",
+      "mk:mk_ally_wizard",
+      "mk:mk_ally_standard_bearer",
+    ];
+    for (const typeId of types) {
+      const name = generateAllyName(typeId);
+      expect(name, `${typeId} should produce Title Name`).toMatch(/^\w+ \w+$/);
+    }
   });
 });
 

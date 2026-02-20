@@ -45,7 +45,7 @@ export interface FactionGuardOverride {
  *  Values multiply the guard count for that entity type. */
 export const FACTION_GUARD_WEIGHTS: Record<FactionId, Partial<Record<string, number>>> = {
   marauders: {
-    "mk:mk_enemy_knight": 1.5, // Knight-heavy
+    "mk:mk_enemy_knight": 1.25, // Knight-heavy
     "mk:mk_enemy_archer": 1.0,
     "mk:mk_enemy_wizard": 0.5,
     "mk:mk_enemy_dark_knight": 0.75,

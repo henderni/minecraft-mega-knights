@@ -8,6 +8,8 @@ import {
   CAMP_START_DAY,
   MAX_CAMP_GUARDS,
 } from "../data/CampDefinitions";
+import { FACTION_GUARD_WEIGHTS } from "../data/FactionDefinitions";
+import type { FactionId } from "../data/FactionDefinitions";
 import { CAMP_SPAWNED, CAMP_CLEARED } from "../data/Strings";
 import * as fs from "fs";
 import * as path from "path";
@@ -232,6 +234,57 @@ describe("Camp strings", () => {
   it("all camp strings return strings", () => {
     expect(typeof CAMP_SPAWNED("x", "y")).toBe("string");
     expect(typeof CAMP_CLEARED("x")).toBe("string");
+  });
+});
+
+describe("CampDefinitions: day range contiguity", () => {
+  it("tier ranges are contiguous (no gaps between tiers)", () => {
+    for (let i = 1; i < CAMP_TIERS.length; i++) {
+      expect(
+        CAMP_TIERS[i].minDay,
+        `Gap between ${CAMP_TIERS[i - 1].name} (max ${CAMP_TIERS[i - 1].maxDay}) and ${CAMP_TIERS[i].name} (min ${CAMP_TIERS[i].minDay})`,
+      ).toBe(CAMP_TIERS[i - 1].maxDay + 1);
+    }
+  });
+
+  it("getCampTierForDay returns correct tier at every boundary", () => {
+    for (const tier of CAMP_TIERS) {
+      expect(getCampTierForDay(tier.minDay)?.name).toBe(tier.name);
+      expect(getCampTierForDay(tier.maxDay)?.name).toBe(tier.name);
+    }
+  });
+});
+
+describe("CampDefinitions: faction guard scaling within MAX_CAMP_GUARDS", () => {
+  const factionIds: FactionId[] = ["marauders", "grave_walkers", "ironclad_raiders"];
+
+  for (const factionId of factionIds) {
+    for (const tier of CAMP_TIERS) {
+      it(`${factionId} scaled guards for ${tier.name} stay within MAX_CAMP_GUARDS (${MAX_CAMP_GUARDS})`, () => {
+        const weights = FACTION_GUARD_WEIGHTS[factionId];
+        let totalScaled = 0;
+        for (const guard of tier.guards) {
+          const weight = weights[guard.entityId] ?? 1.0;
+          const scaled = Math.round(guard.count * weight);
+          totalScaled += scaled;
+        }
+        expect(totalScaled).toBeLessThanOrEqual(MAX_CAMP_GUARDS);
+      });
+    }
+  }
+
+  it("faction-scaled guard counts are always non-negative integers", () => {
+    for (const factionId of factionIds) {
+      const weights = FACTION_GUARD_WEIGHTS[factionId];
+      for (const tier of CAMP_TIERS) {
+        for (const guard of tier.guards) {
+          const weight = weights[guard.entityId] ?? 1.0;
+          const scaled = Math.round(guard.count * weight);
+          expect(scaled).toBeGreaterThanOrEqual(0);
+          expect(Number.isInteger(scaled)).toBe(true);
+        }
+      }
+    }
   });
 });
 

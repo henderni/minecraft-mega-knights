@@ -115,7 +115,7 @@
       "Tests verify faction scaling stays within MAX_CAMP_GUARDS",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 10,
@@ -128,7 +128,7 @@
       "npm run build succeeds",
       "npm run test:run passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 11,
