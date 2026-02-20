@@ -63,6 +63,18 @@ const ENDLESS_WAVES: { entityId: string; count: number }[][] = [
 ];
 
 export class SiegeSystem {
+  /** Getter for enemy spawn multiplier — reads from DifficultySystem at spawn time */
+  private enemyMultiplierGetter: (() => number) | null = null;
+
+  /** Wire a dynamic getter for the enemy spawn multiplier (called from main.ts) */
+  setEnemyMultiplierGetter(getter: () => number): void {
+    this.enemyMultiplierGetter = getter;
+  }
+
+  private get enemyMultiplier(): number {
+    return this.enemyMultiplierGetter?.() ?? 1.0;
+  }
+
   private siegeActive = false;
   private currentWave = 0;
   private ticksSinceWave = 0;
@@ -117,6 +129,10 @@ export class SiegeSystem {
 
     world.sendMessage(SIEGE_BEGIN);
     world.sendMessage(SIEGE_DEFEND);
+    // Ominous horn for siege start
+    for (const p of world.getAllPlayers()) {
+      try { p.runCommand("playsound mob.wither.spawn @s ~ ~ ~ 0.5 0.5"); } catch { /* */ }
+    }
 
     this.spawnWave();
   }
@@ -257,12 +273,16 @@ export class SiegeSystem {
 
     const wave = WAVE_DEFINITIONS[this.currentWave];
     world.sendMessage(SIEGE_WAVE(wave.waveNumber, WAVE_DEFINITIONS.length));
+    // Drum beat for each wave
+    for (const p of world.getAllPlayers()) {
+      try { p.runCommand("playsound note.bd @s ~ ~ ~ 1 0.6"); } catch { /* */ }
+    }
 
     const players = world.getAllPlayers();
     const playerCount = players.length;
 
     // Scale spawn counts: solo gets full wave, multiplayer reduces per-player to stay under entity limits
-    const scaleFactor = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
+    const mpScale = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
 
     // Build a flat spawn queue with scaled counts per player
     const spawnQueue: { entityId: string; playerName: string }[] = [];
@@ -273,7 +293,7 @@ export class SiegeSystem {
       }
       let playerSpawns = 0;
       for (const spawn of wave.spawns) {
-        const scaledCount = Math.max(1, Math.round(spawn.count * scaleFactor));
+        const scaledCount = Math.max(1, Math.round(spawn.count * this.enemyMultiplier * mpScale));
         for (let i = 0; i < scaledCount; i++) {
           if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
             break;
@@ -383,7 +403,7 @@ export class SiegeSystem {
       }
       let playerSpawns = 0;
       for (const spawn of spawns) {
-        const scaledCount = Math.max(1, Math.round(spawn.count * scaleFactor));
+        const scaledCount = Math.max(1, Math.round(spawn.count * this.enemyMultiplier * scaleFactor));
         for (let i = 0; i < scaledCount; i++) {
           if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
             break;

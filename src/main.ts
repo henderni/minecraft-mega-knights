@@ -12,6 +12,7 @@ import { QuestJournalSystem } from "./systems/QuestJournalSystem";
 import { DifficultySystem } from "./systems/DifficultySystem";
 import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET, FRIENDLY_FIRE_BLOCKED } from "./data/Strings";
 import { ENEMY_SPAWN_DAY } from "./data/WaveDefinitions";
+import { setEnemyMultiplierGetter } from "./data/MilestoneEvents";
 
 const dayCounter = new DayCounterSystem();
 const armorTier = new ArmorTierSystem();
@@ -25,8 +26,12 @@ const campSystem = new EnemyCampSystem();
 const merchant = new MerchantSystem(army);
 const journal = new QuestJournalSystem();
 
-// Wire difficulty system to day counter for quest start form
+// Wire difficulty system to all systems that scale enemy spawns
 dayCounter.setDifficultySystem(difficulty);
+const getMultiplier = () => difficulty.getEnemyMultiplier();
+siege.setEnemyMultiplierGetter(getMultiplier);
+campSystem.setEnemyMultiplierGetter(getMultiplier);
+setEnemyMultiplierGetter(getMultiplier);
 
 // Wire up event-driven death tracking
 army.setupDeathListener(); // Instant army recount on ally death

@@ -77,8 +77,9 @@ export class DifficultySystem {
         return;
       }
 
-      this.setDifficulty(response.selection);
-      const name = DIFFICULTY_NAMES[response.selection] ?? "Normal";
+      const selection = response.selection === 1 ? DIFFICULTY_HARD : DIFFICULTY_NORMAL;
+      this.setDifficulty(selection);
+      const name = DIFFICULTY_NAMES[selection] ?? "Normal";
       player.sendMessage(DIFFICULTY_SET(name));
     } catch {
       // UI failed — default to normal

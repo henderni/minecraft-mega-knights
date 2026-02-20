@@ -73,6 +73,19 @@ describe("main.ts: system instantiation", () => {
   it("resets difficulty on mk:reset", () => {
     expect(mainSrc).toContain("difficulty.reset()");
   });
+
+  it("wires enemy multiplier getter to siege system", () => {
+    expect(mainSrc).toContain("siege.setEnemyMultiplierGetter(");
+  });
+
+  it("wires enemy multiplier getter to camp system", () => {
+    expect(mainSrc).toContain("campSystem.setEnemyMultiplierGetter(");
+  });
+
+  it("wires enemy multiplier getter to milestone events", () => {
+    expect(mainSrc).toContain("setEnemyMultiplierGetter(");
+    expect(mainSrc).toContain('import { setEnemyMultiplierGetter }');
+  });
 });
 
 // ─── Event subscriptions ────────────────────────────────────────────────────

@@ -66,6 +66,7 @@ export class CastleSystem {
       this.army.addTroopBonus(player, blueprint.troopBonus);
       const newMax = this.army.getMaxArmySize(player);
       player.sendMessage(CASTLE_CAPACITY_UP(blueprint.troopBonus, newMax));
+      try { player.runCommand("playsound random.anvil_use @s ~ ~ ~ 1 0.8"); } catch { /* */ }
     } else {
       player.sendMessage(CASTLE_FAILED);
     }

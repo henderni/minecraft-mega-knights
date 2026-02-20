@@ -11,6 +11,14 @@ export interface Milestone {
 /** How many entities to spawn per tick during staggered milestone spawning — low for Switch */
 const SPAWNS_PER_TICK = 1;
 
+/** Module-level difficulty reference — set from main.ts after DifficultySystem is created */
+let difficultyMultiplierGetter: (() => number) | null = null;
+
+/** Wire a getter for the enemy spawn multiplier (called once from main.ts) */
+export function setEnemyMultiplierGetter(getter: () => number): void {
+  difficultyMultiplierGetter = getter;
+}
+
 /** Max milestone entities across all players — keeps total near 40 entity budget with allies */
 const MAX_MILESTONE_ENTITIES = 20;
 
@@ -35,9 +43,12 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
     }
   }
 
+  // Apply difficulty multiplier to spawn counts
+  const enemyMultiplier = difficultyMultiplierGetter?.() ?? 1.0;
+
   // Scale per-player counts in multiplayer to stay under entity cap
   const playerCount = playerNames.length;
-  const totalRequested = requests.reduce((sum, r) => sum + r.count, 0) * playerCount;
+  const totalRequested = requests.reduce((sum, r) => sum + r.count * enemyMultiplier, 0) * playerCount;
   const scaleFactor =
     totalRequested > MAX_MILESTONE_ENTITIES ? MAX_MILESTONE_ENTITIES / totalRequested : 1.0;
 
@@ -45,7 +56,7 @@ function spawnEnemiesNearPlayersBatched(requests: SpawnRequest[]): void {
   const queue: { entityId: string; playerName: string }[] = [];
   for (const name of playerNames) {
     for (const req of requests) {
-      const scaledCount = Math.max(1, Math.round(req.count * scaleFactor));
+      const scaledCount = Math.max(1, Math.round(req.count * enemyMultiplier * scaleFactor));
       for (let i = 0; i < scaledCount; i++) {
         queue.push({ entityId: req.entityId, playerName: name });
       }

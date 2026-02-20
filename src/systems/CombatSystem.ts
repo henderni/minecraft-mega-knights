@@ -33,8 +33,8 @@ export class CombatSystem {
 
     const player = killer;
 
-    // Track kill count
-    const kills = Math.max(0, (player.getDynamicProperty("mk:kills") as number) ?? 0) + 1;
+    // Track kill count (capped to prevent unbounded growth from external modification)
+    const kills = Math.min(99999, Math.max(0, (player.getDynamicProperty("mk:kills") as number) ?? 0) + 1);
     player.setDynamicProperty("mk:kills", kills);
     this.bestiary.onKill(player, dead.typeId);
 

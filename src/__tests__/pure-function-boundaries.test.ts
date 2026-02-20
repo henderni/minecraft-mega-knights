@@ -322,7 +322,7 @@ describe("Wave scale factor boundaries", () => {
   it("Math.max(1, ...) guarantees minimum 1 per spawn entry", () => {
     // Even with aggressive scaling, each spawn type gets at least 1
     const siegeSrc = readSource("systems/SiegeSystem.ts");
-    expect(siegeSrc).toMatch(/Math\.max\(\s*1\s*,\s*Math\.round\(\s*spawn\.count\s*\*\s*scaleFactor\s*\)/);
+    expect(siegeSrc).toMatch(/Math\.max\(\s*1\s*,\s*Math\.round\(\s*spawn\.count\s*\*\s*this\.enemyMultiplier\s*\*\s*mpScale\s*\)/);
   });
 });
 

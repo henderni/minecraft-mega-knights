@@ -118,7 +118,7 @@ export class MerchantSystem {
         bearer.addTag("mk_army");
         bearer.addTag(ownerTag);
         bearer.setDynamicProperty("mk:owner_name", player.name);
-        const safeName = player.name.replace(/§./g, "");
+        const safeName = player.name.replace(/§./g, "").slice(0, 16);
         bearer.nameTag = `§a${safeName}'s Standard Bearer`;
         // Increment army count
         const size = (player.getDynamicProperty("mk:army_size") as number) ?? 0;

@@ -37,6 +37,18 @@ export class EnemyCampSystem {
   private lastCampDay = new Map<string, number>();
   private cachedPlayerMap = new Map<string, Player>();
 
+  /** Getter for enemy spawn multiplier — reads from DifficultySystem at spawn time */
+  private enemyMultiplierGetter: (() => number) | null = null;
+
+  /** Wire a dynamic getter for the enemy spawn multiplier (called from main.ts) */
+  setEnemyMultiplierGetter(getter: () => number): void {
+    this.enemyMultiplierGetter = getter;
+  }
+
+  private get enemyMultiplier(): number {
+    return this.enemyMultiplierGetter?.() ?? 1.0;
+  }
+
   /**
    * Evaluate camp spawning on day change.
    * Called from dayCounter.onDayChanged() in main.ts.
@@ -179,6 +191,7 @@ export class EnemyCampSystem {
 
     const direction = this.getCompassDirection(angle);
     player.sendMessage(CAMP_SPAWNED(displayName, direction));
+    try { player.runCommand("playsound note.pling @s ~ ~ ~ 1 0.8"); } catch { /* */ }
 
     this.buildCampStructure(dimension, campLocation, tier.structureSize, () => {
       this.spawnGuards(camp, scaleFactor, faction);
@@ -295,7 +308,7 @@ export class EnemyCampSystem {
     const weights = faction ? FACTION_GUARD_WEIGHTS[faction.id] : {};
     for (const guardDef of camp.tier.guards) {
       const factionWeight = weights[guardDef.entityId] ?? 1.0;
-      const scaledCount = Math.max(0, Math.round(guardDef.count * scaleFactor * factionWeight));
+      const scaledCount = Math.max(0, Math.round(guardDef.count * this.enemyMultiplier * scaleFactor * factionWeight));
       for (let i = 0; i < scaledCount; i++) {
         spawnQueue.push(guardDef.entityId);
       }

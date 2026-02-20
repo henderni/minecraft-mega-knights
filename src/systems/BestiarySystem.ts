@@ -21,13 +21,14 @@ export class BestiarySystem {
     if (!entry) {return;}
 
     const current = Math.max(0, (player.getDynamicProperty(entry.killKey) as number) ?? 0);
-    const next = current + 1;
+    const next = Math.min(9999, current + 1);
     player.setDynamicProperty(entry.killKey, next);
 
     // Check for newly crossed milestones
     for (const milestone of entry.milestones) {
       if (current < milestone.kills && next >= milestone.kills) {
         player.sendMessage(milestone.message);
+        try { player.runCommand("playsound random.levelup @s ~ ~ ~ 1 1.2"); } catch { /* */ }
       }
     }
   }
