@@ -4,7 +4,7 @@
     "category": "functional",
     "priority": "high",
     "complexity": "S",
-    "description": "Fix manifest min_engine_version in both BP and RP manifests. Currently set to [1, 26, 0] which does not exist — no Bedrock client can load the add-on. Change to [1, 21, 50] (the minimum version supporting @minecraft/server@2.5.0) in both MegaKnights_BP/manifest.json and MegaKnights_RP/manifest.json. Update CLAUDE.md if it references the wrong version.",
+    "description": "Fix manifest min_engine_version in both BP and RP manifests. Currently set to [1, 26, 0] which does not exist \u2014 no Bedrock client can load the add-on. Change to [1, 21, 50] (the minimum version supporting @minecraft/server@2.5.0) in both MegaKnights_BP/manifest.json and MegaKnights_RP/manifest.json. Update CLAUDE.md if it references the wrong version.",
     "target_files": [
       "MegaKnights_BP/manifest.json",
       "MegaKnights_RP/manifest.json"
@@ -12,10 +12,22 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "MegaKnights_BP/manifest.json", "pattern": "1, 21, 50" },
-      { "type": "source_contains", "file": "MegaKnights_RP/manifest.json", "pattern": "1, 21, 50" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/manifest.json",
+        "pattern": "1, 21, 50"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_RP/manifest.json",
+        "pattern": "1, 21, 50"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -24,18 +36,33 @@
     "category": "functional",
     "priority": "high",
     "complexity": "S",
-    "description": "Add endless mode defeat feedback. When all players die during an endless mini-siege, endSiege(false) is called but the endless branch has no player-facing message (comment: 'no defeat handling'). Add a message like '§c⚔ Your defenses fell... but legends never truly die. The endless siege pauses until the next cycle.' so players understand what happened. Add new string constants to Strings.ts.",
+    "description": "Add endless mode defeat feedback. When all players die during an endless mini-siege, endSiege(false) is called but the endless branch has no player-facing message (comment: 'no defeat handling'). Add a message like '\u00a7c\u2694 Your defenses fell... but legends never truly die. The endless siege pauses until the next cycle.' so players understand what happened. Add new string constants to Strings.ts.",
     "target_files": [
       "src/data/Strings.ts",
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": null,
-    "related_to": [3, 4],
+    "related_to": [
+      3,
+      4
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "ENDLESS_DEFEAT" },
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "ENDLESS_DEFEAT" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "ENDLESS_DEFEAT"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "ENDLESS_DEFEAT"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -50,12 +77,27 @@
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": null,
-    "related_to": [2, 4, 9],
+    "related_to": [
+      2,
+      4,
+      9
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/data/CampDefinitions.ts", "pattern": "getCampTierForDay" },
-      { "type": "test_passes", "file": "src/__tests__/camp-system.test.ts" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/CampDefinitions.ts",
+        "pattern": "getCampTierForDay"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/camp-system.test.ts"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -64,18 +106,32 @@
     "category": "functional",
     "priority": "medium",
     "complexity": "M",
-    "description": "Fix HUD display for endless mode. The HUD string shows 'Day X/100' which looks wrong when day > 100 in endless mode. When in endless mode and day > 100, the HUD should show 'Day X §7(Endless)' instead of 'Day X/100'. Requires either a new HUD_ACTION_BAR_ENDLESS string in Strings.ts or modifying the existing HUD logic to detect endless mode. The progress bar should show full (all filled) in endless mode.",
+    "description": "Fix HUD display for endless mode. The HUD string shows 'Day X/100' which looks wrong when day > 100 in endless mode. When in endless mode and day > 100, the HUD should show 'Day X \u00a77(Endless)' instead of 'Day X/100'. Requires either a new HUD_ACTION_BAR_ENDLESS string in Strings.ts or modifying the existing HUD logic to detect endless mode. The progress bar should show full (all filled) in endless mode.",
     "target_files": [
       "src/data/Strings.ts",
       "src/systems/DayCounterSystem.ts"
     ],
     "test_file": null,
-    "related_to": [16],
+    "related_to": [
+      16
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "HUD_ACTION_BAR_ENDLESS" },
-      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "HUD_ACTION_BAR_ENDLESS" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "HUD_ACTION_BAR_ENDLESS"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "HUD_ACTION_BAR_ENDLESS"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -92,9 +148,17 @@
     "test_file": "src/__tests__/castle-commands.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/castle-commands.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/castle-commands.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/castle-commands.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/castle-commands.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -109,11 +173,22 @@
       "src/data/WaveDefinitions.ts"
     ],
     "test_file": "src/__tests__/difficulty-scaling.test.ts",
-    "related_to": [7, 12],
+    "related_to": [
+      7,
+      12
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/difficulty-scaling.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/difficulty-scaling.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/difficulty-scaling.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/difficulty-scaling.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -127,11 +202,22 @@
       "src/data/WaveDefinitions.ts"
     ],
     "test_file": "src/__tests__/endless-mode.test.ts",
-    "related_to": [6, 12],
+    "related_to": [
+      6,
+      12
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/endless-mode.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/endless-mode.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/endless-mode.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/endless-mode.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -146,12 +232,26 @@
       "src/main.ts"
     ],
     "test_file": null,
-    "related_to": [14],
+    "related_to": [
+      14
+    ],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "getDynamicProperty" },
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "QuestJournalSystem" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "getDynamicProperty"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "QuestJournalSystem"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -165,10 +265,17 @@
       "src/data/CampDefinitions.ts"
     ],
     "test_file": "src/__tests__/camp-system.test.ts",
-    "related_to": [3],
+    "related_to": [
+      3
+    ],
     "verification": [
-      { "type": "test_passes", "file": "src/__tests__/camp-system.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/camp-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -184,9 +291,17 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "generateAllyName" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "generateAllyName"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -200,11 +315,21 @@
       "src/systems/DayCounterSystem.ts"
     ],
     "test_file": "src/__tests__/hud-bitpacking.test.ts",
-    "related_to": [4],
+    "related_to": [
+      4
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/hud-bitpacking.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/hud-bitpacking.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/hud-bitpacking.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/hud-bitpacking.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -219,10 +344,18 @@
       "src/data/WaveDefinitions.ts"
     ],
     "test_file": "src/__tests__/performance-budget.test.ts",
-    "related_to": [6, 7],
+    "related_to": [
+      6,
+      7
+    ],
     "verification": [
-      { "type": "test_passes", "file": "src/__tests__/performance-budget.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/performance-budget.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -239,11 +372,26 @@
     "test_file": "src/__tests__/bestiary.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/data/BestiaryDefinitions.ts", "pattern": "mk:mk_boss_siege_lord" },
-      { "type": "source_contains", "file": "src/systems/CombatSystem.ts", "pattern": "bestiary" },
-      { "type": "test_passes", "file": "src/__tests__/bestiary.test.ts" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/BestiaryDefinitions.ts",
+        "pattern": "mk:mk_boss_siege_lord"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/CombatSystem.ts",
+        "pattern": "bestiary"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/bestiary.test.ts"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -258,12 +406,26 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": null,
-    "related_to": [8],
+    "related_to": [
+      8
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "JOURNAL_ENDLESS_TITLE" },
-      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "JOURNAL_ENDLESS" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "JOURNAL_ENDLESS_TITLE"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "JOURNAL_ENDLESS"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -281,8 +443,13 @@
     "test_file": "src/__tests__/recipe-ingredients.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_passes", "file": "src/__tests__/recipe-ingredients.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/recipe-ingredients.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -297,12 +464,26 @@
       "src/systems/DayCounterSystem.ts"
     ],
     "test_file": null,
-    "related_to": [4],
+    "related_to": [
+      4
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "DAY_CHANGE_ENDLESS" },
-      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "DAY_CHANGE_ENDLESS" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "DAY_CHANGE_ENDLESS"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "DAY_CHANGE_ENDLESS"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -319,9 +500,17 @@
     "test_file": "src/__tests__/entity-validation.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/entity-validation.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/entity-validation.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/entity-validation.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/entity-validation.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -330,15 +519,20 @@
     "category": "test",
     "priority": "low",
     "complexity": "M",
-    "description": "Add integration-style tests for main.ts system wiring completeness. Verify by reading main.ts source that: (1) all 11 systems are instantiated, (2) all death listeners are set up (army, siege, camp), (3) all event subscriptions cover itemUse for all expected item typeIds, (4) the difficulty multiplier is wired to siege, camp, and milestones, (5) the onVictory callback enables endless mode. Some of these may already exist in system-wiring.test.ts — extend if gaps found.",
+    "description": "Add integration-style tests for main.ts system wiring completeness. Verify by reading main.ts source that: (1) all 11 systems are instantiated, (2) all death listeners are set up (army, siege, camp), (3) all event subscriptions cover itemUse for all expected item typeIds, (4) the difficulty multiplier is wired to siege, camp, and milestones, (5) the onVictory callback enables endless mode. Some of these may already exist in system-wiring.test.ts \u2014 extend if gaps found.",
     "target_files": [
       "src/main.ts"
     ],
     "test_file": "src/__tests__/system-wiring.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_passes", "file": "src/__tests__/system-wiring.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/system-wiring.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -353,12 +547,26 @@
       "src/main.ts"
     ],
     "test_file": "src/__tests__/setday-endless.test.ts",
-    "related_to": [29],
+    "related_to": [
+      29
+    ],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "Math.min(DayCounterSystem.MAX_DAY, day)" },
-      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "cachedEndless" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "Math.min(DayCounterSystem.MAX_DAY, day)"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "cachedEndless"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -367,16 +575,26 @@
     "category": "functional",
     "priority": "high",
     "complexity": "M",
-    "description": "Add endless mode merchant spawning. MERCHANT_DAYS only contains [15, 30, 55, 75, 95], so the Wandering Merchant never appears in endless mode (day > 100). Add support for recurring merchant days in endless mode — e.g., every 25 days starting from day 125 (125, 150, 175, ...). Update MerchantSystem.onDayChanged() to check for endless-mode merchant days in addition to the static set. Consider making this a pure function so it's testable.",
+    "description": "Add endless mode merchant spawning. MERCHANT_DAYS only contains [15, 30, 55, 75, 95], so the Wandering Merchant never appears in endless mode (day > 100). Add support for recurring merchant days in endless mode \u2014 e.g., every 25 days starting from day 125 (125, 150, 175, ...). Update MerchantSystem.onDayChanged() to check for endless-mode merchant days in addition to the static set. Consider making this a pure function so it's testable.",
     "target_files": [
       "src/systems/MerchantSystem.ts"
     ],
     "test_file": "src/__tests__/merchant.test.ts",
-    "related_to": [30],
+    "related_to": [
+      30
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "endless" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "endless"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -391,12 +609,26 @@
       "src/systems/DayCounterSystem.ts"
     ],
     "test_file": "src/__tests__/reset-completeness.test.ts",
-    "related_to": [28],
+    "related_to": [
+      28
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "mk:army_size" },
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "mk:has_started" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "mk:army_size"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "mk:has_started"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -410,11 +642,21 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": null,
-    "related_to": [23],
+    "related_to": [
+      23
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "Refresh player map after pause" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "Refresh player map after pause"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -428,12 +670,26 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": null,
-    "related_to": [22],
+    "related_to": [
+      22
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "staggeredSpawn" },
-      { "type": "source_not_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "spawnEndlessWave" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "staggeredSpawn"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "spawnEndlessWave"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -449,10 +705,22 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "generateAllyName" },
-      { "type": "source_not_contains", "file": "src/systems/ArmySystem.ts", "pattern": "safeName}'s Knight" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "generateAllyName"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "safeName}'s Knight"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -468,12 +736,26 @@
       "src/main.ts"
     ],
     "test_file": null,
-    "related_to": [26],
+    "related_to": [
+      26
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "DifficultySystem" },
-      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "JOURNAL_ARMY_BODY" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "DifficultySystem"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "JOURNAL_ARMY_BODY"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -488,13 +770,23 @@
       "src/data/Strings.ts"
     ],
     "test_file": "src/__tests__/quest-journal.test.ts",
-    "related_to": [25],
-    "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/quest-journal.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/quest-journal.test.ts" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      25
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/quest-journal.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/quest-journal.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 27,
@@ -508,11 +800,19 @@
     "test_file": "src/__tests__/difficulty-system.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/difficulty-system.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/difficulty-system.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/difficulty-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/difficulty-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 28,
@@ -526,13 +826,23 @@
       "src/systems/BestiarySystem.ts"
     ],
     "test_file": "src/__tests__/reset-completeness.test.ts",
-    "related_to": [21],
-    "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/reset-completeness.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/reset-completeness.test.ts" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      21
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/reset-completeness.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/reset-completeness.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 29,
@@ -545,13 +855,23 @@
       "src/main.ts"
     ],
     "test_file": "src/__tests__/setday-endless.test.ts",
-    "related_to": [19],
-    "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/setday-endless.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/setday-endless.test.ts" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      19
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/setday-endless.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/setday-endless.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 30,
@@ -563,12 +883,19 @@
       "src/systems/MerchantSystem.ts"
     ],
     "test_file": "src/__tests__/merchant.test.ts",
-    "related_to": [20],
-    "verification": [
-      { "type": "test_passes", "file": "src/__tests__/merchant.test.ts" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      20
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/merchant.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 31,
@@ -582,11 +909,23 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "27 bits" },
-      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "53-bit" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "27 bits"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "53-bit"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
-    "passes": false
+    "passes": true
   }
 ]
