@@ -589,3 +589,31 @@ Test coverage gaps addressed:
 
 Next: Start with task #78 (boss phase guard), then #79-#81 (validity/safety fixes)
 ===
+
+--- checkpoint 470e2c03-d2fb-447d-bab2-ca82fca92096 @ 2026-02-21 00:37:29 ---
+Progress: 77/88 tasks complete
+---
+
+=== Coding Session 7 — 2026-02-21 ===
+Completed 11 tasks (#78–#88) in v7 harness round.
+
+Bug fixes (8):
+- #78: Guard hp.effectiveMax <= 0 in SiegeSystem.checkBossPhase() — prevents Infinity on division
+- #79: Add player.isValid check + outer try-catch in CastleSystem.onItemUse() — crash safety
+- #80: Add player.isValid check in BestiarySystem.onKill() — crash safety
+- #81: Replace `as number` cast with typeof guard in DifficultySystem.getDifficulty()
+- #82: Fix wizard max_dist 12→16 in both ally and enemy .se.json (matches follow_range)
+- #83: Add knockback_resistance: 0.2 to Standard Bearer entity
+- #84: Extract MAX_BESTIARY_KILLS constant in BestiarySystem (was magic 9999)
+- #85: Add console.warn for invalid tier index in ArmorTierSystem.unlockTier()
+
+Test suites (3):
+- #86: army-system.test.ts — 36 tests covering sanitizePlayerTag, getOwnerTag, GLOBAL_ARMY_CAP, recruitAlly, getMaxArmySize, ALLY_DISPLAY_NAMES, death listener, tick recount, addTroopBonus, tag cache
+- #87: castle-system.test.ts — 34 tests covering CASTLE_BLUEPRINTS data, onItemUse behavior, buildFallbackStaggered, getBuildCommands, build commands content
+- #88: difficulty-behavior.test.ts — 23 tests covering constants, getDifficulty typeof guard, getRecruitChance, getEnemyMultiplier, showDifficultySelect UI, setDifficulty, reset
+
+Final state:
+- Build: PASSES
+- Tests: 67 files, 2603 tests, ALL PASSING
+- All 88/88 tasks: COMPLETE
+===

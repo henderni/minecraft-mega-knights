@@ -41,7 +41,8 @@ export class DifficultySystem {
     if (this.cachedDifficulty !== null) {
       return this.cachedDifficulty;
     }
-    const stored = world.getDynamicProperty(DifficultySystem.KEY) as number | undefined;
+    const raw = world.getDynamicProperty(DifficultySystem.KEY);
+    const stored = typeof raw === "number" ? raw : undefined;
     this.cachedDifficulty = stored ?? DIFFICULTY_NORMAL;
     return this.cachedDifficulty;
   }

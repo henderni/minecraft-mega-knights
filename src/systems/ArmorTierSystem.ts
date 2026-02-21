@@ -30,6 +30,7 @@ export class ArmorTierSystem {
   static unlockTier(tierIndex: number): void {
     const tier = ARMOR_TIERS[tierIndex];
     if (!tier) {
+      console.warn(`[MegaKnights] unlockTier: invalid tier index ${tierIndex}`);
       return;
     }
 

@@ -64,7 +64,7 @@
       "minecraft:behavior.hurt_by_target": { "priority": 1 },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 2,
-        "entity_types": [{ "filters": { "test": "is_family", "subject": "other", "value": "mk_enemy" }, "max_dist": 12 }],
+        "entity_types": [{ "filters": { "test": "is_family", "subject": "other", "value": "mk_enemy" }, "max_dist": 16 }],
         "scan_interval": 10,
         "must_see": true,
         "must_see_forget_duration": 8.0

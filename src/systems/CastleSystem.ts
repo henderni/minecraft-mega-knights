@@ -22,6 +22,8 @@ export class CastleSystem {
     }
 
     const player = event.source;
+    if (!player.isValid) {return;}
+
     const blueprintId = item.typeId.replace("mk:mk_blueprint_", "");
     const blueprint = CASTLE_BLUEPRINTS[blueprintId];
 
@@ -29,31 +31,28 @@ export class CastleSystem {
       return;
     }
 
-    // Get the block the player is looking at
-    const rayResult = player.getBlockFromViewDirection({ maxDistance: 7 });
-    if (!rayResult) {
-      player.sendMessage(CASTLE_LOOK_AT_GROUND);
-      return;
-    }
-
-    const placeLoc = {
-      x: rayResult.block.location.x,
-      y: rayResult.block.location.y + 1,
-      z: rayResult.block.location.z,
-    };
-
-    // Try structure manager first, fall back to command-based building
-    let placed = false;
     try {
-      world.structureManager.place(blueprint.structureId, player.dimension, placeLoc);
-      placed = true;
-    } catch {
-      // Structure file not found — use command-based fallback (staggered via runJob)
-      this.buildFallbackStaggered(blueprintId, player.dimension, placeLoc);
-      placed = true; // Assume success — commands are staggered but will execute
-    }
+      // Get the block the player is looking at
+      const rayResult = player.getBlockFromViewDirection({ maxDistance: 7 });
+      if (!rayResult) {
+        player.sendMessage(CASTLE_LOOK_AT_GROUND);
+        return;
+      }
 
-    if (placed) {
+      const placeLoc = {
+        x: rayResult.block.location.x,
+        y: rayResult.block.location.y + 1,
+        z: rayResult.block.location.z,
+      };
+
+      // Try structure manager first, fall back to command-based building
+      try {
+        world.structureManager.place(blueprint.structureId, player.dimension, placeLoc);
+      } catch {
+        // Structure file not found — use command-based fallback (staggered via runJob)
+        this.buildFallbackStaggered(blueprintId, player.dimension, placeLoc);
+      }
+
       // Consume the blueprint item (1 per use)
       // Reconstruct typeId from validated blueprintId to avoid using raw item.typeId in commands
       const safeTypeId = `mk:mk_blueprint_${blueprintId}`;
@@ -67,8 +66,8 @@ export class CastleSystem {
       const newMax = this.army.getMaxArmySize(player);
       player.sendMessage(CASTLE_CAPACITY_UP(blueprint.troopBonus, newMax));
       try { player.runCommand("playsound random.anvil_use @s ~ ~ ~ 1 0.8"); } catch { /* */ }
-    } else {
-      player.sendMessage(CASTLE_FAILED);
+    } catch {
+      // Player disconnected or in unloaded chunk — non-fatal
     }
   }
 

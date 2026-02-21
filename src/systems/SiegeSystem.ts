@@ -513,7 +513,7 @@ export class SiegeSystem {
         return;
       }
       const hp = this.bossEntity.getComponent("minecraft:health") as EntityHealthComponent | undefined;
-      if (!hp) {return;}
+      if (!hp || hp.effectiveMax <= 0) {return;}
       const ratio = hp.currentValue / hp.effectiveMax;
       if (ratio <= 0.33 && this.siegePhase < 2) {
         this.siegePhase = 2;

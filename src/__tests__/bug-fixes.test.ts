@@ -60,12 +60,10 @@ describe("Blueprint consumption: item removed after placement", () => {
   });
 
   it("placement block includes consumption before messages", () => {
-    const placedIdx = castleSrc.indexOf("if (placed)");
     const clearIdx = castleSrc.indexOf("clear @s");
-    // Find CASTLE_PLACED usage AFTER the if (placed) block, not in imports
-    const messagIdx = castleSrc.indexOf("CASTLE_PLACED", placedIdx);
-    expect(placedIdx).toBeGreaterThan(-1);
-    expect(clearIdx).toBeGreaterThan(placedIdx);
+    // Find CASTLE_PLACED usage after clear command (consumption before feedback)
+    const messagIdx = castleSrc.indexOf("CASTLE_PLACED", clearIdx);
+    expect(clearIdx).toBeGreaterThan(-1);
     expect(messagIdx).toBeGreaterThan(clearIdx);
   });
 });

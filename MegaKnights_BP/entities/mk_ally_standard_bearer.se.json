@@ -88,6 +88,9 @@
         "always_show": false,
         "allow_name_tag_renaming": false
       },
+      "minecraft:knockback_resistance": {
+        "value": 0.2
+      },
       "minecraft:despawn": {
         "despawn_from_distance": {
           "max_distance": 128,
