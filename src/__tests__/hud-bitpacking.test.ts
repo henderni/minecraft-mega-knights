@@ -210,11 +210,7 @@ describe("HUD key: source code patterns", () => {
     expect(daySrc).toContain("(currentDay << 20) | (filled << 15) | (armySize << 9) | (armyCap << 3) | tier");
   });
 
-  it("comment documents field widths", () => {
-    expect(daySrc).toContain("day(7)");
-    expect(daySrc).toContain("filled(5)");
-    expect(daySrc).toContain("armySize(6)");
-    expect(daySrc).toContain("armyCap(6)");
-    expect(daySrc).toContain("tier(3)");
+  it("comment documents safe integer precision", () => {
+    expect(daySrc).toContain("53-bit");
   });
 });

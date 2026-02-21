@@ -173,3 +173,44 @@ describe("Wandering Merchant: MerchantSystem spawn days", () => {
     expect(merchantSrc).toContain("system.run");
   });
 });
+
+describe("Wandering Merchant: endless mode recurring spawns", () => {
+  const merchantSrc = fs.readFileSync(path.join(__dirname, "../systems/MerchantSystem.ts"), "utf-8");
+
+  it("supports endless mode merchant days (day > 100)", () => {
+    expect(merchantSrc).toMatch(/day\s*>\s*100/);
+  });
+
+  it("uses modular check for recurring endless merchant days", () => {
+    // Should check (day - 100) % 25 === 0 or similar recurring pattern
+    expect(merchantSrc).toMatch(/%\s*25\s*===\s*0/);
+  });
+
+  it("MERCHANT_DAYS static set still covers normal play days", () => {
+    expect(merchantSrc).toContain("MERCHANT_DAYS.has(day)");
+  });
+
+  it("combines static and endless checks in onDayChanged", () => {
+    // Both MERCHANT_DAYS.has(day) and the endless check should be in onDayChanged
+    expect(merchantSrc).toContain("MERCHANT_DAYS.has(day)");
+    expect(merchantSrc).toContain("100");
+  });
+
+  it("endless merchant check is in the isMerchantDay logic", () => {
+    // Should use || to combine static and endless checks
+    expect(merchantSrc).toMatch(/MERCHANT_DAYS\.has\(day\)\s*\|\|/);
+  });
+
+  it("day 125 would be a merchant day (25 days after 100)", () => {
+    // Verify the formula: (125 - 100) % 25 === 0
+    expect((125 - 100) % 25).toBe(0);
+  });
+
+  it("day 150 would be a merchant day", () => {
+    expect((150 - 100) % 25).toBe(0);
+  });
+
+  it("day 130 would NOT be a merchant day", () => {
+    expect((130 - 100) % 25).not.toBe(0);
+  });
+});

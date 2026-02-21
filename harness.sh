@@ -23,6 +23,7 @@ PROGRESS_FILTER="$PROJECT_DIR/.claude/harness-progress.py"
 # Defaults
 MAX_SESSIONS=10
 BUDGET_PER_SESSION=5
+INIT_BUDGET=10
 MODEL="opus"
 FORCE_INIT=false
 CONTINUE_LAST=false
@@ -35,6 +36,7 @@ while [[ $# -gt 0 ]]; do
         --budget)   BUDGET_PER_SESSION="$2"; shift 2 ;;
         --model)    MODEL="$2"; shift 2 ;;
         --init)     FORCE_INIT=true; shift ;;
+        --init-budget) INIT_BUDGET="$2"; shift 2 ;;
         --continue) CONTINUE_LAST=true; shift ;;
         --turns)    MAX_TURNS="$2"; shift 2 ;;
         --help|-h)
@@ -43,6 +45,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --sessions N    Max sessions to run (default: 10)"
             echo "  --budget N      USD budget per session (default: 5)"
+            echo "  --init-budget N USD budget for init session (default: 10)"
             echo "  --model NAME    Model: opus, sonnet, haiku (default: opus)"
             echo "  --init          Force run initializer (regenerate feature_list.json)"
             echo "  --continue      Continue last session instead of starting fresh"
@@ -120,7 +123,7 @@ if [ "$NEED_INIT" = true ]; then
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --max-budget-usd "$BUDGET_PER_SESSION" \
+        --max-budget-usd "$INIT_BUDGET" \
         --output-format stream-json \
         | python3 "$PROGRESS_FILTER" || true
 

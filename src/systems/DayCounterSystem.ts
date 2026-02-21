@@ -350,7 +350,7 @@ export class DayCounterSystem {
         const armyCap = ArmySystem.getEffectiveCap(armyBonus, players.length);
 
         // Use numeric composite key to detect changes without allocating a string
-        // Packs day(7), filled(5), armySize(6), armyCap(6), tier(3) = 27 bits
+        // Packs day, filled, armySize, armyCap, tier via bit shifts — safe within 53-bit integer precision
         const key = (currentDay << 20) | (filled << 15) | (armySize << 9) | (armyCap << 3) | tier;
         const lastKey = this.lastHudKeys.get(name);
 

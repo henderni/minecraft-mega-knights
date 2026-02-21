@@ -36,8 +36,8 @@ describe("HUD composite key: source verification", () => {
     expect(dayCounterSrc).toContain("(armyCap << 3)");
   });
 
-  it("source documents the field widths in a comment", () => {
-    expect(dayCounterSrc).toMatch(/day.*7.*filled.*5.*armySize.*6.*armyCap.*6.*tier.*3/s);
+  it("source documents safe integer precision in a comment", () => {
+    expect(dayCounterSrc).toContain("53-bit");
   });
 });
 
