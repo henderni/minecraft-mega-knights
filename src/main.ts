@@ -13,6 +13,8 @@ import { DifficultySystem } from "./systems/DifficultySystem";
 import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET, FRIENDLY_FIRE_BLOCKED } from "./data/Strings";
 import { ENEMY_SPAWN_DAY } from "./data/WaveDefinitions";
 import { setEnemyMultiplierGetter } from "./data/MilestoneEvents";
+import { BESTIARY } from "./data/BestiaryDefinitions";
+import { ARMOR_TIERS } from "./data/ArmorTiers";
 
 const dayCounter = new DayCounterSystem();
 const armorTier = new ArmorTierSystem();
@@ -239,6 +241,22 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
   } else if (event.id === "mk:reset") {
     dayCounter.reset();
     difficulty.reset();
+    // Clear all player-specific properties
+    for (const player of world.getAllPlayers()) {
+      try {
+        player.setDynamicProperty("mk:kills", 0);
+        player.setDynamicProperty("mk:army_size", 0);
+        player.setDynamicProperty("mk:current_tier", 0);
+        player.setDynamicProperty("mk:army_bonus", 0);
+        player.setDynamicProperty("mk:has_started", false);
+        for (let i = 0; i < ARMOR_TIERS.length; i++) {
+          player.setDynamicProperty(`mk:tier_unlocked_${i}`, false);
+        }
+        for (const entry of BESTIARY) {
+          player.setDynamicProperty(entry.killKey, 0);
+        }
+      } catch { /* player may have disconnected */ }
+    }
     world.sendMessage(DEBUG_QUEST_RESET);
   } else if (event.id === "mk:siege") {
     siege.startSiege();
