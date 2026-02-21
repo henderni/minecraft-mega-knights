@@ -379,3 +379,47 @@ Build: tsc clean
 --- checkpoint final-v4 @ 2026-02-20 ---
 Progress: 54/54 tasks complete — ALL DONE
 ---
+
+--- checkpoint 1fbd05f7-25c3-4871-a233-51bab7a79222 @ 2026-02-20 17:24:49 ---
+Progress: 54/54 tasks complete
+---
+
+=== Initializer Session 5 — 2026-02-20 17:36 ===
+Deep codebase audit complete (all 11 system files, 9 data files, entity/item/RP JSON, test suite coverage).
+Added 12 new tasks (IDs 55-66) to feature_list.json.
+
+Priority breakdown: 2 high, 5 medium, 3 low, 2 test-medium
+Category breakdown: 5 functional, 2 performance, 4 test, 1 content, 1 polish (note: some test tasks overlap)
+Complexity: 10 small, 2 medium
+Related task clusters: [55,63], [56,62], [57,65], [60,61]
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 58 files, 2,396 tests, ALL PASSING
+- Previous 54/54 tasks: ALL COMPLETE
+- Entity/item/RP content: ALL CLEAN (page recipes verified present)
+
+Key bugs found:
+- Stance NaN propagation: ArmySystem.ts line 273 — getDynamicProperty cast to number has no runtime guard, NaN propagates through modulo arithmetic and corrupts entity stance permanently
+- Merchant despawn timer: mk_wandering_merchant.se.json — 600 ticks = 30 seconds, far too short for players to find and trade
+- Generator getDimension unguarded: EnemyCampSystem.ts dropRewards (line 392) and spawnGuards (line 341) — getDimension outside try-catch, generator crashes silently if dimension invalid
+- Standard Bearer missing from ALLY_DISPLAY_NAMES: ArmySystem.ts line 68-73 — death messages use slow fallback
+- Redundant bridge call: MerchantSystem.ts lines 104+107 — mk:army_bonus read twice per scroll use
+
+Test coverage gaps:
+- ArmorTierSystem: only 4 file-existence checks, no behavioral tests
+- CombatSystem: logic validation only, no recruitment edge case tests
+- Merchant entity timer: no test prevents timer regression
+
+Task clusters:
+- Stance safety: #55 (fix) + #63 (test)
+- Merchant timer: #56 (fix) + #62 (test)
+- Generator guards: #57 (dropRewards) + #65 (spawnGuards)
+- System behavior tests: #60 (ArmorTier) + #61 (Combat)
+
+Next: Start with task #55 (stance NaN fix), then #56 (merchant timer)
+===
+
+--- checkpoint init-v5 @ 2026-02-20 ---
+Progress: 54/66 tasks complete
+---

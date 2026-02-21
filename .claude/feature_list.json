@@ -1583,5 +1583,326 @@
       }
     ],
     "passes": true
+  },
+  {
+    "id": 55,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix stance NaN propagation in ArmySystem. Line 273 casts getDynamicProperty('mk:stance') as number, but if the property is somehow a non-number (string from external modification, or undefined handled incorrectly), the 'as number' cast is compile-time only — the runtime value stays a string. Math.max(0, Math.min(2, 'hello')) yields NaN, then (NaN + 1) % 3 = NaN, which gets written to the entity via setDynamicProperty('mk:stance', NaN), permanently corrupting the stance. Fix: add a typeof guard — const raw = entity.getDynamicProperty('mk:stance'); const currentStance = Math.max(0, Math.min(2, typeof raw === 'number' ? raw : 0));",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": "src/__tests__/stance-safety.test.ts",
+    "related_to": [63],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "typeof"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "mk:stance"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 56,
+    "category": "content",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix merchant despawn timer — 30 seconds is far too short. mk_wandering_merchant.se.json has minecraft:timer with time [600, 600] (600 ticks / 20 tps = 30 seconds). Players receive a compass direction hint when the merchant spawns, but 30 seconds is barely enough time to walk to it. Increase to [6000, 6000] (5 minutes) so players have reasonable time to find and trade with the Wandering Merchant. This is especially important on large worlds or when players are exploring camps.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_wandering_merchant.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [62],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_wandering_merchant.se.json",
+        "pattern": "6000"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/entities/mk_wandering_merchant.se.json",
+        "pattern": "[600, 600]"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 57,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Guard dropRewards generator against getDimension failure. EnemyCampSystem.ts line 392: world.getDimension(dimId) is at the top of the runJob generator but OUTSIDE the per-reward try-catch (lines 399-408). If getDimension throws (e.g., dimension ID invalid after world reload), the entire generator crashes and all rewards are lost with no error logged. Fix: wrap the getDimension call in its own try-catch, or move the entire generator body into a try-catch with a console.warn on failure.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": "src/__tests__/camp-system.test.ts",
+    "related_to": [65],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "dropRewards"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 58,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add Standard Bearer to ALLY_DISPLAY_NAMES cache. ArmySystem.ts lines 68-73: the ALLY_DISPLAY_NAMES Map has 4 entries (Knight, Archer, Wizard, Dark Knight) but is missing Standard Bearer. When a Standard Bearer dies, ArmySystem.allyDisplayName() falls through to the string manipulation fallback (line 88) instead of using the cached name. Fix: add ['mk:mk_ally_standard_bearer', 'Standard Bearer'] to the Map.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": "src/__tests__/pure-function-boundaries.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "mk:mk_ally_standard_bearer"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "Standard Bearer"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 59,
+    "category": "performance",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Cache army bonus in MerchantSystem.onScrollUse to avoid redundant bridge calls. Lines 103-108: mk:army_bonus is read twice — once inside this.army.getMaxArmySize(player) at line 104 (which reads getDynamicProperty internally), and again explicitly at line 107 via player.getDynamicProperty('mk:army_bonus'). Each getDynamicProperty is an engine bridge call. Fix: read mk:army_bonus once, compute maxSize manually (BASE_ARMY_SIZE + Math.min(bonus, MAX_ARMY_BONUS)), and pass the cached bonus to ArmySystem.getEffectiveCap.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 60,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add ArmorTierSystem behavioral tests using source-as-text pattern. Current coverage is only 4 file-existence checks. Missing: (1) initializePlayer checks mk:has_started before giving armor, (2) unlockTier iterates getAllPlayers with try-catch, (3) TOKEN_COMMANDS has entries for tiers 1-4 only (not tier 0), (4) isTierUnlocked always returns true for tier 0, (5) unlockTier sets both mk:tier_unlocked_N and mk:current_tier, (6) Mega Knight tier (index 4) plays extra totem sound. Read ArmorTierSystem.ts source and validate these patterns.",
+    "target_files": [
+      "src/systems/ArmorTierSystem.ts",
+      "src/data/ArmorTiers.ts"
+    ],
+    "test_file": "src/__tests__/armor-tier-system.test.ts",
+    "related_to": [61],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/armor-tier-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/armor-tier-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 61,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add CombatSystem recruitment edge case tests using source-as-text pattern. Current tests validate logic structure but miss edge cases. Verify via source text: (1) boss kills (mk:mk_boss_*) track in bestiary but do NOT recruit (early return at line 36-39), (2) kill count is capped at 99999 (line 42), (3) recruitment deferred via system.run() (line 53), (4) entity properties captured BEFORE system.run to avoid stale references (typeId, location copy, dimension at lines 50-52), (5) recruit failure sends RECRUIT_FAILED message and plays bass note, (6) DifficultySystem.getRecruitChance() controls probability.",
+    "target_files": [
+      "src/systems/CombatSystem.ts",
+      "src/systems/DifficultySystem.ts"
+    ],
+    "test_file": "src/__tests__/combat-system.test.ts",
+    "related_to": [60],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/combat-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/combat-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 62,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add merchant entity timer validation test. After task #56 fixes the timer, add a test to entity-validation.test.ts (or a new merchant-entity.test.ts) that reads mk_wandering_merchant.se.json and verifies: (1) minecraft:timer time values are >= 6000 ticks (5 minutes minimum), (2) timer event triggers mk:despawn, (3) mk:despawn component group has minecraft:instant_despawn, (4) entity has minecraft:despawn with reasonable max_distance. This prevents the timer from being accidentally reverted.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_wandering_merchant.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [56],
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/entity-validation.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 63,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add stance type safety test. After task #55 adds the typeof guard, verify via source-as-text on ArmySystem.ts that: (1) getDynamicProperty('mk:stance') result is checked with typeof before Math operations, (2) non-number values default to 0, (3) nextStance is always 0, 1, or 2 (modulo 3), (4) setDynamicProperty receives a valid number. This prevents NaN from corrupting entity stance state.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": "src/__tests__/stance-safety.test.ts",
+    "related_to": [55],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/stance-safety.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/stance-safety.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 64,
+    "category": "performance",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Optimize BestiarySystem milestone loop to search in reverse. Lines 68-73: applyEarnedEffects() loops forward through milestones to find the highest earned. Since milestones are sorted ascending by kill count, the loop can be reversed to break on the first match (the highest milestone), avoiding unnecessary iterations. With 2-3 milestones per entry this is negligible performance but improves clarity and establishes the correct pattern for future entries with more milestones.",
+    "target_files": [
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "entry.milestones.length - 1"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "break"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 65,
+    "category": "functional",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Guard spawnGuards generator against getDimension failure. EnemyCampSystem.ts line 341: same pattern as dropRewards — world.getDimension(dimId) at the top of the runJob generator is outside the per-entity try-catch. If getDimension throws, the generator crashes and no guards spawn (camp appears empty). Fix: wrap the entire generator body in try-catch with console.warn, matching the pattern used in dropRewards (after task #57 fixes it).",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [57],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "spawnGuards"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 66,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Sync lang file entity key ordering between BP and RP. MegaKnights_BP/texts/en_US.lang and MegaKnights_RP/texts/en_US.lang have entity name entries in different orders (e.g., boss entry position differs). While this doesn't affect functionality, inconsistent ordering makes manual comparison difficult and increases merge conflict risk. Fix: reorder entity keys in both files to use the same order — allies (alphabetical), enemies (alphabetical), special (boss, merchant).",
+    "target_files": [
+      "MegaKnights_BP/texts/en_US.lang",
+      "MegaKnights_RP/texts/en_US.lang"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
   }
 ]
