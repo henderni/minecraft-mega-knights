@@ -967,3 +967,43 @@ Progress: 128/128 tasks complete
 --- checkpoint 8c4c27cd-36fa-4dd1-b67d-04b27394cd7c @ 2026-02-21 11:04:31 ---
 Progress: 128/128 tasks complete
 ---
+
+--- checkpoint 8c4c27cd-36fa-4dd1-b67d-04b27394cd7c @ 2026-02-21 11:04:52 ---
+Progress: 128/128 tasks complete
+---
+
+=== Initializer Session 12 — 2026-02-21 ===
+Deep codebase audit complete (all 11 system files, 9 data files, 11 entity JSON, 29 item JSON, 27 recipe JSON, 75 test files).
+Added 10 new tasks (IDs 129-138) to feature_list.json.
+
+Priority breakdown: 3 high, 5 medium, 1 low, 1 test-low
+Category breakdown: 4 functional, 2 content, 1 polish (camp cleanup), 3 test
+Complexity: 8 small, 2 medium
+Related task clusters: [129,137], [130,136], [131,137], [132,133,138], [134], [135]
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 75 files, 2,804 tests, ALL PASSING
+- Lint: CLEAN (0 errors, 0 warnings)
+- Previous 128/128 tasks: ALL COMPLETE
+- Entity/item/RP content: 3 issues found (boss phase 2 dead zone, recipe collision, ally retaliation)
+
+Key bugs found:
+- CRITICAL: Boss Siege Lord phase 2 has max_dist=28 vs follow_range=32 — 4-block dead zone where boss pathfinds but can't acquire targets (mk_boss_siege_lord.se.json line 25)
+- CRITICAL: Recipe collision — knight_token and blueprint_gatehouse are both shapeless 3x iron_ingot + paper, one shadows the other making one item uncraftable
+- HIGH: Siege spawn generator (staggeredSpawn) has no siegeActive guard — if endSiege() fires while generator is running, entities continue spawning after cleanup already ran, orphaning them permanently
+- HIGH: All 4 combat ally entities have hurt_by_target with no entity_types filter — allies retaliate against player/other allies despite script-level friendly fire healback (HP healed but target switches to player)
+- MEDIUM: Enemy entities also have unfiltered hurt_by_target — wizard splash causes enemy infighting
+- MEDIUM: mk:reset only cleans mk_army/mk_siege_mob/mk_camp_guard — misses mk_script_spawned (milestone enemies) and mk_merchant
+- MEDIUM: Stale camp expiration deletes Map entry but doesn't remove guard entities from world
+
+Task clusters:
+- Boss entity fix: #129 (phase 2 max_dist)
+- Recipe collision: #130 (fix) + #136 (uniqueness test)
+- Siege generator safety: #131 (fix) + #137 (test)
+- Entity hurt_by_target filters: #132 (allies) + #133 (enemies) + #138 (test)
+- Reset cleanup: #134 (add tags)
+- Camp guard cleanup: #135 (remove entities on expiration)
+
+Next: Start with task #129 (boss phase fix), #130 (recipe collision), #131 (siege generator guard)
+===

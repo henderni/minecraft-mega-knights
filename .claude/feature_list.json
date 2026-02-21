@@ -2603,11 +2603,23 @@
       "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json"
     ],
     "test_file": null,
-    "related_to": [96],
+    "related_to": [
+      96
+    ],
     "verification": [
-      { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_ally_dark_knight.se.json", "pattern": "\"max_dist\": 24" },
-      { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json", "pattern": "\"max_dist\": 24" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_dark_knight.se.json",
+        "pattern": "\"max_dist\": 24"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json",
+        "pattern": "\"max_dist\": 24"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2621,11 +2633,21 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": "src/__tests__/quest-journal.test.ts",
-    "related_to": [95],
+    "related_to": [
+      95
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "replace(/_/g" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "replace(/_/g"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2641,9 +2663,17 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/ArmySystem.ts", "pattern": "getArmySize(player: Player): number" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "getArmySize(player: Player): number"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2658,13 +2688,31 @@
       "src/utils/LRUTickCache.ts"
     ],
     "test_file": null,
-    "related_to": [93],
+    "related_to": [
+      93
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/utils/LRUTickCache.ts", "pattern": "class LRUTickCache" },
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "LRUTickCache" },
-      { "type": "source_not_contains", "file": "src/main.ts", "pattern": "class LRUTickCache" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/utils/LRUTickCache.ts",
+        "pattern": "class LRUTickCache"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "LRUTickCache"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/main.ts",
+        "pattern": "class LRUTickCache"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2678,11 +2726,21 @@
       "src/utils/LRUTickCache.ts"
     ],
     "test_file": "src/__tests__/lru-cache.test.ts",
-    "related_to": [92],
+    "related_to": [
+      92
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/lru-cache.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/lru-cache.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/lru-cache.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/lru-cache.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2698,9 +2756,17 @@
     "test_file": "src/__tests__/player-tag-utils.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/player-tag-utils.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/player-tag-utils.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/player-tag-utils.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/player-tag-utils.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2715,11 +2781,21 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": "src/__tests__/bestiary-effect-names.test.ts",
-    "related_to": [90],
+    "related_to": [
+      90
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/bestiary-effect-names.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/bestiary-effect-names.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/bestiary-effect-names.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/bestiary-effect-names.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2733,11 +2809,21 @@
       "MegaKnights_BP/entities/"
     ],
     "test_file": "src/__tests__/entity-range-consistency.test.ts",
-    "related_to": [89],
+    "related_to": [
+      89
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/entity-range-consistency.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/entity-range-consistency.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/entity-range-consistency.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/entity-range-consistency.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2757,15 +2843,41 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": null,
-    "related_to": [98],
+    "related_to": [
+      98
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/utils/numProp.ts", "pattern": "numProp" },
-      { "type": "source_not_contains", "file": "src/systems/ArmySystem.ts", "pattern": "const numProp" },
-      { "type": "source_not_contains", "file": "src/systems/BestiarySystem.ts", "pattern": "const numProp" },
-      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "const numProp" },
-      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "import" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/utils/numProp.ts",
+        "pattern": "numProp"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "const numProp"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "const numProp"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "const numProp"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "import"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2780,12 +2892,26 @@
       "src/systems/ArmorTierSystem.ts"
     ],
     "test_file": null,
-    "related_to": [97],
+    "related_to": [
+      97
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "boolProp" },
-      { "type": "source_contains", "file": "src/systems/ArmorTierSystem.ts", "pattern": "boolProp" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "boolProp"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmorTierSystem.ts",
+        "pattern": "boolProp"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2799,11 +2925,21 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": "src/__tests__/siege-victory-safety.test.ts",
-    "related_to": [106],
+    "related_to": [
+      106
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "try" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "try"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2817,11 +2953,21 @@
       "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
     ],
     "test_file": "src/__tests__/entity-range-consistency.test.ts",
-    "related_to": [108],
+    "related_to": [
+      108
+    ],
     "verification": [
-      { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json", "pattern": "\"max_dist\": 32" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json",
+        "pattern": "\"max_dist\": 32"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2837,9 +2983,19 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "CLAUDE.md", "pattern": "mk:kills_<type>" },
-      { "type": "source_not_contains", "file": "CLAUDE.md", "pattern": "mk:bestiary_kills_<type>" },
-      { "type": "build_passes" }
+      {
+        "type": "source_contains",
+        "file": "CLAUDE.md",
+        "pattern": "mk:kills_<type>"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "CLAUDE.md",
+        "pattern": "mk:bestiary_kills_<type>"
+      },
+      {
+        "type": "build_passes"
+      }
     ],
     "passes": true
   },
@@ -2855,9 +3011,17 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/CastleSystem.ts", "pattern": "CASTLE_FAILED" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/CastleSystem.ts",
+        "pattern": "CASTLE_FAILED"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2866,16 +3030,24 @@
     "category": "content",
     "priority": "medium",
     "complexity": "S",
-    "description": "Remove useless hurt_by_target from Standard Bearer entity. The Standard Bearer (mk_ally_standard_bearer.se.json) has minecraft:behavior.hurt_by_target at priority 1 (lines 84-86) but has NO attack component (no minecraft:attack, no melee_attack or ranged_attack behavior). The hurt_by_target sets a target when hit but the entity can never act on it — this wastes CPU on target tracking for a pure support unit. Remove the hurt_by_target behavior component.",
+    "description": "Remove useless hurt_by_target from Standard Bearer entity. The Standard Bearer (mk_ally_standard_bearer.se.json) has minecraft:behavior.hurt_by_target at priority 1 (lines 84-86) but has NO attack component (no minecraft:attack, no melee_attack or ranged_attack behavior). The hurt_by_target sets a target when hit but the entity can never act on it \u2014 this wastes CPU on target tracking for a pure support unit. Remove the hurt_by_target behavior component.",
     "target_files": [
       "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json"
     ],
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_not_contains", "file": "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json", "pattern": "hurt_by_target" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json",
+        "pattern": "hurt_by_target"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2891,9 +3063,19 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "600s timer" },
-      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "6000 ticks" },
-      { "type": "build_passes" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "600s timer"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "6000 ticks"
+      },
+      {
+        "type": "build_passes"
+      }
     ],
     "passes": true
   },
@@ -2910,10 +3092,22 @@
     "test_file": "src/__tests__/merchant-siege-guard.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "siegeActive" },
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "siege.isActive()" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "siegeActive"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "siege.isActive()"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2928,11 +3122,22 @@
       "src/data/WaveDefinitions.ts"
     ],
     "test_file": "src/__tests__/siege-system.test.ts",
-    "related_to": [99, 108],
+    "related_to": [
+      99,
+      108
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/siege-system.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/siege-system.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/siege-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/siege-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2941,16 +3146,24 @@
     "category": "functional",
     "priority": "low",
     "complexity": "S",
-    "description": "EnemyCampSystem: reset nextCampId counter in clearAllCamps(). The module-level nextCampId (line 20) increments on every camp spawn but is never reset when clearAllCamps() is called during mk:reset. While reaching MAX_CAMP_ID (1,000,000) is practically impossible in one session, it's a correctness issue — the counter should reset alongside the camps Map. Add `nextCampId = 1;` to the clearAllCamps() method.",
+    "description": "EnemyCampSystem: reset nextCampId counter in clearAllCamps(). The module-level nextCampId (line 20) increments on every camp spawn but is never reset when clearAllCamps() is called during mk:reset. While reaching MAX_CAMP_ID (1,000,000) is practically impossible in one session, it's a correctness issue \u2014 the counter should reset alongside the camps Map. Add `nextCampId = 1;` to the clearAllCamps() method.",
     "target_files": [
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/EnemyCampSystem.ts", "pattern": "nextCampId = 1" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "nextCampId = 1"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2964,11 +3177,22 @@
       "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
     ],
     "test_file": "src/__tests__/boss-phase-consistency.test.ts",
-    "related_to": [100, 106],
+    "related_to": [
+      100,
+      106
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/boss-phase-consistency.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/boss-phase-consistency.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/boss-phase-consistency.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/boss-phase-consistency.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -2982,12 +3206,26 @@
       "src/systems/CombatSystem.ts"
     ],
     "test_file": "src/__tests__/combat-system.test.ts",
-    "related_to": [118],
+    "related_to": [
+      118
+    ],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "RECRUIT_FAILED" },
-      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "note.bass" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/CombatSystem.ts",
+        "pattern": "RECRUIT_FAILED"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/CombatSystem.ts",
+        "pattern": "note.bass"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3001,11 +3239,21 @@
       "src/systems/ArmySystem.ts"
     ],
     "test_file": "src/__tests__/army-system.test.ts",
-    "related_to": [118],
+    "related_to": [
+      118
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "} catch" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "} catch"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3021,9 +3269,17 @@
     "test_file": "src/__tests__/day-counter-system.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "hudPlayerRefreshCounter = 3" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "hudPlayerRefreshCounter = 3"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3039,10 +3295,22 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_not_contains", "file": "src/main.ts", "pattern": "getComponent(\"health\")" },
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "getComponent(\"minecraft:health\")" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/main.ts",
+        "pattern": "getComponent(\"health\")"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "getComponent(\"minecraft:health\")"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3051,16 +3319,24 @@
     "category": "polish",
     "priority": "low",
     "complexity": "S",
-    "description": "Remove stale JSDoc comment above numProp import in CombatSystem.ts. Line 7 still has '/** Safe numeric dynamic property read — guards against non-number corruption */' above the import statement. This comment was relevant when numProp was defined inline, but now that it's imported from utils/numProp.ts, the comment is misleading. Remove it.",
+    "description": "Remove stale JSDoc comment above numProp import in CombatSystem.ts. Line 7 still has '/** Safe numeric dynamic property read \u2014 guards against non-number corruption */' above the import statement. This comment was relevant when numProp was defined inline, but now that it's imported from utils/numProp.ts, the comment is misleading. Remove it.",
     "target_files": [
       "src/systems/CombatSystem.ts"
     ],
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "Safe numeric dynamic property read" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/CombatSystem.ts",
+        "pattern": "Safe numeric dynamic property read"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3076,9 +3352,17 @@
     "test_file": "src/__tests__/numProp.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/numProp.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/numProp.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/numProp.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/numProp.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3093,11 +3377,22 @@
       "MegaKnights_BP/entities/"
     ],
     "test_file": "src/__tests__/cross-reference.test.ts",
-    "related_to": [116],
+    "related_to": [
+      116
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/cross-reference.test.ts", "pattern": "mk_ally_" },
-      { "type": "test_passes", "file": "src/__tests__/cross-reference.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/cross-reference.test.ts",
+        "pattern": "mk_ally_"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/cross-reference.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3106,17 +3401,28 @@
     "category": "test",
     "priority": "medium",
     "complexity": "S",
-    "description": "Add cross-reference test: every BESTIARY enemyTypeId has a matching ENEMY_SPAWN_DAY entry. Import both BESTIARY (from BestiaryDefinitions) and ENEMY_SPAWN_DAY (from WaveDefinitions) — both are pure data, safe to import in tests. Verify that every BESTIARY entry's enemyTypeId appears as a key in ENEMY_SPAWN_DAY, ensuring the bestiary only tracks enemies that can actually spawn naturally.",
+    "description": "Add cross-reference test: every BESTIARY enemyTypeId has a matching ENEMY_SPAWN_DAY entry. Import both BESTIARY (from BestiaryDefinitions) and ENEMY_SPAWN_DAY (from WaveDefinitions) \u2014 both are pure data, safe to import in tests. Verify that every BESTIARY entry's enemyTypeId appears as a key in ENEMY_SPAWN_DAY, ensuring the bestiary only tracks enemies that can actually spawn naturally.",
     "target_files": [
       "src/data/BestiaryDefinitions.ts",
       "src/data/WaveDefinitions.ts"
     ],
     "test_file": "src/__tests__/bestiary.test.ts",
-    "related_to": [115],
+    "related_to": [
+      115
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/bestiary.test.ts", "pattern": "ENEMY_SPAWN_DAY" },
-      { "type": "test_passes", "file": "src/__tests__/bestiary.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/bestiary.test.ts",
+        "pattern": "ENEMY_SPAWN_DAY"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/bestiary.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3130,11 +3436,22 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": "src/__tests__/siege-system.test.ts",
-    "related_to": [106],
+    "related_to": [
+      106
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/siege-system.test.ts", "pattern": "SIEGE_DEFEAT" },
-      { "type": "test_passes", "file": "src/__tests__/siege-system.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/siege-system.test.ts",
+        "pattern": "SIEGE_DEFEAT"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/siege-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3149,11 +3466,21 @@
       "src/systems/CombatSystem.ts"
     ],
     "test_file": null,
-    "related_to": [109],
+    "related_to": [
+      109
+    ],
     "verification": [
-      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "RECRUIT_FAILED" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/CombatSystem.ts",
+        "pattern": "RECRUIT_FAILED"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3168,12 +3495,26 @@
       "src/systems/BestiarySystem.ts"
     ],
     "test_file": null,
-    "related_to": [125],
+    "related_to": [
+      125
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "bestiary.onPlayerSpawn" },
-      { "type": "source_contains", "file": "src/main.ts", "pattern": "respawn" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "bestiary.onPlayerSpawn"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "respawn"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3190,10 +3531,22 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/DifficultySystem.ts", "pattern": "eslint-disable-next-line" },
-      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "eslint-disable-next-line" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/DifficultySystem.ts",
+        "pattern": "eslint-disable-next-line"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "eslint-disable-next-line"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3202,16 +3555,26 @@
     "category": "polish",
     "priority": "low",
     "complexity": "S",
-    "description": "Fix confusing bestiary multi-milestone display in quest journal. QuestJournalSystem.showBestiary() builds milestone strings that produce output like 'Knight: 5/10 → Health Boost I, /25 → Health Boost II' — the second milestone shows '/25' without the current kill count, making it look broken. Fix by prepending the current kill count to each subsequent milestone part so output reads '5/10 → Health Boost I, 5/25 → Health Boost II', giving players clear progress context for all milestones.",
+    "description": "Fix confusing bestiary multi-milestone display in quest journal. QuestJournalSystem.showBestiary() builds milestone strings that produce output like 'Knight: 5/10 \u2192 Health Boost I, /25 \u2192 Health Boost II' \u2014 the second milestone shows '/25' without the current kill count, making it look broken. Fix by prepending the current kill count to each subsequent milestone part so output reads '5/10 \u2192 Health Boost I, 5/25 \u2192 Health Boost II', giving players clear progress context for all milestones.",
     "target_files": [
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": "src/__tests__/quest-journal.test.ts",
-    "related_to": [126],
+    "related_to": [
+      126
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "kills/" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "kills/"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3225,11 +3588,21 @@
       "src/systems/MerchantSystem.ts"
     ],
     "test_file": "src/__tests__/merchant-system.test.ts",
-    "related_to": [127],
+    "related_to": [
+      127
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "player.location.y" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "player.location.y"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3238,17 +3611,27 @@
     "category": "polish",
     "priority": "low",
     "complexity": "S",
-    "description": "ALLY_RECRUITED message does not include the unit class. When an enemy is recruited via CombatSystem, the player sees something like 'A Sir Marcus joined your army!' but there is no indication of what type of unit it is (Knight, Archer, etc.). Update the ALLY_RECRUITED call in CombatSystem.onEntityDie() to pass the unit class name derived from the entity typeId (e.g. 'mk:mk_ally_knight' → 'Knight') alongside the ally name, and update the ALLY_RECRUITED string in Strings.ts to include the class.",
+    "description": "ALLY_RECRUITED message does not include the unit class. When an enemy is recruited via CombatSystem, the player sees something like 'A Sir Marcus joined your army!' but there is no indication of what type of unit it is (Knight, Archer, etc.). Update the ALLY_RECRUITED call in CombatSystem.onEntityDie() to pass the unit class name derived from the entity typeId (e.g. 'mk:mk_ally_knight' \u2192 'Knight') alongside the ally name, and update the ALLY_RECRUITED string in Strings.ts to include the class.",
     "target_files": [
       "src/systems/CombatSystem.ts",
       "src/data/Strings.ts"
     ],
     "test_file": "src/__tests__/combat-system.test.ts",
-    "related_to": [128],
+    "related_to": [
+      128
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "unitClass" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "unitClass"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3264,9 +3647,17 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "ally === bearer" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "ally === bearer"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3275,17 +3666,28 @@
     "category": "test",
     "priority": "medium",
     "complexity": "S",
-    "description": "Add test verifying bestiary effects are reapplied on non-initial player respawn (covers fix in task #119). Using source-as-text pattern on main.ts, verify that the playerSpawn handler does NOT gate bestiary.onPlayerSpawn() behind initialSpawn — i.e., the pattern 'bestiary.onPlayerSpawn' should appear outside of (or independent from) an 'initialSpawn' conditional. Also add a BestiarySystem unit test verifying that calling onPlayerSpawn() twice for a player with kills already tracked correctly reapplies effects without doubling them.",
+    "description": "Add test verifying bestiary effects are reapplied on non-initial player respawn (covers fix in task #119). Using source-as-text pattern on main.ts, verify that the playerSpawn handler does NOT gate bestiary.onPlayerSpawn() behind initialSpawn \u2014 i.e., the pattern 'bestiary.onPlayerSpawn' should appear outside of (or independent from) an 'initialSpawn' conditional. Also add a BestiarySystem unit test verifying that calling onPlayerSpawn() twice for a player with kills already tracked correctly reapplies effects without doubling them.",
     "target_files": [
       "src/main.ts",
       "src/systems/BestiarySystem.ts"
     ],
     "test_file": "src/__tests__/bestiary.test.ts",
-    "related_to": [119],
+    "related_to": [
+      119
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/bestiary.test.ts", "pattern": "respawn" },
-      { "type": "test_passes", "file": "src/__tests__/bestiary.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/bestiary.test.ts",
+        "pattern": "respawn"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/bestiary.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3299,11 +3701,22 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": "src/__tests__/quest-journal.test.ts",
-    "related_to": [121],
+    "related_to": [
+      121
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/quest-journal.test.ts", "pattern": "multi-milestone" },
-      { "type": "test_passes", "file": "src/__tests__/quest-journal.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/quest-journal.test.ts",
+        "pattern": "multi-milestone"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/quest-journal.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3317,11 +3730,22 @@
       "src/systems/MerchantSystem.ts"
     ],
     "test_file": "src/__tests__/merchant-system.test.ts",
-    "related_to": [122],
+    "related_to": [
+      122
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/merchant-system.test.ts", "pattern": "findGroundLevel" },
-      { "type": "test_passes", "file": "src/__tests__/merchant-system.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/merchant-system.test.ts",
+        "pattern": "findGroundLevel"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/merchant-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
   },
@@ -3336,12 +3760,353 @@
       "src/systems/CombatSystem.ts"
     ],
     "test_file": "src/__tests__/combat-system.test.ts",
-    "related_to": [123],
+    "related_to": [
+      123
+    ],
     "verification": [
-      { "type": "source_contains", "file": "src/__tests__/combat-system.test.ts", "pattern": "unitClass" },
-      { "type": "test_passes", "file": "src/__tests__/combat-system.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/__tests__/combat-system.test.ts",
+        "pattern": "unitClass"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/combat-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": true
+  },
+  {
+    "id": 129,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix boss Siege Lord phase 2 max_dist=28 which mismatches follow_range=32, creating a 4-block dead zone where the boss pathfinds but cannot re-acquire targets. Change max_dist to 32 in the mk:phase_2 component group.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
+    ],
+    "test_file": "src/__tests__/boss-phase-consistency.test.ts",
+    "related_to": [
+      130,
+      137
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json",
+        "pattern": "\"max_dist\": 32"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json",
+        "pattern": "\"max_dist\": 28"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 130,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix recipe collision: mk_knight_token and mk_blueprint_gatehouse are both shapeless recipes with identical ingredients (3x iron_ingot + paper). In Bedrock, one shadows the other making one item uncraftable. Change blueprint_gatehouse recipe to use 3x cobblestone + paper (thematic for building structures).",
+    "target_files": [
+      "MegaKnights_BP/recipes/mk_blueprint_gatehouse.json"
+    ],
+    "test_file": "src/__tests__/recipe-uniqueness.test.ts",
+    "related_to": [
+      136
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/recipes/mk_blueprint_gatehouse.json",
+        "pattern": "cobblestone"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/recipes/mk_blueprint_gatehouse.json",
+        "pattern": "iron_ingot"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 131,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Add siegeActive guard inside the staggeredSpawn generator loop (SiegeSystem.ts). When endSiege() sets siegeActive=false, the generator continues spawning entities via system.runJob. These late-spawned entities get mk_siege_mob tag but cleanupSiegeMobs() already ran, orphaning them in the world permanently. Add 'if (!siegeRef.siegeActive) break;' at the top of the spawn loop.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/siege-system.test.ts",
+    "related_to": [
+      137
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "siegeActive"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 132,
+    "category": "content",
+    "priority": "high",
+    "complexity": "M",
+    "description": "Add entity_types filter to hurt_by_target on all 4 combat ally entities (knight, archer, wizard, dark_knight). Currently hurt_by_target has no filter, so allies retaliate against ANYTHING that damages them \u2014 including the player (accidental hits) and other allies (wizard fireball splash). The script-level friendly fire healback restores HP but doesn't prevent the target switch, so allies chase and attack the player. Filter to only retaliate against mk_enemy and monster families.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_knight.se.json",
+      "MegaKnights_BP/entities/mk_ally_archer.se.json",
+      "MegaKnights_BP/entities/mk_ally_wizard.se.json",
+      "MegaKnights_BP/entities/mk_ally_dark_knight.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [
+      133,
+      138
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_knight.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_archer.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_wizard.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_dark_knight.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 133,
+    "category": "content",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add entity_types filter to hurt_by_target on all 4 enemy entities and the boss. Currently enemies retaliate against anything, so enemy wizard fireball splash causes enemies to infight. Filter to only retaliate against player and mk_ally families.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_enemy_knight.se.json",
+      "MegaKnights_BP/entities/mk_enemy_archer.se.json",
+      "MegaKnights_BP/entities/mk_enemy_wizard.se.json",
+      "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json",
+      "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [
+      132,
+      138
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_knight.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_archer.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_wizard.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json",
+        "pattern": "entity_types"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 134,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "mk:reset entity cleanup is incomplete \u2014 add mk_script_spawned and mk_merchant to the tag cleanup loop in main.ts. Currently only cleans mk_army, mk_siege_mob, mk_camp_guard. Milestone-spawned enemies (mk_script_spawned) and merchant entities (mk_merchant) persist after reset.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/reset-entity-cleanup.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "mk_script_spawned"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "mk_merchant"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 135,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Stale camp expiration in EnemyCampSystem.tick() deletes the camp Map entry but does NOT remove surviving guard entities from the world. These guards persist indefinitely with mk_camp_guard tag, wasting entity budget. When expiring a stale camp, remove its guard entities via getEntities({tags: [mk_camp_guard, mk_camp_<id>]}) before deleting the Map entry.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": "src/__tests__/camp-expiration.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "remove"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 136,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add test: recipe uniqueness \u2014 read all recipe JSON files and verify no two shapeless recipes share identical sorted ingredient lists. This prevents the collision discovered between knight_token and blueprint_gatehouse (both 3x iron_ingot + paper).",
+    "target_files": [
+      "MegaKnights_BP/recipes/"
+    ],
+    "test_file": "src/__tests__/recipe-uniqueness.test.ts",
+    "related_to": [
+      130
+    ],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/recipe-uniqueness.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/recipe-uniqueness.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 137,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add test: siege generator abort \u2014 verify SiegeSystem.staggeredSpawn generator checks siegeActive flag inside the spawn loop. Read SiegeSystem.ts source and verify the pattern 'siegeActive' appears inside the generator function body (between 'function*' and the closing of the generator).",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/siege-system.test.ts",
+    "related_to": [
+      131
+    ],
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/siege-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 138,
+    "category": "test",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add test: hurt_by_target entity_types filter \u2014 validate that all ally entities have entity_types on their hurt_by_target behavior restricting retaliation to mk_enemy family, and all enemy entities restrict to player+mk_ally. Prevents friendly-fire retaliation chains.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_knight.se.json",
+      "MegaKnights_BP/entities/mk_enemy_knight.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [
+      132,
+      133
+    ],
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/entity-validation.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
   }
 ]
