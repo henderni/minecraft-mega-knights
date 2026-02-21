@@ -819,3 +819,42 @@ Build: tsc clean
 --- checkpoint 7ad43124-727e-4cd9-b8c2-99c8f0ef4a89 @ 2026-02-21 09:54:52 ---
 Progress: 98/108 tasks complete
 ---
+
+--- checkpoint 7ad43124-727e-4cd9-b8c2-99c8f0ef4a89 @ 2026-02-21 10:01:13 ---
+Progress: 108/108 tasks complete
+---
+
+=== Initializer Session 10 — 2026-02-21 ===
+Deep codebase audit complete (all 11 system files, 9 data files, 11 entity JSON, 73 test files).
+Added 10 new tasks (IDs 109-118) to feature_list.json.
+
+Priority breakdown: 2 high, 7 medium, 1 low
+Category breakdown: 4 functional, 2 polish, 4 test
+Complexity: 10 small
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 73 files, 2,763 tests, ALL PASSING
+- Previous 108/108 tasks: ALL COMPLETE
+- Uncommitted changes: v8 numProp extraction + boolProp + dark knight max_dist fix (13 files)
+
+Key bugs found:
+- RECRUIT_FAILED message spam: every failed recruit roll (70-80% of kills) sends chat message + sound, flooding combat UX
+- ArmySystem death listener: entity property reads on dead entity not try-caught, crash risk in unloaded chunks
+- HUD initial empty: cachedHudPlayers starts [], no HUD shown for first 2 seconds after world load
+- Inconsistent health component ID: main.ts uses "health", other systems use "minecraft:health"
+
+Test coverage gaps:
+- numProp/boolProp: pure utility functions with zero direct tests
+- Enemy→ally entity pair: CombatSystem type swap never validated by cross-reference
+- BESTIARY→ENEMY_SPAWN_DAY: bestiary entries not validated against spawn data
+- Siege defeat path: endSiege(false) branch has minimal test coverage
+
+Task clusters:
+- Recruit UX: #109 (remove spam) + #118 (cleanup unused import)
+- Death listener safety: #110 (try-catch)
+- HUD/polish: #111 (init counter), #112 (health string), #113 (stale comment)
+- Test coverage: #114 (numProp), #115 (enemy-ally pairs), #116 (bestiary xref), #117 (siege defeat)
+
+Next: Start with task #109 (recruit spam) and #110 (death listener safety)
+===

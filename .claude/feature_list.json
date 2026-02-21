@@ -2971,5 +2971,190 @@
       { "type": "all_tests_pass" }
     ],
     "passes": true
+  },
+  {
+    "id": 109,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Remove RECRUIT_FAILED message spam from CombatSystem. Currently every failed recruitment roll (70% of kills on Normal, 80% on Hard) sends a chat message AND plays a failure sound. During combat with multiple kills per second, this floods chat and audio. Remove both the sendMessage(RECRUIT_FAILED) call and the playsound on line 70. Successful recruits already have positive feedback (spawn + sound), so silence on failure is the correct UX.",
+    "target_files": [
+      "src/systems/CombatSystem.ts"
+    ],
+    "test_file": "src/__tests__/combat-system.test.ts",
+    "related_to": [118],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "RECRUIT_FAILED" },
+      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "note.bass" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 110,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Add try-catch around entity property reads in ArmySystem death listener. Lines 198 and 210 read dead.getDynamicProperty('mk:owner_name') and dead.getDynamicProperty('mk:ally_name') without try-catch. Dead entities in unloaded chunks can throw on property access. Wrap the entire body of the death listener callback (after the mk_army tag check) in a try-catch to prevent crashes.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": "src/__tests__/army-system.test.ts",
+    "related_to": [118],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "} catch" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 111,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix HUD not showing for first 2 seconds after world load. DayCounterSystem.hudPlayerRefreshCounter initializes to 0, so the first getAllPlayers() call happens on the 4th HUD tick (40 game ticks = 2 seconds). Initialize hudPlayerRefreshCounter to 3 (one less than the threshold of 4) so the very first updateHUD() call triggers a player refresh.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": "src/__tests__/day-counter-system.test.ts",
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "hudPlayerRefreshCounter = 3" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 112,
+    "category": "polish",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Standardize health component access to use canonical 'minecraft:health' string. In main.ts line 135 (friendly fire handler), getComponent('health') is used without the minecraft: prefix, while SiegeSystem and ArmySystem correctly use 'minecraft:health'. Both resolve to the same component in Bedrock, but the inconsistency is a maintenance hazard. Change main.ts to use 'minecraft:health'.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/main.ts", "pattern": "getComponent(\"health\")" },
+      { "type": "source_contains", "file": "src/main.ts", "pattern": "getComponent(\"minecraft:health\")" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 113,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Remove stale JSDoc comment above numProp import in CombatSystem.ts. Line 7 still has '/** Safe numeric dynamic property read — guards against non-number corruption */' above the import statement. This comment was relevant when numProp was defined inline, but now that it's imported from utils/numProp.ts, the comment is misleading. Remove it.",
+    "target_files": [
+      "src/systems/CombatSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "Safe numeric dynamic property read" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 114,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add direct unit tests for numProp() and boolProp() utility functions. These pure functions in src/utils/numProp.ts can be imported directly (no @minecraft/server dependency). Test edge cases: undefined, null, string, NaN, Infinity, 0, negative numbers, boolean true/false. Test boolProp with: undefined, null, 0, 1, empty string, true, false. Test custom defaults.",
+    "target_files": [
+      "src/utils/numProp.ts"
+    ],
+    "test_file": "src/__tests__/numProp.test.ts",
+    "related_to": [],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/numProp.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/numProp.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 115,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add cross-reference test: every mk_enemy_ entity file has a corresponding mk_ally_ entity file. CombatSystem.recruitAlly swaps '_enemy_' to '_ally_' in typeId to spawn the recruited unit. If an enemy entity exists without a matching ally, recruitment silently fails. Glob MegaKnights_BP/entities/mk_enemy_*.se.json, derive the ally filename, and verify it exists.",
+    "target_files": [
+      "src/__tests__/cross-reference.test.ts",
+      "MegaKnights_BP/entities/"
+    ],
+    "test_file": "src/__tests__/cross-reference.test.ts",
+    "related_to": [116],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/cross-reference.test.ts", "pattern": "mk_ally_" },
+      { "type": "test_passes", "file": "src/__tests__/cross-reference.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 116,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add cross-reference test: every BESTIARY enemyTypeId has a matching ENEMY_SPAWN_DAY entry. Import both BESTIARY (from BestiaryDefinitions) and ENEMY_SPAWN_DAY (from WaveDefinitions) — both are pure data, safe to import in tests. Verify that every BESTIARY entry's enemyTypeId appears as a key in ENEMY_SPAWN_DAY, ensuring the bestiary only tracks enemies that can actually spawn naturally.",
+    "target_files": [
+      "src/data/BestiaryDefinitions.ts",
+      "src/data/WaveDefinitions.ts"
+    ],
+    "test_file": "src/__tests__/bestiary.test.ts",
+    "related_to": [115],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/bestiary.test.ts", "pattern": "ENEMY_SPAWN_DAY" },
+      { "type": "test_passes", "file": "src/__tests__/bestiary.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 117,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add siege defeat path test coverage. Using source-as-text pattern on SiegeSystem.ts, verify: (1) endSiege(false) branch exists and sends defeat messages (SIEGE_DEFEAT_1/2/3), (2) cleanupSiegeMobs is called on both victory and defeat paths, (3) siegeActive is set to false in endSiege, (4) endless mode defeat sends ENDLESS_DEFEAT message. Currently siege-system.test.ts covers victory extensively but has minimal defeat path validation.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/siege-system.test.ts",
+    "related_to": [106],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/siege-system.test.ts", "pattern": "SIEGE_DEFEAT" },
+      { "type": "test_passes", "file": "src/__tests__/siege-system.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 118,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Remove unused RECRUIT_FAILED import from Strings.ts after task #109 removes its usage. Also remove the RECRUIT_FAILED constant definition itself from Strings.ts if no other file references it. Clean up any test assertions that reference RECRUIT_FAILED to prevent test failures.",
+    "target_files": [
+      "src/data/Strings.ts",
+      "src/systems/CombatSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [109],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/CombatSystem.ts", "pattern": "RECRUIT_FAILED" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
   }
 ]
