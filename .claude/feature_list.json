@@ -2609,7 +2609,7 @@
       { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json", "pattern": "\"max_dist\": 24" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 90,
@@ -2627,7 +2627,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 91,
@@ -2645,7 +2645,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 92,
@@ -2666,7 +2666,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 93,
@@ -2684,7 +2684,7 @@
       { "type": "test_passes", "file": "src/__tests__/lru-cache.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 94,
@@ -2702,7 +2702,7 @@
       { "type": "test_passes", "file": "src/__tests__/player-tag-utils.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 95,
@@ -2721,7 +2721,7 @@
       { "type": "test_passes", "file": "src/__tests__/bestiary-effect-names.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 96,
@@ -2739,7 +2739,7 @@
       { "type": "test_passes", "file": "src/__tests__/entity-range-consistency.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 97,
@@ -2767,7 +2767,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 98,
@@ -2785,6 +2785,189 @@
       { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "boolProp" },
       { "type": "source_contains", "file": "src/systems/ArmorTierSystem.ts", "pattern": "boolProp" },
       { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": true
+  },
+  {
+    "id": 99,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "SiegeSystem victory loop crash safety: the per-player title+playsound block in endSiege() (lines 449-461) is not wrapped in try-catch. If any player disconnects between the isValid check and runCommand, the thrown exception escapes the for-loop and no subsequent players receive their victory fanfare. Wrap the per-player body in try-catch, consistent with ArmorTierSystem.unlockTier() and other player iteration patterns in the codebase.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/siege-victory-safety.test.ts",
+    "related_to": [106],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "try" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 100,
+    "category": "content",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Boss siege lord Phase 1 max_dist/follow_range mismatch: base components have follow_range=32 but nearest_attackable_target max_dist=24. The boss can pathfind 32 blocks but cannot acquire targets beyond 24, creating an 8-block dead zone where the boss wastes CPU pathfinding with no target. Phase 2 (max_dist=28) and Phase 3 (max_dist=32) escalate correctly. Fix by setting base max_dist to 32 to match follow_range, or alternatively lower base follow_range to 24 to save Switch CPU. Since boss is a special entity (not a regular mob), matching at 32 is preferred for gameplay impact.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
+    ],
+    "test_file": "src/__tests__/entity-range-consistency.test.ts",
+    "related_to": [108],
+    "verification": [
+      { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json", "pattern": "\"max_dist\": 32" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 101,
+    "category": "polish",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix CLAUDE.md bestiary dynamic property key documentation. Line 94 says `mk:bestiary_kills_<type>` but actual keys in BestiaryDefinitions.ts are `mk:kills_<type>` (e.g. mk:kills_knight, mk:kills_archer). This mismatch could mislead future development sessions into using the wrong property names. Update the documented format to match the real implementation.",
+    "target_files": [
+      "CLAUDE.md"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "CLAUDE.md", "pattern": "mk:kills_<type>" },
+      { "type": "source_not_contains", "file": "CLAUDE.md", "pattern": "mk:bestiary_kills_<type>" },
+      { "type": "build_passes" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 102,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "CastleSystem: use CASTLE_FAILED string for placement failure feedback. The string is imported (line 8) but never used. The outer catch on line 69 silently swallows errors when both structureManager.place() and buildFallbackStaggered() fail, leaving the player with no feedback. Send CASTLE_FAILED to the player in the outer catch block so they know placement failed. Also prevents the troop bonus and CASTLE_PLACED message from being sent when placement actually failed.",
+    "target_files": [
+      "src/systems/CastleSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/CastleSystem.ts", "pattern": "CASTLE_FAILED" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 103,
+    "category": "content",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Remove useless hurt_by_target from Standard Bearer entity. The Standard Bearer (mk_ally_standard_bearer.se.json) has minecraft:behavior.hurt_by_target at priority 1 (lines 84-86) but has NO attack component (no minecraft:attack, no melee_attack or ranged_attack behavior). The hurt_by_target sets a target when hit but the entity can never act on it — this wastes CPU on target tracking for a pure support unit. Remove the hurt_by_target behavior component.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_not_contains", "file": "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json", "pattern": "hurt_by_target" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 104,
+    "category": "polish",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix MerchantSystem doc comment: line 29 says 'built-in 600s timer' but the entity mk_wandering_merchant.se.json has minecraft:timer with time=[6000,6000]. The value 6000 is in ticks (not seconds). At 20 ticks/sec, 6000 ticks = 300 seconds = 5 minutes, not 600 seconds. Update the comment to '5-minute timer (6000 ticks)' to match the entity definition.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "600s timer" },
+      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "6000 ticks" },
+      { "type": "build_passes" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 105,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Guard MerchantSystem.onDayChanged against siege-active state. EnemyCampSystem.onDayChanged takes a siegeActive parameter and skips spawning during siege, but MerchantSystem does not. In endless mode, merchant days (every 25 past 100: 125, 150, ...) and siege days (every 20 past 100: 120, 140, ...) overlap at LCM=100 intervals (200, 300, 400, ...). On these overlap days, a merchant spawns during an active siege, adding to the entity count at peak load. Fix by adding a siegeActive parameter to MerchantSystem.onDayChanged and passing siege.isActive() from main.ts, matching the EnemyCampSystem pattern.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts",
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/merchant-siege-guard.test.ts",
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "siegeActive" },
+      { "type": "source_contains", "file": "src/main.ts", "pattern": "siege.isActive()" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 106,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add SiegeSystem source-as-text behavioral tests. SiegeSystem is the most complex system (532 lines, 5-wave logic, boss phase transitions, staggered spawning, multiplayer scaling, victory/defeat) with no dedicated behavioral test suite. Using source-as-text pattern, verify: (1) WAVE_DEFINITIONS has 5 entries with increasing entity counts, (2) boss phase HP thresholds are 0.33 and 0.66, (3) ENDLESS_WAVES has 3 escalation tiers with valid entity IDs, (4) MAX_ACTIVE_SIEGE_MOBS=25 stays within entity budget, (5) SPAWNS_PER_TICK=1 for Switch safety, (6) staggeredSpawn uses system.runJob generator, (7) victory/defeat handlers send all expected message strings, (8) checkBossPhase guards against effectiveMax<=0.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts",
+      "src/data/WaveDefinitions.ts"
+    ],
+    "test_file": "src/__tests__/siege-system.test.ts",
+    "related_to": [99, 108],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/siege-system.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/siege-system.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 107,
+    "category": "functional",
+    "priority": "low",
+    "complexity": "S",
+    "description": "EnemyCampSystem: reset nextCampId counter in clearAllCamps(). The module-level nextCampId (line 20) increments on every camp spawn but is never reset when clearAllCamps() is called during mk:reset. While reaching MAX_CAMP_ID (1,000,000) is practically impossible in one session, it's a correctness issue — the counter should reset alongside the camps Map. Add `nextCampId = 1;` to the clearAllCamps() method.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/EnemyCampSystem.ts", "pattern": "nextCampId = 1" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 108,
+    "category": "test",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add boss entity phase consistency test. Using source-as-text pattern on mk_boss_siege_lord.se.json, verify: (1) follow_range matches max_dist in base components (after task #100 fix), (2) follow_range matches max_dist in Phase 2 and Phase 3 component groups, (3) damage values escalate monotonically across phases (base < phase_2 < phase_3), (4) movement speed escalates across phases, (5) scan_interval is set on all nearest_attackable_target behaviors.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
+    ],
+    "test_file": "src/__tests__/boss-phase-consistency.test.ts",
+    "related_to": [100, 106],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/boss-phase-consistency.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/boss-phase-consistency.test.ts" },
       { "type": "all_tests_pass" }
     ],
     "passes": false
