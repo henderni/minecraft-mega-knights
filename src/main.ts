@@ -10,6 +10,7 @@ import { BestiarySystem } from "./systems/BestiarySystem";
 import { MerchantSystem } from "./systems/MerchantSystem";
 import { QuestJournalSystem } from "./systems/QuestJournalSystem";
 import { DifficultySystem } from "./systems/DifficultySystem";
+import { LRUTickCache } from "./utils/LRUTickCache";
 import { DEBUG_DAY_SET, DEBUG_QUEST_STARTED, DEBUG_QUEST_RESET, FRIENDLY_FIRE_BLOCKED } from "./data/Strings";
 import { ENEMY_SPAWN_DAY } from "./data/WaveDefinitions";
 import { setEnemyMultiplierGetter } from "./data/MilestoneEvents";
@@ -54,7 +55,7 @@ dayCounter.onDayChanged((day) => {
     siege.startEndlessSiege(day);
   }
   campSystem.onDayChanged(day, siege.isActive());
-  merchant.onDayChanged(day);
+  merchant.onDayChanged(day, siege.isActive());
 });
 
 // Main game tick (every 20 ticks = 1 second)
@@ -110,25 +111,6 @@ world.afterEvents.entitySpawn.subscribe((event) => {
     });
   }
 });
-
-/** Bounded LRU map for tick-based rate limiting — evicts oldest entries when over capacity */
-class LRUTickCache {
-  private map = new Map<string, number>();
-  private order: string[] = [];
-  private maxSize: number;
-  constructor(maxSize: number) { this.maxSize = maxSize; }
-  get(key: string): number | undefined { return this.map.get(key); }
-  set(key: string, value: number): void {
-    this.map.set(key, value);
-    const idx = this.order.indexOf(key);
-    if (idx >= 0) { this.order.splice(idx, 1); }
-    this.order.push(key);
-    while (this.map.size > this.maxSize) {
-      const oldest = this.order.shift();
-      if (oldest) { this.map.delete(oldest); }
-    }
-  }
-}
 
 // Friendly fire protection — prevent players from damaging their own allies
 const friendlyFireCache = new LRUTickCache(200);

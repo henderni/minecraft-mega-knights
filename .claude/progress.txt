@@ -789,3 +789,33 @@ Test coverage:
 
 Next: Start with task #99 (siege victory try-catch), then #100-#101
 ===
+
+=== Coding Session 9 — 2026-02-21 ===
+Completed all 10 tasks (#99-#108) in v9 harness round.
+
+Bug fixes (5):
+- #99 (HIGH S): SiegeSystem victory loop — wrapped per-player title+playsound in try-catch
+- #100 (HIGH S): Boss siege lord base max_dist 24→32 to match follow_range
+- #102 (MED S): CastleSystem — use CASTLE_FAILED in outer catch for player feedback
+- #105 (MED S): MerchantSystem — added siegeActive param, passed from main.ts
+- #107 (LOW S): EnemyCampSystem — reset nextCampId in clearAllCamps()
+
+Content fixes (1):
+- #103 (MED S): Removed useless hurt_by_target from Standard Bearer entity
+
+Polish (2):
+- #101 (HIGH S): Fixed CLAUDE.md bestiary key docs (mk:bestiary_kills_ → mk:kills_)
+- #104 (MED S): Fixed MerchantSystem comment (600s → 6000 ticks/5 min)
+
+Test suites (2):
+- #106 (MED M): siege-system.test.ts — 82 tests covering wave config, boss phases, staggered spawn, victory/defeat
+- #108 (LOW S): boss-phase-consistency.test.ts — 47 tests covering phase escalation, range matching, persistence
+
+All 108/108 tasks COMPLETE.
+Full suite: 73 files, 2763 tests, ALL PASSING
+Build: tsc clean
+===
+
+--- checkpoint 7ad43124-727e-4cd9-b8c2-99c8f0ef4a89 @ 2026-02-21 09:54:52 ---
+Progress: 98/108 tasks complete
+---

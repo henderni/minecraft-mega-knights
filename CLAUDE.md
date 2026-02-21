@@ -18,11 +18,22 @@ The Switch has a Tegra X1 (ARM), 4 GB shared RAM, and a Maxwell GPU. Every code 
 npm install          # Install dependencies
 npm run build        # Compile TS → MegaKnights_BP/scripts/
 npm run watch        # Watch mode
-npm run deploy       # Build + rsync to BDS (requires $BDS_DIR env var)
+npm run deploy       # Build + rsync to BDS (set $BDS_DIR first, e.g. /path/to/server)
+npm run package      # Package add-on for distribution
 npm run test:run     # Run vitest test suite
+npm run test:coverage # Run tests with coverage report
 npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
 npm run format:check # Prettier check
+
+# BDS Docker commands
+npm run bds:start    # Start BDS container (port 19132/udp)
+npm run bds:stop     # Stop BDS container
+npm run bds:restart  # Restart BDS container
+npm run bds:logs     # Tail BDS logs
+npm run bds:setup    # Enable packs on BDS
+npm run bds:console  # Attach to BDS console
+npm run bds:ip       # Show LAN IP for iPad connection
 ```
 
 ## Architecture
@@ -36,10 +47,16 @@ src/
   data/                # Config: AllyNames, ArmorTiers, BestiaryDefinitions, CampDefinitions,
                        #   CastleBlueprints, FactionDefinitions, MilestoneEvents,
                        #   Strings, WaveDefinitions (includes ENEMY_SPAWN_DAY)
+  utils/               # Shared helpers (LRUTickCache, numProp)
   __tests__/           # vitest test files (source-as-text pattern — no @minecraft/server imports)
 MegaKnights_BP/        # Behavior pack (entities, items, loot, recipes, scripts/)
 MegaKnights_RP/        # Resource pack (textures, models, animations)
-tools/build.sh         # BDS deploy script
+tools/
+  build.sh             # BDS deploy script (rsync packs to server)
+  package.sh           # Package add-on for distribution
+  bds-enable-packs.sh  # Enable packs on BDS server
+  generate_textures.py # Texture generation (Python)
+  generate-textures.js # Texture generation (Node)
 ```
 
 ## Systems
@@ -74,7 +91,7 @@ tools/build.sh         # BDS deploy script
 - Entity (ally): `mk:owner_name` — tracks which player owns the unit
 - Entity (ally): `mk:stance` — current stance index (0=Follow, 1=Guard, 2=Hold)
 - Entity (ally): `mk:ally_name` — named ally display name
-- Player (bestiary): `mk:bestiary_kills_<type>` — per-enemy kill count for bestiary milestones
+- Player (bestiary): `mk:kills_<type>` — per-enemy kill count for bestiary milestones (e.g. `mk:kills_knight`, `mk:kills_archer`)
 
 **Key data exports**:
 - `ENEMY_SPAWN_DAY` (WaveDefinitions.ts) — minimum quest day before each enemy type spawns naturally
@@ -117,7 +134,7 @@ tools/build.sh         # BDS deploy script
 ## Gotchas
 
 - **Structure placement**: `world.structureManager.place()` is primary; falls back to fill/setblock commands if `.mcstructure` files missing.
-- **Deleted utils**: `src/utils/` (EntityUtils, MessageUtils, PlayerData) was removed — logic now lives in each system.
+- **Utils directory**: `src/utils/` was gutted (EntityUtils, MessageUtils, PlayerData removed — logic lives in each system) but now contains `LRUTickCache` (tick-aware cache) and `numProp` (numeric dynamic property helper).
 - **Tick rate**: 20 ticks/sec. Day counter ticks every 20 ticks. HUD updates every 10 ticks. Army recount every 200 ticks.
 - **Army capacity**: Base 15 units + castle bonuses (+5 tower, +7 gatehouse, +8 great hall) = 35 max singleplayer. `GLOBAL_ARMY_CAP=35` is intentional — 35 allies + 25 siege mobs = 60, the Switch entity budget ceiling.
 - **Minecraft API versions**: Requires engine `[1, 21, 50]`; uses `@minecraft/server@^2.5.0`.
@@ -187,11 +204,3 @@ For long-running autonomous work across multiple sessions:
 
 **In-session usage:** Use `/harness init` to generate a feature list, `/harness status` to check progress, or `/harness add <description>` to add tasks.
 
-## BDS Deployment
-
-```bash
-export BDS_DIR=/path/to/macOS-Bedrock-Server/server
-npm run deploy
-```
-
-Rsyncs both packs to the server's `development_behavior_packs/` and `development_resource_packs/`.

@@ -67,7 +67,8 @@ export class CastleSystem {
       player.sendMessage(CASTLE_CAPACITY_UP(blueprint.troopBonus, newMax));
       try { player.runCommand("playsound random.anvil_use @s ~ ~ ~ 1 0.8"); } catch { /* */ }
     } catch {
-      // Player disconnected or in unloaded chunk — non-fatal
+      // Player disconnected or placement failed entirely — send failure feedback
+      try { player.sendMessage(CASTLE_FAILED); } catch { /* player may be invalid */ }
     }
   }
 

@@ -122,7 +122,7 @@
                 }
               ]
             },
-            "max_dist": 24
+            "max_dist": 32
           }
         ],
         "must_see": true,

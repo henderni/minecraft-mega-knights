@@ -450,14 +450,18 @@ export class SiegeSystem {
         if (!player.isValid) {
           continue;
         }
-        player.onScreenDisplay.setTitle(SIEGE_VICTORY_TITLE, {
-          subtitle: SIEGE_VICTORY_SUBTITLE,
-          fadeInDuration: 20,
-          stayDuration: 100,
-          fadeOutDuration: 20,
-        });
-        // Play victory fanfare
-        player.runCommand("playsound random.totem @s ~ ~ ~ 1 1");
+        try {
+          player.onScreenDisplay.setTitle(SIEGE_VICTORY_TITLE, {
+            subtitle: SIEGE_VICTORY_SUBTITLE,
+            fadeInDuration: 20,
+            stayDuration: 100,
+            fadeOutDuration: 20,
+          });
+          // Play victory fanfare
+          player.runCommand("playsound random.totem @s ~ ~ ~ 1 1");
+        } catch {
+          // Player may have disconnected mid-iteration
+        }
       }
 
       // Enable endless mode after a short delay for dramatic effect

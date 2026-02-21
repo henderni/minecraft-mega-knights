@@ -61,6 +61,7 @@ export class EnemyCampSystem {
     this.lastCampDay.clear();
     this.cachedPlayerMap.clear();
     this.staleCampCounter.clear();
+    nextCampId = 1;
   }
 
   /**

@@ -10,7 +10,7 @@ import {
 } from "../data/Strings";
 
 /** Safe numeric dynamic property read — guards against non-number corruption */
-const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+import { numProp } from "../utils/numProp";
 
 /** Days on which the Wandering Merchant may spawn near each player */
 export const MERCHANT_DAYS = new Set([15, 30, 55, 75, 95]);
@@ -26,8 +26,8 @@ const GROUND_SCAN_RANGE = 10;
  * MerchantSystem — spawns the Wandering Merchant near players on
  * specific milestone days (15, 30, 55, 75, 95).
  *
- * One merchant per player per day. The entity has a built-in 600s timer
- * (minecraft:timer in entity JSON) and despawns itself — no script tracking needed.
+ * One merchant per player per day. The entity has a built-in 5-minute timer
+ * (6000 ticks in minecraft:timer, entity JSON) and despawns itself — no script tracking needed.
  */
 export class MerchantSystem {
   private army: ArmySystem;
@@ -39,7 +39,8 @@ export class MerchantSystem {
   /** Track which players already have a merchant this day */
   private merchantedThisDay = new Set<string>();
 
-  onDayChanged(day: number): void {
+  onDayChanged(day: number, siegeActive: boolean): void {
+    if (siegeActive) {return;}
     // Normal merchant days + endless mode recurring every 25 days past day 100
     const isMerchantDay = MERCHANT_DAYS.has(day) || (day > 100 && (day - 100) % 25 === 0);
     if (!isMerchantDay) {return;}

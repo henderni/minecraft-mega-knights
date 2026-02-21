@@ -2805,7 +2805,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 100,
@@ -2823,7 +2823,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 101,
@@ -2841,7 +2841,7 @@
       { "type": "source_not_contains", "file": "CLAUDE.md", "pattern": "mk:bestiary_kills_<type>" },
       { "type": "build_passes" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 102,
@@ -2859,7 +2859,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 103,
@@ -2877,7 +2877,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 104,
@@ -2895,7 +2895,7 @@
       { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "6000 ticks" },
       { "type": "build_passes" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 105,
@@ -2915,7 +2915,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 106,
@@ -2934,7 +2934,7 @@
       { "type": "test_passes", "file": "src/__tests__/siege-system.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 107,
@@ -2952,7 +2952,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 108,
@@ -2970,6 +2970,6 @@
       { "type": "test_passes", "file": "src/__tests__/boss-phase-consistency.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   }
 ]
