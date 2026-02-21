@@ -513,3 +513,38 @@ Task clusters:
 
 Next: Start with task #67 (reset dimension fix) and #68 (armor init try-catch), then #69-#71
 ===
+
+--- checkpoint f917534f-75b6-421a-a6ca-a8b13a851bfd @ 2026-02-20 18:09:20 ---
+Progress: 66/77 tasks complete
+---
+
+=== Session 2026-02-20 18:15 ===
+Tasks #67-77: Complete all v6 tasks
+
+Code fixes (verified from prior session's uncommitted work):
+- #67 (HIGH S): Multi-dimension reset — for-loop over ["overworld", "nether", "the_end"] in main.ts
+- #68 (HIGH S): ArmorTier init try-catch — give commands wrapped in try-catch
+- #69 (MED S): Merchant army_size — single read via numProp(), reused for increment
+- #70 (MED S): Camp expiration — staleCampCounter with STALE_CAMP_THRESHOLD=3 in EnemyCampSystem.ts
+- #71 (MED M): typeof guards — numProp() helper in all 6 system files
+
+Code changes (this session):
+- #72 (LOW S): LRU extraction — LRUTickCache class replaces both duplicate patterns in main.ts
+
+Tests (this session):
+- #73 (MED M): DayCounterSystem behavioral tests — src/__tests__/day-counter-system.test.ts (28 tests)
+- #74 (MED S): Multi-dimension reset tests — added to reset-entity-cleanup.test.ts (4 new tests)
+- #75 (MED S): ArmorTier init error-handling tests — added to armor-tier-system.test.ts (5 new tests)
+- #76 (MED S): Merchant scroll-use tests — src/__tests__/merchant-scroll.test.ts (25 tests)
+- #77 (MED S): Camp expiration tests — src/__tests__/camp-expiration.test.ts (16 tests)
+
+Updated test files for LRU refactor: friendly-fire, performance-budget, system-wiring, crash-resistance, error-handling
+
+All 77/77 tasks COMPLETE.
+Full suite: 64 files, 2510 tests, ALL PASSING
+Build: tsc clean
+===
+
+--- checkpoint final-v6 @ 2026-02-20 ---
+Progress: 77/77 tasks complete — ALL DONE
+---

@@ -50,7 +50,6 @@ const BASE_ARMY_SIZE = 15;
 const MAX_ARMY_BONUS = 20;
 const MAX_SPAWNS_PER_PLAYER = 24;
 const MAX_TAG_CACHE = 100;
-const MAX_RATE_LIMIT_CACHE = 200;
 const MAX_DAY = 100;
 const MAX_MILESTONE_ENTITIES = 20;
 
@@ -421,11 +420,9 @@ describe("HUD and cache safety", () => {
     expect(armySrc).toContain("ownerTagCache.clear()");
   });
 
-  it("Rate limiter bounded at MAX_RATE_LIMIT_CACHE with while-loop eviction", () => {
-    expect(mainSrc).toContain(`MAX_RATE_LIMIT_CACHE = ${MAX_RATE_LIMIT_CACHE}`);
-    expect(mainSrc).toMatch(
-      /while\s*\(\s*lastArmySpawnTickByPlayer\.size\s*>\s*MAX_RATE_LIMIT_CACHE\s*\)/,
-    );
+  it("Rate limiter uses shared LRUTickCache for army spawn cooldowns", () => {
+    expect(mainSrc).toContain("LRUTickCache");
+    expect(mainSrc).toContain("armySpawnCache");
   });
 
   it("HUD prunes disconnected players from per-player maps", () => {

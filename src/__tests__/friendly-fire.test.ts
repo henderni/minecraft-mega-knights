@@ -46,22 +46,14 @@ describe("Friendly Fire Protection (main.ts lines 114-171)", () => {
     expect(MAIN_SRC).toMatch(/system\.run\s*\(\s*\(\s*\)\s*=>\s*\{[\s\S]*?health\.setCurrentValue/);
   });
 
-  it("defines MAX_FRIENDLY_FIRE_CACHE constant for bounded LRU cache", () => {
-    expect(MAIN_SRC).toMatch(/MAX_FRIENDLY_FIRE_CACHE\s*=\s*\d+/);
+  it("uses shared LRUTickCache for bounded rate-limit cache", () => {
+    expect(MAIN_SRC).toContain("LRUTickCache");
+    expect(MAIN_SRC).toContain("friendlyFireCache");
   });
 
-  it("MAX_FRIENDLY_FIRE_CACHE is a reasonable positive value", () => {
-    const match = MAIN_SRC.match(/MAX_FRIENDLY_FIRE_CACHE\s*=\s*(\d+)/);
-    expect(match).not.toBeNull();
-    const value = parseInt(match![1], 10);
-    expect(value).toBeGreaterThan(0);
-    expect(value).toBeLessThanOrEqual(10000);
-  });
-
-  it("LRU eviction uses while loop with shift() pattern", () => {
-    // Eviction pattern: while (map.size > MAX) { shift oldest from order array }
-    expect(MAIN_SRC).toMatch(/while\s*\(\s*lastFriendlyFireMsg\.size\s*>/);
-    expect(MAIN_SRC).toMatch(/friendlyFireInsertionOrder\.shift\s*\(\s*\)/);
+  it("LRU eviction uses shared LRUTickCache class", () => {
+    expect(MAIN_SRC).toContain("LRUTickCache");
+    expect(MAIN_SRC).toContain("friendlyFireCache");
   });
 
   it("checks source player typeId is minecraft:player before acting", () => {

@@ -9,6 +9,9 @@ import {
   ARMY_FULL_SHARED,
 } from "../data/Strings";
 
+/** Safe numeric dynamic property read — guards against non-number corruption */
+const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+
 /** Days on which the Wandering Merchant may spawn near each player */
 export const MERCHANT_DAYS = new Set([15, 30, 55, 75, 95]);
 
@@ -100,8 +103,8 @@ export class MerchantSystem {
 
         // Re-check army capacity inside system.run() to prevent race condition
         // when two scrolls are used in the same tick
-        const currentSize = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
-        const armyBonus = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+        const currentSize = numProp(player.getDynamicProperty("mk:army_size"));
+        const armyBonus = numProp(player.getDynamicProperty("mk:army_bonus"));
         const maxSize = this.army.getMaxArmySize(player);
         const playerCount = world.getAllPlayers().length;
         const effectiveCap = ArmySystem.getEffectiveCap(armyBonus, playerCount);
@@ -122,9 +125,8 @@ export class MerchantSystem {
         const allyName = generateAllyName("mk:mk_ally_standard_bearer");
         bearer.nameTag = `§a${allyName} §7(Standard Bearer)`;
         bearer.setDynamicProperty("mk:ally_name", allyName);
-        // Increment army count
-        const size = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
-        player.setDynamicProperty("mk:army_size", size + 1);
+        // Increment army count (reuse currentSize from capacity check above)
+        player.setDynamicProperty("mk:army_size", currentSize + 1);
         // Remove scroll from inventory
         player.runCommand("clear @s mk:mk_standard_bearer_scroll 0 1");
         player.sendMessage(STANDARD_BEARER_JOINED);

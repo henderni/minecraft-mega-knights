@@ -5,6 +5,9 @@ import { ARMOR_TIERS, TIER_NAMES } from "../data/ArmorTiers";
 import { ArmySystem } from "./ArmySystem";
 import { DayCounterSystem } from "./DayCounterSystem";
 import { DifficultySystem } from "./DifficultySystem";
+
+/** Safe numeric dynamic property read — guards against non-number corruption */
+const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
 import {
   JOURNAL_TITLE,
   JOURNAL_OVERVIEW_TITLE,
@@ -40,11 +43,11 @@ export class QuestJournalSystem {
 
   private async showTOC(player: Player): Promise<void> {
     const day = this.dayCounter.getCurrentDay();
-    const armySize = Math.max(0, (player.getDynamicProperty("mk:army_size") as number) ?? 0);
-    const armyBonus = Math.max(0, (player.getDynamicProperty("mk:army_bonus") as number) ?? 0);
+    const armySize = Math.max(0, numProp(player.getDynamicProperty("mk:army_size")));
+    const armyBonus = Math.max(0, numProp(player.getDynamicProperty("mk:army_bonus")));
     const tier = Math.max(
       0,
-      Math.min(ARMOR_TIERS.length - 1, (player.getDynamicProperty("mk:current_tier") as number) ?? 0),
+      Math.min(ARMOR_TIERS.length - 1, numProp(player.getDynamicProperty("mk:current_tier"))),
     );
     const tierName = TIER_NAMES[tier] ?? "Page";
     const playerCount = world.getAllPlayers().length;
@@ -121,7 +124,7 @@ export class QuestJournalSystem {
     const lines: string[] = ["Kill enemies to earn permanent passive buffs!\n"];
 
     for (const entry of BESTIARY) {
-      const kills = Math.max(0, (player.getDynamicProperty(entry.killKey) as number) ?? 0);
+      const kills = Math.max(0, numProp(player.getDynamicProperty(entry.killKey)));
       const parts: string[] = [];
       for (const m of entry.milestones) {
         const effectLevel = m.amplifier === 0 ? "I" : "II";

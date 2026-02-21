@@ -120,3 +120,59 @@ describe("ArmorTierSystem: data consistency", () => {
     expect(tokenEntries.length).toBe(ARMOR_TIERS.length - 1);
   });
 });
+
+describe("ArmorTierSystem: initializePlayer error handling (task #68 regression)", () => {
+  // Extract the initializePlayer method body
+  const initBlock = armorSrc.slice(
+    armorSrc.indexOf("initializePlayer(player"),
+    armorSrc.indexOf("static unlockTier"),
+  );
+
+  it("wraps give commands in try-catch", () => {
+    expect(initBlock).toContain("try");
+    expect(initBlock).toContain("catch");
+  });
+
+  it("all four armor piece give commands are inside the try block", () => {
+    const tryBlock = initBlock.slice(
+      initBlock.indexOf("try"),
+      initBlock.indexOf("catch"),
+    );
+    expect(tryBlock).toContain("mk_page_helmet");
+    expect(tryBlock).toContain("mk_page_chestplate");
+    expect(tryBlock).toContain("mk_page_leggings");
+    expect(tryBlock).toContain("mk_page_boots");
+  });
+
+  it("ARMOR_GIVEN message is inside the try block (sent after gives)", () => {
+    const tryBlock = initBlock.slice(
+      initBlock.indexOf("try"),
+      initBlock.indexOf("catch"),
+    );
+    expect(tryBlock).toContain("ARMOR_GIVEN");
+  });
+
+  it("ARMOR_GIVEN is sent AFTER all four give commands", () => {
+    const tryBlock = initBlock.slice(
+      initBlock.indexOf("try"),
+      initBlock.indexOf("catch"),
+    );
+    const helmetIdx = tryBlock.indexOf("mk_page_helmet");
+    const bootsIdx = tryBlock.indexOf("mk_page_boots");
+    const msgIdx = tryBlock.indexOf("ARMOR_GIVEN");
+    expect(helmetIdx).toBeGreaterThan(-1);
+    expect(bootsIdx).toBeGreaterThan(-1);
+    expect(msgIdx).toBeGreaterThan(-1);
+    expect(msgIdx).toBeGreaterThan(bootsIdx);
+    expect(bootsIdx).toBeGreaterThan(helmetIdx);
+  });
+
+  it("catch block is non-empty (has comment or handling)", () => {
+    const catchBlock = initBlock.slice(
+      initBlock.indexOf("catch"),
+      initBlock.indexOf("}", initBlock.indexOf("catch") + 10) + 1,
+    );
+    // Should have at least a comment explaining the catch
+    expect(catchBlock.length).toBeGreaterThan(10);
+  });
+});

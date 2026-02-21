@@ -1244,7 +1244,9 @@
       "src/main.ts"
     ],
     "test_file": "src/__tests__/system-wiring.test.ts",
-    "related_to": [53],
+    "related_to": [
+      53
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1270,7 +1272,9 @@
       "src/systems/DayCounterSystem.ts"
     ],
     "test_file": "src/__tests__/day-counter.test.ts",
-    "related_to": [56],
+    "related_to": [
+      56
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1302,7 +1306,9 @@
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": "src/__tests__/reset-completeness.test.ts",
-    "related_to": [54],
+    "related_to": [
+      54
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1359,7 +1365,9 @@
       "src/systems/DayCounterSystem.ts"
     ],
     "test_file": null,
-    "related_to": [42],
+    "related_to": [
+      42
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1380,7 +1388,7 @@
     "category": "functional",
     "priority": "medium",
     "complexity": "S",
-    "description": "Add boss despawn protection during siege. The Siege Lord entity (mk_boss_siege_lord.se.json) has minecraft:despawn with max_distance:128, min_distance:96. During the climactic Day 100 siege, if a player retreats more than 128 blocks, the boss despawns and is lost forever — breaking the siege victory condition. Fix: add minecraft:persistent to the boss entity's base components, or remove the minecraft:despawn component from its active siege component group. The boss already has a scripted cleanup via endSiege().",
+    "description": "Add boss despawn protection during siege. The Siege Lord entity (mk_boss_siege_lord.se.json) has minecraft:despawn with max_distance:128, min_distance:96. During the climactic Day 100 siege, if a player retreats more than 128 blocks, the boss despawns and is lost forever \u2014 breaking the siege victory condition. Fix: add minecraft:persistent to the boss entity's base components, or remove the minecraft:despawn component from its active siege component group. The boss already has a scripted cleanup via endSiege().",
     "target_files": [
       "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
     ],
@@ -1406,7 +1414,7 @@
     "category": "performance",
     "priority": "medium",
     "complexity": "S",
-    "description": "Remove wasted targeting AI from Standard Bearer ally. mk_ally_standard_bearer.se.json has minecraft:behavior.nearest_attackable_target (priority 2) which causes constant pathfinding target scans, but the entity has NO minecraft:attack or minecraft:behavior.melee_attack component. It can never actually attack, so the targeting AI wastes CPU cycles every scan_interval. Remove nearest_attackable_target from the Standard Bearer — it should only follow and buff, not waste cycles searching for targets it can never hit.",
+    "description": "Remove wasted targeting AI from Standard Bearer ally. mk_ally_standard_bearer.se.json has minecraft:behavior.nearest_attackable_target (priority 2) which causes constant pathfinding target scans, but the entity has NO minecraft:attack or minecraft:behavior.melee_attack component. It can never actually attack, so the targeting AI wastes CPU cycles every scan_interval. Remove nearest_attackable_target from the Standard Bearer \u2014 it should only follow and buff, not waste cycles searching for targets it can never hit.",
     "target_files": [
       "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json"
     ],
@@ -1438,7 +1446,9 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": null,
-    "related_to": [14],
+    "related_to": [
+      14
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1464,7 +1474,7 @@
     "category": "performance",
     "priority": "low",
     "complexity": "S",
-    "description": "Avoid double getAllPlayers() call in SiegeSystem.startSiege(). Lines 141 and 148 both call world.getAllPlayers() — the first to find a valid player for dimension ID, the second to play the wither sound to all players. The second call is redundant since startPlayers already contains the same player list. Fix: reuse the startPlayers variable on line 148 instead of calling world.getAllPlayers() again.",
+    "description": "Avoid double getAllPlayers() call in SiegeSystem.startSiege(). Lines 141 and 148 both call world.getAllPlayers() \u2014 the first to find a valid player for dimension ID, the second to play the wither sound to all players. The second call is redundant since startPlayers already contains the same player list. Fix: reuse the startPlayers variable on line 148 instead of calling world.getAllPlayers() again.",
     "target_files": [
       "src/systems/SiegeSystem.ts"
     ],
@@ -1518,7 +1528,9 @@
       "src/systems/ArmorTierSystem.ts"
     ],
     "test_file": "src/__tests__/init-order.test.ts",
-    "related_to": [42],
+    "related_to": [
+      42
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -1546,7 +1558,9 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": "src/__tests__/reset-entity-cleanup.test.ts",
-    "related_to": [44],
+    "related_to": [
+      44
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -1572,7 +1586,9 @@
       "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
     ],
     "test_file": "src/__tests__/entity-validation.test.ts",
-    "related_to": [47],
+    "related_to": [
+      47
+    ],
     "verification": [
       {
         "type": "test_passes",
@@ -1589,12 +1605,14 @@
     "category": "functional",
     "priority": "high",
     "complexity": "S",
-    "description": "Fix stance NaN propagation in ArmySystem. Line 273 casts getDynamicProperty('mk:stance') as number, but if the property is somehow a non-number (string from external modification, or undefined handled incorrectly), the 'as number' cast is compile-time only — the runtime value stays a string. Math.max(0, Math.min(2, 'hello')) yields NaN, then (NaN + 1) % 3 = NaN, which gets written to the entity via setDynamicProperty('mk:stance', NaN), permanently corrupting the stance. Fix: add a typeof guard — const raw = entity.getDynamicProperty('mk:stance'); const currentStance = Math.max(0, Math.min(2, typeof raw === 'number' ? raw : 0));",
+    "description": "Fix stance NaN propagation in ArmySystem. Line 273 casts getDynamicProperty('mk:stance') as number, but if the property is somehow a non-number (string from external modification, or undefined handled incorrectly), the 'as number' cast is compile-time only \u2014 the runtime value stays a string. Math.max(0, Math.min(2, 'hello')) yields NaN, then (NaN + 1) % 3 = NaN, which gets written to the entity via setDynamicProperty('mk:stance', NaN), permanently corrupting the stance. Fix: add a typeof guard \u2014 const raw = entity.getDynamicProperty('mk:stance'); const currentStance = Math.max(0, Math.min(2, typeof raw === 'number' ? raw : 0));",
     "target_files": [
       "src/systems/ArmySystem.ts"
     ],
     "test_file": "src/__tests__/stance-safety.test.ts",
-    "related_to": [63],
+    "related_to": [
+      63
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1620,12 +1638,14 @@
     "category": "content",
     "priority": "high",
     "complexity": "S",
-    "description": "Fix merchant despawn timer — 30 seconds is far too short. mk_wandering_merchant.se.json has minecraft:timer with time [600, 600] (600 ticks / 20 tps = 30 seconds). Players receive a compass direction hint when the merchant spawns, but 30 seconds is barely enough time to walk to it. Increase to [6000, 6000] (5 minutes) so players have reasonable time to find and trade with the Wandering Merchant. This is especially important on large worlds or when players are exploring camps.",
+    "description": "Fix merchant despawn timer \u2014 30 seconds is far too short. mk_wandering_merchant.se.json has minecraft:timer with time [600, 600] (600 ticks / 20 tps = 30 seconds). Players receive a compass direction hint when the merchant spawns, but 30 seconds is barely enough time to walk to it. Increase to [6000, 6000] (5 minutes) so players have reasonable time to find and trade with the Wandering Merchant. This is especially important on large worlds or when players are exploring camps.",
     "target_files": [
       "MegaKnights_BP/entities/mk_wandering_merchant.se.json"
     ],
     "test_file": "src/__tests__/entity-validation.test.ts",
-    "related_to": [62],
+    "related_to": [
+      62
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1656,7 +1676,9 @@
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": "src/__tests__/camp-system.test.ts",
-    "related_to": [65],
+    "related_to": [
+      65
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1708,7 +1730,7 @@
     "category": "performance",
     "priority": "medium",
     "complexity": "S",
-    "description": "Cache army bonus in MerchantSystem.onScrollUse to avoid redundant bridge calls. Lines 103-108: mk:army_bonus is read twice — once inside this.army.getMaxArmySize(player) at line 104 (which reads getDynamicProperty internally), and again explicitly at line 107 via player.getDynamicProperty('mk:army_bonus'). Each getDynamicProperty is an engine bridge call. Fix: read mk:army_bonus once, compute maxSize manually (BASE_ARMY_SIZE + Math.min(bonus, MAX_ARMY_BONUS)), and pass the cached bonus to ArmySystem.getEffectiveCap.",
+    "description": "Cache army bonus in MerchantSystem.onScrollUse to avoid redundant bridge calls. Lines 103-108: mk:army_bonus is read twice \u2014 once inside this.army.getMaxArmySize(player) at line 104 (which reads getDynamicProperty internally), and again explicitly at line 107 via player.getDynamicProperty('mk:army_bonus'). Each getDynamicProperty is an engine bridge call. Fix: read mk:army_bonus once, compute maxSize manually (BASE_ARMY_SIZE + Math.min(bonus, MAX_ARMY_BONUS)), and pass the cached bonus to ArmySystem.getEffectiveCap.",
     "target_files": [
       "src/systems/MerchantSystem.ts"
     ],
@@ -1735,7 +1757,9 @@
       "src/data/ArmorTiers.ts"
     ],
     "test_file": "src/__tests__/armor-tier-system.test.ts",
-    "related_to": [61],
+    "related_to": [
+      61
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -1762,7 +1786,9 @@
       "src/systems/DifficultySystem.ts"
     ],
     "test_file": "src/__tests__/combat-system.test.ts",
-    "related_to": [60],
+    "related_to": [
+      60
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -1788,7 +1814,9 @@
       "MegaKnights_BP/entities/mk_wandering_merchant.se.json"
     ],
     "test_file": "src/__tests__/entity-validation.test.ts",
-    "related_to": [56],
+    "related_to": [
+      56
+    ],
     "verification": [
       {
         "type": "test_passes",
@@ -1810,7 +1838,9 @@
       "src/systems/ArmySystem.ts"
     ],
     "test_file": "src/__tests__/stance-safety.test.ts",
-    "related_to": [55],
+    "related_to": [
+      55
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -1862,12 +1892,14 @@
     "category": "functional",
     "priority": "low",
     "complexity": "S",
-    "description": "Guard spawnGuards generator against getDimension failure. EnemyCampSystem.ts line 341: same pattern as dropRewards — world.getDimension(dimId) at the top of the runJob generator is outside the per-entity try-catch. If getDimension throws, the generator crashes and no guards spawn (camp appears empty). Fix: wrap the entire generator body in try-catch with console.warn, matching the pattern used in dropRewards (after task #57 fixes it).",
+    "description": "Guard spawnGuards generator against getDimension failure. EnemyCampSystem.ts line 341: same pattern as dropRewards \u2014 world.getDimension(dimId) at the top of the runJob generator is outside the per-entity try-catch. If getDimension throws, the generator crashes and no guards spawn (camp appears empty). Fix: wrap the entire generator body in try-catch with console.warn, matching the pattern used in dropRewards (after task #57 fixes it).",
     "target_files": [
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": null,
-    "related_to": [57],
+    "related_to": [
+      57
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1888,7 +1920,7 @@
     "category": "polish",
     "priority": "low",
     "complexity": "S",
-    "description": "Sync lang file entity key ordering between BP and RP. MegaKnights_BP/texts/en_US.lang and MegaKnights_RP/texts/en_US.lang have entity name entries in different orders (e.g., boss entry position differs). While this doesn't affect functionality, inconsistent ordering makes manual comparison difficult and increases merge conflict risk. Fix: reorder entity keys in both files to use the same order — allies (alphabetical), enemies (alphabetical), special (boss, merchant).",
+    "description": "Sync lang file entity key ordering between BP and RP. MegaKnights_BP/texts/en_US.lang and MegaKnights_RP/texts/en_US.lang have entity name entries in different orders (e.g., boss entry position differs). While this doesn't affect functionality, inconsistent ordering makes manual comparison difficult and increases merge conflict risk. Fix: reorder entity keys in both files to use the same order \u2014 allies (alphabetical), enemies (alphabetical), special (boss, merchant).",
     "target_files": [
       "MegaKnights_BP/texts/en_US.lang",
       "MegaKnights_RP/texts/en_US.lang"
@@ -1915,7 +1947,9 @@
       "src/main.ts"
     ],
     "test_file": null,
-    "related_to": [74],
+    "related_to": [
+      74
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1934,19 +1968,21 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 68,
     "category": "functional",
     "priority": "high",
     "complexity": "S",
-    "description": "Wrap ArmorTierSystem.initializePlayer give commands in try-catch. Lines 18-21 have four consecutive player.runCommand(\"give @s mk:mk_page_*\") calls with no error handling. If any give fails (item not loaded, inventory full, player transitioning), all subsequent gives and the ARMOR_GIVEN message are skipped — the player gets partial or no armor silently. Fix: wrap the four give commands + message in a single try-catch block so failures are handled gracefully.",
+    "description": "Wrap ArmorTierSystem.initializePlayer give commands in try-catch. Lines 18-21 have four consecutive player.runCommand(\"give @s mk:mk_page_*\") calls with no error handling. If any give fails (item not loaded, inventory full, player transitioning), all subsequent gives and the ARMOR_GIVEN message are skipped \u2014 the player gets partial or no armor silently. Fix: wrap the four give commands + message in a single try-catch block so failures are handled gracefully.",
     "target_files": [
       "src/systems/ArmorTierSystem.ts"
     ],
     "test_file": null,
-    "related_to": [75],
+    "related_to": [
+      75
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -1960,19 +1996,21 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 69,
     "category": "functional",
     "priority": "medium",
     "complexity": "S",
-    "description": "Fix MerchantSystem.onScrollUse redundant army_size re-read. Line 103 reads mk:army_size into `currentSize` for the capacity check, then line 126 reads it again into `size` before incrementing. The second read is an unnecessary dynamic property bridge call and could return a different value if another system modifies it between the two reads (race condition). Fix: replace the second read on line 126 with `currentSize` — use `player.setDynamicProperty(\"mk:army_size\", currentSize + 1)` instead of re-reading.",
+    "description": "Fix MerchantSystem.onScrollUse redundant army_size re-read. Line 103 reads mk:army_size into `currentSize` for the capacity check, then line 126 reads it again into `size` before incrementing. The second read is an unnecessary dynamic property bridge call and could return a different value if another system modifies it between the two reads (race condition). Fix: replace the second read on line 126 with `currentSize` \u2014 use `player.setDynamicProperty(\"mk:army_size\", currentSize + 1)` instead of re-reading.",
     "target_files": [
       "src/systems/MerchantSystem.ts"
     ],
     "test_file": null,
-    "related_to": [76],
+    "related_to": [
+      76
+    ],
     "verification": [
       {
         "type": "source_not_contains",
@@ -1986,19 +2024,21 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 70,
     "category": "functional",
     "priority": "medium",
     "complexity": "S",
-    "description": "Add camp expiration for disconnected players in EnemyCampSystem. The `activeCamps` Map entries persist indefinitely if a player disconnects — there is no TTL or cleanup. Over time on a long-running server, this leaks memory and leaves invisible camp state. Fix: in the tick() or onDayChanged() method, check each active camp's playerName against cachedPlayerMap. If the player has been absent for more than N days (e.g., 3), remove the camp entry. This prevents unbounded growth of the activeCamps Map.",
+    "description": "Add camp expiration for disconnected players in EnemyCampSystem. The `activeCamps` Map entries persist indefinitely if a player disconnects \u2014 there is no TTL or cleanup. Over time on a long-running server, this leaks memory and leaves invisible camp state. Fix: in the tick() or onDayChanged() method, check each active camp's playerName against cachedPlayerMap. If the player has been absent for more than N days (e.g., 3), remove the camp entry. This prevents unbounded growth of the activeCamps Map.",
     "target_files": [
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": null,
-    "related_to": [77],
+    "related_to": [
+      77
+    ],
     "verification": [
       {
         "type": "source_contains",
@@ -2012,14 +2052,14 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 71,
     "category": "functional",
     "priority": "medium",
     "complexity": "M",
-    "description": "Add typeof guards to dynamic property numeric reads across all systems. Task #55 fixed NaN propagation for mk:stance with a typeof guard, but 20+ other `(player.getDynamicProperty(key) as number) ?? 0` patterns remain unguarded across 6 system files. The `?? 0` nullish coalescing only catches `undefined`/`null`, not NaN or string values — if a property is corrupted to a non-number type, NaN propagates through Math.max/Math.min and displays as 'NaN' in the HUD. Fix: apply `typeof raw === \"number\" ? raw : defaultVal` pattern consistently in QuestJournalSystem (4), DayCounterSystem (5), CombatSystem (1), ArmySystem (5), BestiarySystem (2), MerchantSystem (3).",
+    "description": "Add typeof guards to dynamic property numeric reads across all systems. Task #55 fixed NaN propagation for mk:stance with a typeof guard, but 20+ other `(player.getDynamicProperty(key) as number) ?? 0` patterns remain unguarded across 6 system files. The `?? 0` nullish coalescing only catches `undefined`/`null`, not NaN or string values \u2014 if a property is corrupted to a non-number type, NaN propagates through Math.max/Math.min and displays as 'NaN' in the HUD. Fix: apply `typeof raw === \"number\" ? raw : defaultVal` pattern consistently in QuestJournalSystem (4), DayCounterSystem (5), CombatSystem (1), ArmySystem (5), BestiarySystem (2), MerchantSystem (3).",
     "target_files": [
       "src/systems/QuestJournalSystem.ts",
       "src/systems/DayCounterSystem.ts",
@@ -2047,14 +2087,14 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 72,
     "category": "performance",
     "priority": "low",
     "complexity": "S",
-    "description": "Extract duplicate LRU rate-limit cache pattern in main.ts to a shared helper. Lines 115-132 (friendlyFireInsertionOrder) and lines 205-229 (playerNameInsertionOrder) implement identical Map+Array LRU eviction logic for throttled messages. Extract a reusable `LRUTickCache` class or factory function within main.ts (no new file needed — src/utils/ was intentionally removed). Both rate limiters should use the shared implementation to reduce duplication and prevent future drift.",
+    "description": "Extract duplicate LRU rate-limit cache pattern in main.ts to a shared helper. Lines 115-132 (friendlyFireInsertionOrder) and lines 205-229 (playerNameInsertionOrder) implement identical Map+Array LRU eviction logic for throttled messages. Extract a reusable `LRUTickCache` class or factory function within main.ts (no new file needed \u2014 src/utils/ was intentionally removed). Both rate limiters should use the shared implementation to reduce duplication and prevent future drift.",
     "target_files": [
       "src/main.ts"
     ],
@@ -2078,14 +2118,14 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 73,
     "category": "test",
     "priority": "medium",
     "complexity": "M",
-    "description": "Add DayCounterSystem behavioral tests. DayCounterSystem is the most complex system (~390 lines) with tick counting, day transitions, HUD formatting, starter kit logic, and crash recovery — but has no dedicated behavioral test file. Create src/__tests__/day-counter-system.test.ts using the source-as-text pattern. Cover: day transition math (tick accumulation → day increment), HUD string format (normal vs endless), starter kit items list, crash recovery tick persistence interval, throttled HUD update cadence (every 4th call), and the late-joiner kit logic.",
+    "description": "Add DayCounterSystem behavioral tests. DayCounterSystem is the most complex system (~390 lines) with tick counting, day transitions, HUD formatting, starter kit logic, and crash recovery \u2014 but has no dedicated behavioral test file. Create src/__tests__/day-counter-system.test.ts using the source-as-text pattern. Cover: day transition math (tick accumulation \u2192 day increment), HUD string format (normal vs endless), starter kit items list, crash recovery tick persistence interval, throttled HUD update cadence (every 4th call), and the late-joiner kit logic.",
     "target_files": [
       "src/systems/DayCounterSystem.ts"
     ],
@@ -2104,7 +2144,7 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 74,
@@ -2117,7 +2157,9 @@
       "src/main.ts"
     ],
     "test_file": "src/__tests__/reset-entity-cleanup.test.ts",
-    "related_to": [67],
+    "related_to": [
+      67
+    ],
     "verification": [
       {
         "type": "test_passes",
@@ -2127,7 +2169,7 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 75,
@@ -2140,7 +2182,9 @@
       "src/systems/ArmorTierSystem.ts"
     ],
     "test_file": "src/__tests__/armor-tier-system.test.ts",
-    "related_to": [68],
+    "related_to": [
+      68
+    ],
     "verification": [
       {
         "type": "test_passes",
@@ -2150,7 +2194,7 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 76,
@@ -2162,7 +2206,9 @@
       "src/systems/MerchantSystem.ts"
     ],
     "test_file": "src/__tests__/merchant-scroll.test.ts",
-    "related_to": [69],
+    "related_to": [
+      69
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -2176,7 +2222,7 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 77,
@@ -2189,7 +2235,9 @@
       "src/__tests__/camp-system.test.ts"
     ],
     "test_file": "src/__tests__/camp-expiration.test.ts",
-    "related_to": [70],
+    "related_to": [
+      70
+    ],
     "verification": [
       {
         "type": "test_file_exists",
@@ -2203,6 +2251,6 @@
         "type": "all_tests_pass"
       }
     ],
-    "passes": false
+    "passes": true
   }
 ]

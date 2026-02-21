@@ -225,8 +225,8 @@ describe("main.ts: debug commands", () => {
   });
 
   it("LRU eviction prevents unbounded rate limit cache", () => {
-    expect(mainSrc).toContain("MAX_RATE_LIMIT_CACHE");
-    expect(mainSrc).toContain("playerNameInsertionOrder");
+    expect(mainSrc).toContain("LRUTickCache");
+    expect(mainSrc).toContain("armySpawnCache");
   });
 });
 

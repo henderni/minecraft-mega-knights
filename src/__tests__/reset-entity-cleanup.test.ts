@@ -151,4 +151,40 @@ describe("mk:reset Handler — Entity Cleanup (main.ts lines 241-271)", () => {
       expect(CAMP_SRC).toMatch(/clearAllCamps\s*\(\s*\)[\s\S]*?this\.cachedPlayerMap\.clear\s*\(\s*\)/);
     });
   });
+
+  describe("Multi-dimension entity cleanup (task #67 regression)", () => {
+    it("iterates all three standard dimensions: overworld, nether, the_end", () => {
+      const resetBlock = MAIN_SRC.match(/event\.id\s*===\s*["']mk:reset["'][\s\S]*?else if/);
+      expect(resetBlock).not.toBeNull();
+      expect(resetBlock![0]).toContain('"overworld"');
+      expect(resetBlock![0]).toContain('"nether"');
+      expect(resetBlock![0]).toContain('"the_end"');
+    });
+
+    it("uses a for...of loop over dimension array", () => {
+      const resetBlock = MAIN_SRC.match(/event\.id\s*===\s*["']mk:reset["'][\s\S]*?else if/);
+      expect(resetBlock).not.toBeNull();
+      expect(resetBlock![0]).toMatch(/for\s*\(\s*const\s+\w+\s+of\s+\[["']overworld["']/);
+    });
+
+    it("wraps each dimension cleanup in its own try-catch", () => {
+      const resetBlock = MAIN_SRC.match(/event\.id\s*===\s*["']mk:reset["'][\s\S]*?else if/);
+      expect(resetBlock).not.toBeNull();
+      // The dimension loop has try-catch around getDimension + entity cleanup
+      const dimLoop = resetBlock![0].slice(
+        resetBlock![0].indexOf('for (const dimId of'),
+        resetBlock![0].indexOf('Clear all player'),
+      );
+      expect(dimLoop).toContain("try");
+      expect(dimLoop).toContain("catch");
+      expect(dimLoop).toContain("getDimension(dimId)");
+    });
+
+    it("cleans all three entity tags per dimension", () => {
+      const resetBlock = MAIN_SRC.match(/event\.id\s*===\s*["']mk:reset["'][\s\S]*?else if/);
+      expect(resetBlock).not.toBeNull();
+      // The tag array should contain all three entity tags
+      expect(resetBlock![0]).toMatch(/\[["']mk_army["']\s*,\s*["']mk_siege_mob["']\s*,\s*["']mk_camp_guard["']\]/);
+    });
+  });
 });

@@ -4,6 +4,9 @@ import { BestiarySystem } from "./BestiarySystem";
 import { DifficultySystem } from "./DifficultySystem";
 import { RECRUIT_FAILED } from "../data/Strings";
 
+/** Safe numeric dynamic property read — guards against non-number corruption */
+const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+
 export class CombatSystem {
   private army: ArmySystem;
   private bestiary: BestiarySystem;
@@ -39,7 +42,7 @@ export class CombatSystem {
     }
 
     // Track kill count (capped to prevent unbounded growth from external modification)
-    const kills = Math.min(99999, Math.max(0, (player.getDynamicProperty("mk:kills") as number) ?? 0) + 1);
+    const kills = Math.min(99999, Math.max(0, numProp(player.getDynamicProperty("mk:kills"))) + 1);
     player.setDynamicProperty("mk:kills", kills);
     this.bestiary.onKill(player, dead.typeId);
 

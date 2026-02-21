@@ -245,8 +245,8 @@ describe("Cache patterns: bounded size", () => {
 
   it("rate limit cache has LRU eviction", () => {
     const mainSrc = readSource("main.ts");
-    expect(mainSrc).toContain("MAX_RATE_LIMIT_CACHE");
-    expect(mainSrc).toContain("playerNameInsertionOrder");
+    expect(mainSrc).toContain("LRUTickCache");
+    expect(mainSrc).toContain("armySpawnCache");
   });
 });
 

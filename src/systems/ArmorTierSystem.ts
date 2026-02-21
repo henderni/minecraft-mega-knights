@@ -15,11 +15,15 @@ export class ArmorTierSystem {
     const hasStarted = player.getDynamicProperty("mk:has_started") as boolean;
     if (!hasStarted) {
       // Give starting Page armor
-      player.runCommand("give @s mk:mk_page_helmet");
-      player.runCommand("give @s mk:mk_page_chestplate");
-      player.runCommand("give @s mk:mk_page_leggings");
-      player.runCommand("give @s mk:mk_page_boots");
-      player.sendMessage(ARMOR_GIVEN);
+      try {
+        player.runCommand("give @s mk:mk_page_helmet");
+        player.runCommand("give @s mk:mk_page_chestplate");
+        player.runCommand("give @s mk:mk_page_leggings");
+        player.runCommand("give @s mk:mk_page_boots");
+        player.sendMessage(ARMOR_GIVEN);
+      } catch {
+        // Player may be in unloaded chunk or transitioning — non-fatal
+      }
     }
   }
 

@@ -20,6 +20,9 @@ import {
 } from "../data/Strings";
 import { generateAllyName } from "../data/AllyNames";
 
+/** Safe numeric dynamic property read — guards against non-number corruption */
+const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+
 /** Max castle troop bonus a player can accumulate (+20 = all 3 structures) */
 const MAX_ARMY_BONUS = 20;
 
@@ -97,7 +100,7 @@ export class ArmySystem {
 
   /** Get the current max army size for a player (base + castle bonuses, clamped) */
   getMaxArmySize(player: Player): number {
-    const bonus = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+    const bonus = numProp(player.getDynamicProperty("mk:army_bonus"));
     return ArmySystem.BASE_ARMY_SIZE + Math.min(bonus, MAX_ARMY_BONUS);
   }
 
@@ -112,7 +115,7 @@ export class ArmySystem {
 
   /** Add troop capacity from placing a castle structure (capped) */
   addTroopBonus(player: Player, bonus: number): void {
-    const current = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
+    const current = numProp(player.getDynamicProperty("mk:army_bonus"));
     const capped = Math.min(current + bonus, MAX_ARMY_BONUS);
     player.setDynamicProperty("mk:army_bonus", capped);
   }
@@ -138,7 +141,7 @@ export class ArmySystem {
       // Dimension query failed — fall back to the stored value, clamped conservatively
       actualCount = Math.max(
         0,
-        Math.min(GLOBAL_ARMY_CAP, (player.getDynamicProperty("mk:army_size") as number) ?? 0),
+        Math.min(GLOBAL_ARMY_CAP, numProp(player.getDynamicProperty("mk:army_size"))),
       );
     }
     // Sync the cache with reality so the HUD and death listener start from a correct baseline
@@ -201,7 +204,7 @@ export class ArmySystem {
       // Find the owner player by name — O(1) lookup from cached Map (refreshed every recount tick)
       const player = this.cachedPlayerMap.get(ownerName);
       if (player?.isValid) {
-        const current = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+        const current = numProp(player.getDynamicProperty("mk:army_size"));
         if (current > 0) {
           player.setDynamicProperty("mk:army_size", current - 1);
         }
@@ -321,7 +324,7 @@ export class ArmySystem {
   }
 
   getArmySize(player: Player): number {
-    const raw = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+    const raw = numProp(player.getDynamicProperty("mk:army_size"));
     return Math.max(0, Math.min(GLOBAL_ARMY_CAP, Math.floor(raw)));
   }
 

@@ -1,6 +1,9 @@
 import { world, Player } from "@minecraft/server";
 import { BESTIARY, BESTIARY_EFFECT_DURATION_TICKS, BestiaryEntry } from "../data/BestiaryDefinitions";
 
+/** Safe numeric dynamic property read — guards against non-number corruption */
+const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+
 /**
  * BestiarySystem — tracks per-player kill counts per enemy type and
  * applies permanent passive effects at milestone thresholds.
@@ -29,7 +32,7 @@ export class BestiarySystem {
     const entry = this.getEntryForType(enemyTypeId);
     if (!entry) {return;}
 
-    const current = Math.max(0, (player.getDynamicProperty(entry.killKey) as number) ?? 0);
+    const current = Math.max(0, numProp(player.getDynamicProperty(entry.killKey)));
     const next = Math.min(9999, current + 1);
     player.setDynamicProperty(entry.killKey, next);
 
@@ -62,7 +65,7 @@ export class BestiarySystem {
 
   private applyEarnedEffects(player: Player): void {
     for (const entry of BESTIARY) {
-      const kills = Math.max(0, (player.getDynamicProperty(entry.killKey) as number) ?? 0);
+      const kills = Math.max(0, numProp(player.getDynamicProperty(entry.killKey)));
 
       // Find the highest earned milestone (reverse scan — milestones sorted ascending)
       let highestMilestone = -1;

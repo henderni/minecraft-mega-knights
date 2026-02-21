@@ -19,7 +19,7 @@ npm install          # Install dependencies
 npm run build        # Compile TS → MegaKnights_BP/scripts/
 npm run watch        # Watch mode
 npm run deploy       # Build + rsync to BDS (requires $BDS_DIR env var)
-npm run test:run     # Run vitest test suite (41 test files)
+npm run test:run     # Run vitest test suite
 npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
 npm run format:check # Prettier check
@@ -32,11 +32,11 @@ TypeScript source in `src/` compiles to `MegaKnights_BP/scripts/`. Never edit co
 ```
 src/
   main.ts              # Entry point — wires all systems together
-  systems/             # 9 core systems (each manages one mechanic)
-  data/                # Config: ArmorTiers, BestiaryDefinitions, CampDefinitions,
+  systems/             # Core systems (each manages one mechanic)
+  data/                # Config: AllyNames, ArmorTiers, BestiaryDefinitions, CampDefinitions,
                        #   CastleBlueprints, FactionDefinitions, MilestoneEvents,
                        #   Strings, WaveDefinitions (includes ENEMY_SPAWN_DAY)
-  __tests__/           # 41 vitest test files (source-as-text pattern — no @minecraft/server imports)
+  __tests__/           # vitest test files (source-as-text pattern — no @minecraft/server imports)
 MegaKnights_BP/        # Behavior pack (entities, items, loot, recipes, scripts/)
 MegaKnights_RP/        # Resource pack (textures, models, animations)
 tools/build.sh         # BDS deploy script
@@ -49,12 +49,14 @@ tools/build.sh         # BDS deploy script
 | DayCounterSystem | 100-day quest timer, milestone event firing, HUD |
 | ArmorTierSystem | Page → Squire → Knight → Champion → Mega Knight progression |
 | ArmySystem | Allied unit tracking, capacity management |
-| CombatSystem | Death event handler, 30% enemy recruitment chance |
+| CombatSystem | Death event handler, difficulty-dependent enemy recruitment |
 | CastleSystem | Blueprint item usage → structure placement |
 | SiegeSystem | Day-100 final wave event, 5 waves + boss |
 | BestiarySystem | Kill-count tracking per enemy type, passive buff rewards at milestones |
 | EnemyCampSystem | Enemy camp spawning on non-milestone off-days, compass direction hints |
 | MerchantSystem | Standard Bearer scroll usage, merchant unit spawning |
+| DifficultySystem | Normal/Hard difficulty toggle, recruit chance and enemy multiplier |
+| QuestJournalSystem | In-game quest journal UI with bestiary, milestones, and progress |
 
 ## Key Conventions
 
@@ -67,15 +69,16 @@ tools/build.sh         # BDS deploy script
 - `mk_camp_guard` — marks enemies spawned as camp guards
 
 **Dynamic properties** (persistent storage):
-- World: `mk:current_day`, `mk:day_tick_counter`, `mk:quest_active`
-- Player: `mk:kills`, `mk:army_size`, `mk:current_tier`, `mk:army_bonus`, `mk:has_started`, `mk:tier_unlocked_*`
+- World: `mk:current_day`, `mk:day_tick_counter`, `mk:quest_active`, `mk:endless_mode`
+- Player: `mk:kills`, `mk:army_size`, `mk:current_tier`, `mk:army_bonus`, `mk:has_started`, `mk:tier_unlocked_*`, `mk:difficulty`
 - Entity (ally): `mk:owner_name` — tracks which player owns the unit
 - Entity (ally): `mk:stance` — current stance index (0=Follow, 1=Guard, 2=Hold)
+- Entity (ally): `mk:ally_name` — named ally display name
 - Player (bestiary): `mk:bestiary_kills_<type>` — per-enemy kill count for bestiary milestones
 
 **Key data exports**:
 - `ENEMY_SPAWN_DAY` (WaveDefinitions.ts) — minimum quest day before each enemy type spawns naturally
-- `MERCHANT_DAYS` (MerchantSystem.ts) — days the Wandering Merchant appears (15, 30, 55, 75, 95)
+- `MERCHANT_DAYS` (MerchantSystem.ts) — days the Wandering Merchant appears (15, 30, 55, 75, 95; also every 25 days past 100 in endless mode)
 - `MILESTONE_DAYS` (MilestoneEvents.ts) — days with milestone events (camps and merchants avoid these)
 
 **Logging**: Uses `console.warn()` (not `console.log`) — intentional, captures to stderr in BDS.
@@ -83,7 +86,7 @@ tools/build.sh         # BDS deploy script
 ## Debug Commands (in-game)
 
 ```
-/scriptevent mk:setday <0-100>   # Jump to day
+/scriptevent mk:setday <N>       # Jump to day (0-100 normal, up to 999 endless)
 /scriptevent mk:start            # Start quest
 /scriptevent mk:reset            # Reset all progress
 /scriptevent mk:siege            # Trigger siege immediately
@@ -166,8 +169,10 @@ For long-running autonomous work across multiple sessions:
 
 ```bash
 ./harness.sh                        # Default: 10 sessions, opus model
-./harness.sh --init                 # Generate feature_list.json from codebase analysis
+./harness.sh --init                 # Force regenerate feature_list.json
 ./harness.sh --sessions 20          # Run up to 20 sessions
+./harness.sh --init-budget 15       # Set init session budget (default: $10)
+./harness.sh --turns 120            # Max agentic turns per session (default: 80)
 ./harness.sh --model sonnet         # Faster/cheaper model
 ./harness.sh --continue             # Continue last session
 ```
@@ -178,7 +183,7 @@ For long-running autonomous work across multiple sessions:
 - `.claude/prompts/initializer_prompt.md` — first-session prompt (generates feature list)
 - `.claude/prompts/coding_prompt.md` — continuation prompt (works through tasks)
 
-**How it works:** The harness runs `claude -p` in a loop. Each session reads progress.txt and feature_list.json, works on the next incomplete task, verifies it, marks it done, commits, and moves on. The Stop hook saves progress and nudges Claude to keep working if tasks remain. Sessions chain automatically — each fresh context picks up where the last left off via the progress file.
+**How it works:** The harness runs `claude -p` in a loop. Each session reads progress.txt and feature_list.json, works on the next incomplete task, verifies it, marks it done, commits, and moves on. Sessions chain automatically — each fresh context picks up where the last left off via the progress file. When all tasks are complete, the harness auto-reinitializes to find new work.
 
 **In-session usage:** Use `/harness init` to generate a feature list, `/harness status` to check progress, or `/harness add <description>` to add tasks.
 

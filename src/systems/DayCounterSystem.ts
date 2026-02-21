@@ -20,6 +20,9 @@ import {
   TUTORIAL_6_BESTIARY,
 } from "../data/Strings";
 
+/** Safe numeric dynamic property read — guards against non-number corruption */
+const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+
 /** Pre-built progress bar strings to avoid string allocations every HUD tick */
 const BAR_LENGTH = 20;
 const PROGRESS_BARS: string[] = [];
@@ -76,8 +79,8 @@ export class DayCounterSystem {
     }
     this.initialized = true;
     this.cachedActive = (world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE) as boolean) ?? false;
-    this.cachedDay = (world.getDynamicProperty(DayCounterSystem.KEY_DAY) as number) ?? 0;
-    this.cachedTickCounter = (world.getDynamicProperty(DayCounterSystem.KEY_TICK) as number) ?? 0;
+    this.cachedDay = numProp(world.getDynamicProperty(DayCounterSystem.KEY_DAY));
+    this.cachedTickCounter = numProp(world.getDynamicProperty(DayCounterSystem.KEY_TICK));
     this.cachedEndless = (world.getDynamicProperty("mk:endless_mode") as boolean) ?? false;
   }
 
@@ -338,15 +341,15 @@ export class DayCounterSystem {
 
         if (shouldReadProps) {
           // Full read from dynamic properties
-          armySize = Math.max(0, (player.getDynamicProperty("mk:army_size") as number) ?? 0);
+          armySize = Math.max(0, numProp(player.getDynamicProperty("mk:army_size")));
           tier = Math.max(
             0,
             Math.min(
               ARMOR_TIERS.length - 1,
-              (player.getDynamicProperty("mk:current_tier") as number) ?? 0,
+              numProp(player.getDynamicProperty("mk:current_tier")),
             ),
           );
-          armyBonus = Math.max(0, (player.getDynamicProperty("mk:army_bonus") as number) ?? 0);
+          armyBonus = Math.max(0, numProp(player.getDynamicProperty("mk:army_bonus")));
           this.cachedPlayerArmySize.set(name, armySize);
           this.cachedPlayerTier.set(name, tier);
           this.cachedPlayerArmyBonus.set(name, armyBonus);

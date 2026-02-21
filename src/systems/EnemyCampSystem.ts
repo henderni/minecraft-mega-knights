@@ -33,10 +33,15 @@ interface CampState {
   factionId: FactionId | undefined;
 }
 
+/** Number of consecutive tick() absences before a camp is considered stale */
+const STALE_CAMP_THRESHOLD = 3;
+
 export class EnemyCampSystem {
   private activeCamps = new Map<string, CampState>();
   private lastCampDay = new Map<string, number>();
   private cachedPlayerMap = new Map<string, Player>();
+  /** Tracks consecutive tick() calls where a camp's owner is absent */
+  private staleCampCounter = new Map<string, number>();
 
   /** Getter for enemy spawn multiplier — reads from DifficultySystem at spawn time */
   private enemyMultiplierGetter: (() => number) | null = null;
@@ -55,6 +60,7 @@ export class EnemyCampSystem {
     this.activeCamps.clear();
     this.lastCampDay.clear();
     this.cachedPlayerMap.clear();
+    this.staleCampCounter.clear();
   }
 
   /**
@@ -136,6 +142,21 @@ export class EnemyCampSystem {
         }
       } catch {
         // Dimension query failed — skip this cycle
+      }
+    }
+
+    // Expire stale camps for disconnected players to prevent unbounded Map growth
+    for (const [playerName] of this.activeCamps) {
+      if (this.cachedPlayerMap.has(playerName)) {
+        this.staleCampCounter.delete(playerName);
+      } else {
+        const count = (this.staleCampCounter.get(playerName) ?? 0) + 1;
+        if (count >= STALE_CAMP_THRESHOLD) {
+          this.activeCamps.delete(playerName);
+          this.staleCampCounter.delete(playerName);
+        } else {
+          this.staleCampCounter.set(playerName, count);
+        }
       }
     }
   }

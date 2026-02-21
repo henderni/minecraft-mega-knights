@@ -111,25 +111,27 @@ world.afterEvents.entitySpawn.subscribe((event) => {
   }
 });
 
-// Friendly fire protection — prevent players from damaging their own allies
-const MAX_FRIENDLY_FIRE_CACHE = 200;
-const lastFriendlyFireMsg = new Map<string, number>();
-const friendlyFireInsertionOrder: string[] = [];
-
-function recordFriendlyFireMsg(playerName: string, tick: number): void {
-  lastFriendlyFireMsg.set(playerName, tick);
-  const existingIndex = friendlyFireInsertionOrder.indexOf(playerName);
-  if (existingIndex >= 0) {
-    friendlyFireInsertionOrder.splice(existingIndex, 1);
-  }
-  friendlyFireInsertionOrder.push(playerName);
-  while (lastFriendlyFireMsg.size > MAX_FRIENDLY_FIRE_CACHE) {
-    const oldest = friendlyFireInsertionOrder.shift();
-    if (oldest) {
-      lastFriendlyFireMsg.delete(oldest);
+/** Bounded LRU map for tick-based rate limiting — evicts oldest entries when over capacity */
+class LRUTickCache {
+  private map = new Map<string, number>();
+  private order: string[] = [];
+  private maxSize: number;
+  constructor(maxSize: number) { this.maxSize = maxSize; }
+  get(key: string): number | undefined { return this.map.get(key); }
+  set(key: string, value: number): void {
+    this.map.set(key, value);
+    const idx = this.order.indexOf(key);
+    if (idx >= 0) { this.order.splice(idx, 1); }
+    this.order.push(key);
+    while (this.map.size > this.maxSize) {
+      const oldest = this.order.shift();
+      if (oldest) { this.map.delete(oldest); }
     }
   }
 }
+
+// Friendly fire protection — prevent players from damaging their own allies
+const friendlyFireCache = new LRUTickCache(200);
 
 world.afterEvents.entityHurt.subscribe((event) => {
   const entity = event.hurtEntity;
@@ -159,9 +161,9 @@ world.afterEvents.entityHurt.subscribe((event) => {
   });
   // Throttled message — once per 3 seconds (60 ticks) per player
   const now = system.currentTick;
-  const lastMsg = lastFriendlyFireMsg.get(player.name) ?? 0;
+  const lastMsg = friendlyFireCache.get(player.name) ?? 0;
   if (now - lastMsg >= 60) {
-    recordFriendlyFireMsg(player.name, now);
+    friendlyFireCache.set(player.name, now);
     try {
       player.sendMessage(FRIENDLY_FIRE_BLOCKED);
     } catch {
@@ -201,32 +203,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((event) => {
 });
 
 // Debug commands via /scriptevent (requires operator permissions)
-// Per-player rate limit map — prevents each operator from spamming mk:army independently
-const MAX_RATE_LIMIT_CACHE = 200;
-const lastArmySpawnTickByPlayer = new Map<string, number>();
-const playerNameInsertionOrder: string[] = [];
-
-/**
- * Record a player's army spawn tick, evicting oldest entries if cache exceeds MAX_RATE_LIMIT_CACHE
- */
-function recordArmySpawnTick(playerName: string, tick: number): void {
-  lastArmySpawnTickByPlayer.set(playerName, tick);
-
-  // Track insertion order for LRU eviction
-  const existingIndex = playerNameInsertionOrder.indexOf(playerName);
-  if (existingIndex >= 0) {
-    playerNameInsertionOrder.splice(existingIndex, 1);
-  }
-  playerNameInsertionOrder.push(playerName);
-
-  // Evict oldest entries if cache exceeds limit
-  while (lastArmySpawnTickByPlayer.size > MAX_RATE_LIMIT_CACHE) {
-    const oldestPlayer = playerNameInsertionOrder.shift();
-    if (oldestPlayer) {
-      lastArmySpawnTickByPlayer.delete(oldestPlayer);
-    }
-  }
-}
+const armySpawnCache = new LRUTickCache(200);
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
   if (event.id === "mk:setday") {
@@ -243,15 +220,17 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     dayCounter.reset();
     difficulty.reset();
     campSystem.clearAllCamps();
-    // Remove all custom entities (army, siege mobs, camp guards)
-    try {
-      const dim = world.getDimension("overworld");
-      for (const tag of ["mk_army", "mk_siege_mob", "mk_camp_guard"]) {
-        for (const e of dim.getEntities({ tags: [tag] })) {
-          try { e.remove(); } catch { /* already despawned */ }
+    // Remove all custom entities (army, siege mobs, camp guards) across all dimensions
+    for (const dimId of ["overworld", "nether", "the_end"]) {
+      try {
+        const dim = world.getDimension(dimId);
+        for (const tag of ["mk_army", "mk_siege_mob", "mk_camp_guard"]) {
+          for (const e of dim.getEntities({ tags: [tag] })) {
+            try { e.remove(); } catch { /* already despawned */ }
+          }
         }
-      }
-    } catch { /* dimension not loaded */ }
+      } catch { /* dimension not loaded */ }
+    }
     // Clear all player-specific properties
     for (const player of world.getAllPlayers()) {
       try {
@@ -283,10 +262,10 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
       sourcePlayer.typeId === "minecraft:player"
     ) {
       const playerName = (sourcePlayer as import("@minecraft/server").Player).name;
-      const lastTick = lastArmySpawnTickByPlayer.get(playerName) ?? 0;
+      const lastTick = armySpawnCache.get(playerName) ?? 0;
       // Rate limit: 5-second cooldown per operator to prevent entity exhaustion
       if (now - lastTick >= 100) {
-        recordArmySpawnTick(playerName, now);
+        armySpawnCache.set(playerName, now);
         army.debugSpawnAllies(sourcePlayer as import("@minecraft/server").Player, count);
       }
     }

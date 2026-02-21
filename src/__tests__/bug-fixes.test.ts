@@ -86,9 +86,9 @@ describe("Standard Bearer scroll: army cap enforcement", () => {
   });
 
   it("increments army count after spawning standard bearer", () => {
-    // After spawn, should set mk:army_size to size + 1
+    // After spawn, should set mk:army_size to currentSize + 1 (reuses capacity-check read)
     expect(merchantSrc).toContain('setDynamicProperty("mk:army_size"');
-    expect(merchantSrc).toContain("size + 1");
+    expect(merchantSrc).toContain("currentSize + 1");
   });
 
   it("sends army full message when at capacity", () => {
@@ -124,16 +124,15 @@ describe("Camp safety recount: calls campCleared() not just delete", () => {
     expect(tickMethod).toContain("this.campCleared(");
   });
 
-  it("tick() recount path does NOT silently delete camps", () => {
-    // After the fix, tick() should not have a bare activeCamps.delete
-    // that bypasses campCleared (which handles rewards + message).
-    const tickMethod = campSrc.slice(
-      campSrc.indexOf("tick():"),
-      campSrc.indexOf("debugSpawnCamp"),
-    );
-    // campCleared() internally calls activeCamps.delete, so the delete
-    // should only appear in campCleared, not directly in tick
-    expect(tickMethod).not.toContain("this.activeCamps.delete(");
+  it("tick() guard-recount path does NOT silently delete camps", () => {
+    // The guard-recount section (before stale camp expiration) should call
+    // campCleared() when guards hit 0, NOT bare activeCamps.delete().
+    // Stale camp expiration (for disconnected players) legitimately uses
+    // activeCamps.delete since the player is gone and no rewards apply.
+    const tickMethod = campSrc.slice(campSrc.indexOf("tick():"));
+    const recountSection = tickMethod.slice(0, tickMethod.indexOf("stale"));
+    expect(recountSection).toContain("this.campCleared(");
+    expect(recountSection).not.toContain("this.activeCamps.delete(");
   });
 });
 

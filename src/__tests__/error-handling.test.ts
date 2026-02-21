@@ -184,7 +184,7 @@ describe("Input Validation at Command Boundaries", () => {
 
   it("army debug command has per-player rate-limit cooldown (100 ticks = 5 seconds)", () => {
     const src = readMain();
-    expect(src).toContain("lastArmySpawnTickByPlayer");
+    expect(src).toContain("armySpawnCache");
     expect(src).toContain(">= 100");
   });
 
