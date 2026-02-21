@@ -29,7 +29,7 @@ export const TIER_UP_MEGA_SUBTITLE = "§d§lThe ultimate warrior has arrived!";
 export const ARMY_FULL = "§cYour army is at maximum capacity!";
 export const ARMY_FULL_SHARED = (cap: number) =>
   `§cArmy full! §7(Limit: ${cap}/player in multiplayer)`;
-export const ALLY_RECRUITED = (displayName: string) => `§a+ A ${displayName} has joined your army!`;
+export const ALLY_RECRUITED = (unitClass: string, allyName: string) => `§a+ A ${unitClass} named ${allyName} has joined your army!`;
 export const ALLY_NOT_YOURS = (ownerName: string) => `§7This warrior serves ${ownerName}.`;
 export const ALLY_INFO = (nameTag: string, hp: string | number, maxHp: string | number) =>
   `§b${nameTag} §7- HP: ${hp}/${maxHp}`;

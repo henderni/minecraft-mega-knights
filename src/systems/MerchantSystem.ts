@@ -65,8 +65,11 @@ export class MerchantSystem {
     const rawZ = player.location.z + Math.sin(angle) * dist;
 
     const dim = player.dimension;
-    const groundY = findGroundLevel(dim, Math.floor(rawX), Math.floor(player.location.y), Math.floor(rawZ));
-    if (groundY === null) {return;}
+    const scannedY = findGroundLevel(dim, Math.floor(rawX), Math.floor(player.location.y), Math.floor(rawZ));
+    if (scannedY === null) {
+      console.warn(`[MegaKnights] findGroundLevel returned null near player ${player.name} — falling back to player Y`);
+    }
+    const groundY = scannedY ?? Math.floor(player.location.y);
 
     const spawnLoc: Vector3 = {
       x: Math.floor(rawX),

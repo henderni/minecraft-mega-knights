@@ -71,6 +71,7 @@ export class DifficultySystem {
       .button(`${DIFFICULTY_HARD_LABEL}\n§7${DIFFICULTY_HARD_DESC}`);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = await form.show(player as any);
       if (response.canceled || response.selection === undefined) {
         // Default to normal if cancelled

@@ -100,3 +100,28 @@ describe("CombatSystem: difficulty integration", () => {
     expect(combatSrc).toContain("DifficultySystem");
   });
 });
+
+// ─── ALLY_RECRUITED includes unit class (task #128) ──────────────────────────
+
+const stringsSrc = fs.readFileSync(path.join(SRC_ROOT, "data/Strings.ts"), "utf-8");
+const armySrc = fs.readFileSync(path.join(SRC_ROOT, "systems/ArmySystem.ts"), "utf-8");
+
+describe("ALLY_RECRUITED: includes unit class name", () => {
+  it("ALLY_RECRUITED in Strings.ts accepts a unitClass parameter", () => {
+    expect(stringsSrc).toMatch(/ALLY_RECRUITED\s*=\s*\(\s*unitClass/);
+  });
+
+  it("ALLY_RECRUITED message template includes the unitClass", () => {
+    expect(stringsSrc).toContain("unitClass");
+    expect(stringsSrc).toMatch(/\$\{unitClass\}/);
+  });
+
+  it("ArmySystem passes displayName as unit class to ALLY_RECRUITED", () => {
+    // ALLY_RECRUITED must be called with displayName (the class) and allyName
+    expect(armySrc).toContain("ALLY_RECRUITED(displayName, allyName)");
+  });
+
+  it("ALLY_RECRUITED format uses 'named' to separate class from individual name", () => {
+    expect(stringsSrc).toContain("named");
+  });
+});

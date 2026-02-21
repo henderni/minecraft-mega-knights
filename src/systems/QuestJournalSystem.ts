@@ -69,6 +69,7 @@ export class QuestJournalSystem {
       form.button(JOURNAL_ENDLESS_TITLE);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await form.show(player as any);
     if (response.canceled || response.selection === undefined) {
       return;
@@ -110,6 +111,7 @@ export class QuestJournalSystem {
       .button1("Back")
       .button2("Close");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await form.show(player as any);
     if (response.canceled) {
       return;
@@ -129,9 +131,9 @@ export class QuestJournalSystem {
       for (const m of entry.milestones) {
         const effectLevel = m.amplifier === 0 ? "I" : "II";
         const effectName = m.effectId.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-        parts.push(`/${m.kills} → ${effectName} ${effectLevel}`);
+        parts.push(`${kills}/${m.kills} → ${effectName} ${effectLevel}`);
       }
-      lines.push(`${entry.displayName}: ${kills}${parts.join(", ")}`);
+      lines.push(`${entry.displayName}: ${parts.join(", ")}`);
     }
 
     await this.showPage(player, JOURNAL_BESTIARY_TITLE, lines.join("\n"));

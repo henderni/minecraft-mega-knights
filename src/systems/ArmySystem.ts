@@ -178,7 +178,7 @@ export class ArmySystem {
       ally.setDynamicProperty("mk:ally_name", allyName);
 
       player.setDynamicProperty("mk:army_size", actualCount + 1);
-      player.sendMessage(ALLY_RECRUITED(allyName));
+      player.sendMessage(ALLY_RECRUITED(displayName, allyName));
     } catch (e) {
       console.warn(`[MegaKnights] Failed to spawn ally: ${e}`);
     }
@@ -250,7 +250,7 @@ export class ArmySystem {
           if (!bearer.isValid || bearer.typeId !== "mk:mk_ally_standard_bearer") {continue;}
           const bLoc = bearer.location;
           for (const ally of allies) {
-            if (!ally.isValid) {continue;}
+            if (!ally.isValid || ally === bearer) {continue;}
             const dx = ally.location.x - bLoc.x;
             const dy = ally.location.y - bLoc.y;
             const dz = ally.location.z - bLoc.z;

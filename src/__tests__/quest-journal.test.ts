@@ -157,3 +157,23 @@ describe("Strings.ts: journal body strings accept recruitPct", () => {
     expect(stringsSrc).toMatch(/recruitPct.*%.*recruit/s);
   });
 });
+
+// ─── Bestiary multi-milestone display (task #126) ────────────────────────────
+
+describe("QuestJournalSystem: bestiary multi-milestone display format", () => {
+  it("each milestone part includes the current kill count prefix (kills/threshold)", () => {
+    // The format should be `${kills}/${m.kills}` — each part self-contained with kill count
+    // Old bad format: `${kills}${parts.join(", ")}` where parts were `/${m.kills} → ...`
+    expect(journalSrc).toContain("${kills}/${m.kills}");
+  });
+
+  it("does not use the old format that omits kill count from subsequent milestones", () => {
+    // Old pattern: template literal starting with just `/${m.kills}` (no kills prefix)
+    expect(journalSrc).not.toMatch(/`\/\$\{m\.kills\}/);
+  });
+
+  it("joins milestone parts without prepending kills again outside the loop", () => {
+    // After the fix, lines.push should NOT have `${kills}${parts.join` (old pattern)
+    expect(journalSrc).not.toMatch(/\$\{kills\}\$\{parts\.join/);
+  });
+});

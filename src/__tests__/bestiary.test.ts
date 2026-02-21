@@ -156,3 +156,41 @@ describe("BestiaryDefinitions: ENEMY_SPAWN_DAY cross-reference", () => {
     }
   });
 });
+
+// ─── Bestiary respawn reapplication (task #125) ─────────────────────────────
+
+describe("main.ts: bestiary effects reapplied on every respawn", () => {
+  const mainSrc = fs.readFileSync(path.join(__dirname, "../main.ts"), "utf-8");
+
+  it("calls bestiary.onPlayerSpawn outside the initialSpawn block", () => {
+    // Find the playerSpawn event handler
+    const handlerStart = mainSrc.indexOf("playerSpawn.subscribe");
+    expect(handlerStart).toBeGreaterThan(-1);
+
+    // bestiary.onPlayerSpawn must appear in the handler
+    const bestiaryCall = mainSrc.indexOf("bestiary.onPlayerSpawn", handlerStart);
+    expect(bestiaryCall).toBeGreaterThan(-1);
+
+    // It must NOT be inside the initialSpawn conditional — verify by checking
+    // that the bestiary call comes AFTER the closing brace of the initialSpawn block.
+    const initialSpawnIdx = mainSrc.indexOf("event.initialSpawn", handlerStart);
+    if (initialSpawnIdx !== -1) {
+      // Find closing brace of the initialSpawn block
+      const openBrace = mainSrc.indexOf("{", initialSpawnIdx);
+      let depth = 1;
+      let i = openBrace + 1;
+      while (i < mainSrc.length && depth > 0) {
+        if (mainSrc[i] === "{") { depth++; }
+        else if (mainSrc[i] === "}") { depth--; }
+        i++;
+      }
+      const closingBrace = i - 1;
+      // bestiary call must be after the closing brace (not inside the if block)
+      expect(bestiaryCall).toBeGreaterThan(closingBrace);
+    }
+  });
+
+  it("comment explains effects are reapplied on respawn after death", () => {
+    expect(mainSrc).toContain("respawn");
+  });
+});

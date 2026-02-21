@@ -159,8 +159,8 @@ world.afterEvents.playerSpawn.subscribe((event) => {
   if (event.initialSpawn) {
     armorTier.initializePlayer(event.player); // Must run before dayCounter (which sets mk:has_started=true)
     dayCounter.initializePlayer(event.player);
-    bestiary.onPlayerSpawn(event.player); // Reapply earned bestiary effects on join
   }
+  bestiary.onPlayerSpawn(event.player); // Reapply earned bestiary effects on every spawn (join + respawn after death)
 });
 
 // Entity death (recruitment)
