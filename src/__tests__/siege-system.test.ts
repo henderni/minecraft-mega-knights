@@ -581,6 +581,53 @@ describe("SiegeSystem: endless mode message paths", () => {
   });
 });
 
+// ─── staggeredSpawn: siegeActive guard inside generator ──────────────────────
+
+describe("SiegeSystem: staggeredSpawn() siegeActive guard", () => {
+  it("staggeredSpawn generator checks siegeActive inside the spawn loop (prevents orphaned entities after endSiege)", () => {
+    // The generator function* body must contain a check for siegeRef.siegeActive
+    // so that if endSiege() is called while the generator is mid-execution,
+    // remaining spawns are aborted rather than creating orphaned siege mobs.
+    const spawnBlock = SIEGE_SRC.slice(
+      SIEGE_SRC.indexOf("private staggeredSpawn("),
+      SIEGE_SRC.indexOf("private endSiege("),
+    );
+    // Locate the generator function* block within staggeredSpawn
+    const generatorStart = spawnBlock.indexOf("function*");
+    expect(generatorStart).toBeGreaterThan(-1);
+    const generatorBody = spawnBlock.slice(generatorStart);
+    // The siegeActive guard must appear inside the generator body
+    expect(generatorBody).toMatch(/siegeRef\.siegeActive/);
+  });
+
+  it("siegeActive guard uses break to abort remaining spawns (not return)", () => {
+    // Using `break` exits the spawn loop cleanly within the generator,
+    // preserving the decremented activeSpawnJobs at the end.
+    const spawnBlock = SIEGE_SRC.slice(
+      SIEGE_SRC.indexOf("private staggeredSpawn("),
+      SIEGE_SRC.indexOf("private endSiege("),
+    );
+    const generatorStart = spawnBlock.indexOf("function*");
+    const generatorBody = spawnBlock.slice(generatorStart);
+    // The guard must break out of the loop (not return from the generator)
+    expect(generatorBody).toMatch(/!siegeRef\.siegeActive[\s\S]{0,30}break/);
+  });
+
+  it("siegeActive guard is inside the for-of loop that iterates spawnQueue", () => {
+    // Guard must be AFTER the for-of header and BEFORE the spawnEntity call
+    const spawnBlock = SIEGE_SRC.slice(
+      SIEGE_SRC.indexOf("private staggeredSpawn("),
+      SIEGE_SRC.indexOf("private endSiege("),
+    );
+    const forOfIdx = spawnBlock.indexOf("for (const entry of spawnQueue)");
+    const guardIdx = spawnBlock.indexOf("!siegeRef.siegeActive");
+    const spawnCallIdx = spawnBlock.indexOf(".spawnEntity(");
+    expect(forOfIdx).toBeGreaterThan(-1);
+    expect(guardIdx).toBeGreaterThan(forOfIdx);
+    expect(guardIdx).toBeLessThan(spawnCallIdx);
+  });
+});
+
 // ─── Siege lifecycle guards ───────────────────────────────────────────────────
 
 describe("SiegeSystem: lifecycle guards", () => {

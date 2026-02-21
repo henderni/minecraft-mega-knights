@@ -78,7 +78,11 @@
         "priority": 7
       },
       "minecraft:behavior.hurt_by_target": {
-        "priority": 1
+        "priority": 1,
+        "entity_types": [{ "filters": { "any_of": [
+          { "test": "is_family", "subject": "other", "value": "player" },
+          { "test": "is_family", "subject": "other", "value": "mk_ally" }
+        ]}}]
       },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 2,

@@ -1007,3 +1007,33 @@ Task clusters:
 
 Next: Start with task #129 (boss phase fix), #130 (recipe collision), #131 (siege generator guard)
 ===
+
+--- checkpoint 7d2a94f1-d6e7-44e3-a571-bca0bb43654b @ 2026-02-21 11:15:15 ---
+Progress: 128/138 tasks complete
+---
+
+=== Session — 2026-02-21 (v12 run 1) ===
+Tasks completed: 10/10 (IDs 129-138)
+Build: passing | Lint: clean | Tests: 76 files, 2942 tests
+
+## Changes Made
+
+### Bug Fixes (7)
+- #129 (HIGH S): Boss phase 2 max_dist 28→32 to match follow_range — eliminates 4-block dead zone
+- #130 (HIGH S): Blueprint gatehouse recipe changed to cobblestone+paper (was iron+paper, colliding with knight_token)
+- #131 (HIGH S): staggeredSpawn generator now checks siegeRef.siegeActive — breaks out if siege ended mid-spawn
+- #132 (HIGH M): All 4 combat ally entities hurt_by_target filtered to mk_enemy only — prevents player retaliation
+- #133 (MED M): All 4 enemy + boss hurt_by_target filtered to player+mk_ally — prevents enemy infighting from wizard splash
+- #134 (MED S): mk:reset cleanup tags expanded to 5: +mk_script_spawned, +mk_merchant
+- #135 (MED S): Stale camp expiration now removes guard entities from world before deleting Map entry
+
+### Tests Added (3)
+- #136 (MED S): recipe-uniqueness.test.ts — 91 tests, validates no shapeless recipe collisions, caught additional small_tower collision (fixed: stone instead of cobblestone)
+- #137 (MED S): siege-system.test.ts — 5 new tests for staggeredSpawn siegeActive guard pattern
+- #138 (LOW S): entity-validation.test.ts — 48 new tests for hurt_by_target entity_types filters on all allies/enemies/boss
+
+### Bonus Fix
+- Blueprint small tower recipe also collided with gatehouse (both cobblestone+paper after #130). Changed to stone+paper for tier progression: stone→cobblestone→gold
+
+All 138/138 tasks COMPLETE.
+=== END ===

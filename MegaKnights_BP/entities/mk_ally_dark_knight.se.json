@@ -51,7 +51,7 @@
       "minecraft:behavior.follow_owner": { "priority": 4, "speed_multiplier": 1.0, "start_distance": 10, "stop_distance": 2 },
       "minecraft:behavior.random_stroll": { "priority": 6, "speed_multiplier": 0.6, "interval": 120 },
       "minecraft:behavior.random_look_around": { "priority": 7 },
-      "minecraft:behavior.hurt_by_target": { "priority": 1 },
+      "minecraft:behavior.hurt_by_target": { "priority": 1, "entity_types": [{ "filters": { "test": "is_family", "subject": "other", "value": "mk_enemy" } }] },
       "minecraft:behavior.nearest_attackable_target": {
         "priority": 2,
         "entity_types": [{ "filters": { "test": "is_family", "subject": "other", "value": "mk_enemy" }, "max_dist": 24 }],

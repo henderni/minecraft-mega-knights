@@ -6,9 +6,9 @@
     },
     "tags": ["crafting_table"],
     "ingredients": [
-      { "item": "minecraft:iron_ingot" },
-      { "item": "minecraft:iron_ingot" },
-      { "item": "minecraft:iron_ingot" },
+      { "item": "minecraft:cobblestone" },
+      { "item": "minecraft:cobblestone" },
+      { "item": "minecraft:cobblestone" },
       { "item": "minecraft:paper" }
     ],
     "result": {

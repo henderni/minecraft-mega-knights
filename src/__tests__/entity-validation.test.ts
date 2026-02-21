@@ -301,3 +301,152 @@ describe("RP entities: opaque materials preferred", () => {
     });
   }
 });
+
+// ─── hurt_by_target entity_types filters ─────────────────────────────────────
+
+/**
+ * hurt_by_target without entity_types would cause friendly fire — allies
+ * would retaliate against each other and enemies would retaliate against
+ * their own faction when struck. These tests verify that every entity with
+ * hurt_by_target restricts retaliation to the correct opposing faction.
+ *
+ * - Ally entities: hurt_by_target must only retaliate against mk_enemy
+ * - Enemy / boss entities: hurt_by_target must only retaliate against player and mk_ally
+ */
+
+// Helper: extract hurt_by_target component from a parsed entity JSON
+function getHurtByTarget(raw: any): any {
+  return raw["minecraft:entity"]?.components?.["minecraft:behavior.hurt_by_target"] ?? null;
+}
+
+// Helper: collect all family values present in entity_types filter(s)
+function getHurtByTargetFamilies(hbt: any): string[] {
+  if (!hbt?.entity_types) return [];
+  const families: string[] = [];
+  const entityTypes: any[] = hbt.entity_types;
+  for (const et of entityTypes) {
+    const filters = et.filters;
+    if (!filters) continue;
+    // Single test
+    if (filters.test === "is_family") {
+      families.push(filters.value);
+    }
+    // any_of array of tests
+    if (Array.isArray(filters.any_of)) {
+      for (const f of filters.any_of) {
+        if (f.test === "is_family") families.push(f.value);
+      }
+    }
+  }
+  return families;
+}
+
+describe("BP entities: ally hurt_by_target restricts retaliation to mk_enemy", () => {
+  // Only combatant allies have hurt_by_target (standard_bearer does not)
+  const combatantAllyFiles = bpFiles.filter((f) => {
+    const raw = readBPEntity(f);
+    return f.includes("mk_ally_") && getHurtByTarget(raw) !== null;
+  });
+
+  it("at least one combatant ally entity has hurt_by_target", () => {
+    expect(combatantAllyFiles.length).toBeGreaterThan(0);
+  });
+
+  for (const file of combatantAllyFiles) {
+    const entityName = file.replace(".se.json", "");
+    const raw = readBPEntity(file);
+    const hbt = getHurtByTarget(raw);
+
+    it(`${entityName}: hurt_by_target has entity_types defined`, () => {
+      expect(hbt.entity_types).toBeDefined();
+      expect(hbt.entity_types.length).toBeGreaterThan(0);
+    });
+
+    it(`${entityName}: hurt_by_target entity_types restricts to mk_enemy`, () => {
+      const families = getHurtByTargetFamilies(hbt);
+      expect(families).toContain("mk_enemy");
+    });
+
+    it(`${entityName}: hurt_by_target does NOT retaliate against player (prevents friendly-fire)`, () => {
+      const families = getHurtByTargetFamilies(hbt);
+      expect(families).not.toContain("player");
+    });
+
+    it(`${entityName}: hurt_by_target does NOT retaliate against mk_ally (prevents ally-on-ally combat)`, () => {
+      const families = getHurtByTargetFamilies(hbt);
+      expect(families).not.toContain("mk_ally");
+    });
+  }
+});
+
+describe("BP entities: enemy hurt_by_target restricts retaliation to player and mk_ally", () => {
+  // All enemy and boss entities have hurt_by_target
+  const enemyFiles = bpFiles.filter((f) => {
+    const raw = readBPEntity(f);
+    return (f.includes("mk_enemy_") || f.includes("mk_boss_")) && getHurtByTarget(raw) !== null;
+  });
+
+  it("at least one enemy entity has hurt_by_target", () => {
+    expect(enemyFiles.length).toBeGreaterThan(0);
+  });
+
+  for (const file of enemyFiles) {
+    const entityName = file.replace(".se.json", "");
+    const raw = readBPEntity(file);
+    const hbt = getHurtByTarget(raw);
+
+    it(`${entityName}: hurt_by_target has entity_types defined`, () => {
+      expect(hbt.entity_types).toBeDefined();
+      expect(hbt.entity_types.length).toBeGreaterThan(0);
+    });
+
+    it(`${entityName}: hurt_by_target entity_types restricts to player`, () => {
+      const families = getHurtByTargetFamilies(hbt);
+      expect(families).toContain("player");
+    });
+
+    it(`${entityName}: hurt_by_target entity_types restricts to mk_ally`, () => {
+      const families = getHurtByTargetFamilies(hbt);
+      expect(families).toContain("mk_ally");
+    });
+
+    it(`${entityName}: hurt_by_target does NOT retaliate against mk_enemy (prevents enemy-on-enemy combat)`, () => {
+      const families = getHurtByTargetFamilies(hbt);
+      expect(families).not.toContain("mk_enemy");
+    });
+  }
+});
+
+describe("BP entities: boss hurt_by_target restricts retaliation to player and mk_ally", () => {
+  const bossFile = "mk_boss_siege_lord.se.json";
+  const raw = readBPEntity(bossFile);
+  const hbt = getHurtByTarget(raw);
+
+  it("boss has hurt_by_target component", () => {
+    expect(hbt).not.toBeNull();
+  });
+
+  it("boss hurt_by_target has entity_types defined", () => {
+    expect(hbt?.entity_types).toBeDefined();
+    expect(hbt?.entity_types.length).toBeGreaterThan(0);
+  });
+
+  it("boss hurt_by_target includes player in entity_types", () => {
+    const families = getHurtByTargetFamilies(hbt);
+    expect(families).toContain("player");
+  });
+
+  it("boss hurt_by_target includes mk_ally in entity_types", () => {
+    const families = getHurtByTargetFamilies(hbt);
+    expect(families).toContain("mk_ally");
+  });
+
+  it("boss hurt_by_target does NOT include mk_enemy (boss does not retaliate against enemies)", () => {
+    const families = getHurtByTargetFamilies(hbt);
+    expect(families).not.toContain("mk_enemy");
+  });
+
+  it("boss hurt_by_target priority is 1 (high priority retaliation)", () => {
+    expect(hbt.priority).toBe(1);
+  });
+});

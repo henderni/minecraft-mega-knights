@@ -361,6 +361,8 @@ export class SiegeSystem {
         }
 
         for (const entry of spawnQueue) {
+          // Abort if siege ended while generator was running — prevents orphaned entities
+          if (!siegeRef.siegeActive) { break; }
           const cachedPlayer = playerMap.get(entry.playerName);
 
           if (cachedPlayer?.isValid) {

@@ -153,6 +153,16 @@ export class EnemyCampSystem {
       } else {
         const count = (this.staleCampCounter.get(playerName) ?? 0) + 1;
         if (count >= STALE_CAMP_THRESHOLD) {
+          // Remove surviving guard entities before deleting camp state
+          const staleCamp = this.activeCamps.get(playerName);
+          if (staleCamp) {
+            try {
+              const dim = world.getDimension(staleCamp.dimensionId);
+              for (const guard of dim.getEntities({ tags: ["mk_camp_guard", `mk_camp_${staleCamp.campId}`] })) {
+                try { guard.remove(); } catch { /* already despawned */ }
+              }
+            } catch { /* dimension not loaded */ }
+          }
           this.activeCamps.delete(playerName);
           this.staleCampCounter.delete(playerName);
         } else {

@@ -81,9 +81,9 @@ describe("Boss: mk:phase_2 component group", () => {
     expect(phase2["minecraft:follow_range"].value).toBe(32);
   });
 
-  it("phase_2 nearest_attackable_target max_dist is 28", () => {
+  it("phase_2 nearest_attackable_target max_dist matches follow_range (32)", () => {
     const nat = phase2["minecraft:behavior.nearest_attackable_target"];
-    expect(nat.entity_types[0].max_dist).toBe(28);
+    expect(nat.entity_types[0].max_dist).toBe(32);
   });
 
   it("phase_2 attack damage is 16", () => {

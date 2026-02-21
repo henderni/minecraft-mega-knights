@@ -206,7 +206,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     for (const dimId of ["overworld", "nether", "the_end"]) {
       try {
         const dim = world.getDimension(dimId);
-        for (const tag of ["mk_army", "mk_siege_mob", "mk_camp_guard"]) {
+        for (const tag of ["mk_army", "mk_siege_mob", "mk_camp_guard", "mk_script_spawned", "mk_merchant"]) {
           for (const e of dim.getEntities({ tags: [tag] })) {
             try { e.remove(); } catch { /* already despawned */ }
           }

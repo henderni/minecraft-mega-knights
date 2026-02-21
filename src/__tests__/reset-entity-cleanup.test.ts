@@ -180,11 +180,13 @@ describe("mk:reset Handler — Entity Cleanup (main.ts lines 241-271)", () => {
       expect(dimLoop).toContain("getDimension(dimId)");
     });
 
-    it("cleans all three entity tags per dimension", () => {
+    it("cleans all five entity tags per dimension", () => {
       const resetBlock = MAIN_SRC.match(/event\.id\s*===\s*["']mk:reset["'][\s\S]*?else if/);
       expect(resetBlock).not.toBeNull();
-      // The tag array should contain all three entity tags
-      expect(resetBlock![0]).toMatch(/\[["']mk_army["']\s*,\s*["']mk_siege_mob["']\s*,\s*["']mk_camp_guard["']\]/);
+      // The tag array should contain all five entity tags
+      for (const tag of ["mk_army", "mk_siege_mob", "mk_camp_guard", "mk_script_spawned", "mk_merchant"]) {
+        expect(resetBlock![0]).toContain(tag);
+      }
     });
   });
 });
