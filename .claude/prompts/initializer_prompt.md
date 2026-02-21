@@ -116,6 +116,11 @@ Good candidates for grouping:
 ## Context
 
 - TypeScript in `src/` compiles to `MegaKnights_BP/scripts/` via `npm run build`
-- Tests: `npm run test:run` (vitest, source-as-text pattern — cannot import @minecraft/server)
+- Tests: `npm run test:run` (vitest, source-as-text pattern)
+- Tests CANNOT import modules that pull in `@minecraft/server`
+- Safe test imports: ArmorTiers, BestiaryDefinitions, CampDefinitions, CastleBlueprints, FactionDefinitions, Strings, WaveDefinitions
 - Primary target: Nintendo Switch (30 FPS, <60 custom entities during siege)
 - Entity namespace: `mk:mk_<name>`, tags: `mk_army`, `mk_owner_<name>`, `mk_siege_mob`
+- Logging: `console.warn()` not `console.log()`
+- World mutations in event handlers must be deferred with `system.run()`
+- Entity access must be wrapped in try-catch (unloaded/despawned entities)

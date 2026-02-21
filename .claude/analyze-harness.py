@@ -25,19 +25,28 @@ from typing import Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CLAUDE_DIR = PROJECT_ROOT / ".claude"
-SESSIONS_DIR = Path.home() / ".claude" / "projects" / "-Users-nick-Repos-minecraft-mega-knights"
 FEATURE_LIST = CLAUDE_DIR / "feature_list.json"
 PROGRESS_FILE = CLAUDE_DIR / "progress.txt"
 RUNS_DIR = CLAUDE_DIR / "harness_runs"
 
-# ─── Pricing (Claude Opus 4, per million tokens) ─────────────────────────────
 
-PRICING = {
-    "input": 15.00,
-    "output": 75.00,
-    "cache_write": 18.75,
-    "cache_read": 1.50,
+def get_sessions_dir() -> Path:
+    """Derive the Claude sessions directory from the project root path."""
+    # Claude Code stores sessions under ~/.claude/projects/<mangled-path>/
+    # where the mangled path replaces / with - and prepends -
+    mangled = "-" + str(PROJECT_ROOT).replace("/", "-")
+    return Path.home() / ".claude" / "projects" / mangled
+
+# ─── Pricing (per million tokens) ─────────────────────────────────────────────
+
+MODEL_PRICING = {
+    "opus": {"input": 15.00, "output": 75.00, "cache_write": 18.75, "cache_read": 1.50},
+    "sonnet": {"input": 3.00, "output": 15.00, "cache_write": 3.75, "cache_read": 0.30},
+    "haiku": {"input": 0.80, "output": 4.00, "cache_write": 1.00, "cache_read": 0.08},
 }
+
+# Default — overridden by --model flag
+PRICING = MODEL_PRICING["opus"]
 
 
 @dataclass
@@ -165,9 +174,10 @@ def parse_session(session_path: Path) -> SessionMetrics:
 def find_sessions_by_date(target_date: date) -> list[Path]:
     """Find all non-empty session files modified on a given date."""
     sessions = []
-    if not SESSIONS_DIR.exists():
+    sessions_dir = get_sessions_dir()
+    if not sessions_dir.exists():
         return sessions
-    for f in SESSIONS_DIR.glob("*.jsonl"):
+    for f in sessions_dir.glob("*.jsonl"):
         if f.stat().st_size == 0:
             continue
         mtime = datetime.fromtimestamp(f.stat().st_mtime)
@@ -178,9 +188,10 @@ def find_sessions_by_date(target_date: date) -> list[Path]:
 
 def find_sessions_by_ids(ids: list[str]) -> list[Path]:
     """Find session files by partial or full session ID."""
+    sessions_dir = get_sessions_dir()
     sessions = []
     for sid in ids:
-        matches = list(SESSIONS_DIR.glob(f"{sid}*.jsonl"))
+        matches = list(sessions_dir.glob(f"{sid}*.jsonl"))
         sessions.extend(matches)
     return sorted(sessions, key=lambda p: p.stat().st_mtime)
 
@@ -424,7 +435,17 @@ def main():
     parser.add_argument(
         "--json", action="store_true", help="Output raw JSON instead of text"
     )
+    parser.add_argument(
+        "--model",
+        choices=["opus", "sonnet", "haiku"],
+        default="opus",
+        help="Model used for cost estimation (default: opus)",
+    )
     args = parser.parse_args()
+
+    # Apply model pricing
+    global PRICING
+    PRICING = MODEL_PRICING[args.model]
 
     # Find session files
     if args.sessions:
@@ -434,9 +455,10 @@ def main():
         session_paths = find_sessions_by_date(target)
     else:
         # Auto-detect: find most recent date with sessions
+        sessions_dir = get_sessions_dir()
         all_dates = set()
-        if SESSIONS_DIR.exists():
-            for f in SESSIONS_DIR.glob("*.jsonl"):
+        if sessions_dir.exists():
+            for f in sessions_dir.glob("*.jsonl"):
                 if f.stat().st_size > 0:
                     mtime = datetime.fromtimestamp(f.stat().st_mtime)
                     all_dates.add(mtime.date())

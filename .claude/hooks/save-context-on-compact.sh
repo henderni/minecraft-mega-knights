@@ -3,7 +3,9 @@
 # Auto-save context summary before compaction
 # Triggered by PreCompact hook — saves a lightweight breadcrumb
 
-MEMORY_DIR="$HOME/.claude/projects/-Users-nick-Repos-minecraft-mega-knights/memory/contexts"
+PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
+MANGLED="-$(echo "$PROJECT_DIR" | tr '/' '-')"
+MEMORY_DIR="$HOME/.claude/projects/$MANGLED/memory/contexts"
 mkdir -p "$MEMORY_DIR"
 
 TIMESTAMP=$(date +"%Y-%m-%d-%H%M")

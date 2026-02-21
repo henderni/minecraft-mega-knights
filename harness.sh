@@ -17,7 +17,6 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FEATURE_FILE="$PROJECT_DIR/.claude/feature_list.json"
 PROGRESS_FILE="$PROJECT_DIR/.claude/progress.txt"
-SESSION_LOG="$PROJECT_DIR/.claude/session_ids.txt"
 PROMPTS_DIR="$PROJECT_DIR/.claude/prompts"
 
 # Defaults
@@ -116,7 +115,6 @@ if [ "$NEED_INIT" = true ]; then
     INIT_PROMPT=$(cat "$PROMPTS_DIR/initializer_prompt.md")
 
     # Run claude without output capture — streams live to terminal
-    echo "init:$(date -Iseconds)" >> "$SESSION_LOG"
     claude -p "$INIT_PROMPT" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
@@ -137,7 +135,6 @@ fi
 # Continue last session if requested
 if [ "$CONTINUE_LAST" = true ]; then
     log "Continuing last session..."
-    echo "continue:$(date -Iseconds)" >> "$SESSION_LOG"
     claude --continue -p "$(cat "$PROMPTS_DIR/coding_prompt.md")" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
@@ -169,8 +166,6 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
 
     # Run coding session — streams live to terminal
     CODING_PROMPT=$(cat "$PROMPTS_DIR/coding_prompt.md")
-    echo "coding:session-$i:$(date -Iseconds)" >> "$SESSION_LOG"
-
     claude -p "$CODING_PROMPT" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
@@ -212,5 +207,4 @@ if [ -f "$FEATURE_FILE" ]; then
     FINAL_TOTAL=$(jq length "$FEATURE_FILE")
     log "Final progress: $FINAL_DONE/$FINAL_TOTAL tasks complete"
 fi
-log "Session log: $SESSION_LOG"
 log "Progress log: $PROGRESS_FILE"

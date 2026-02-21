@@ -14,7 +14,7 @@ Create a context snapshot that can be loaded in a future session.
 
 ## What to capture
 
-Write a structured summary to `~/.claude/projects/-Users-nick-Repos-minecraft-mega-knights/memory/contexts/<timestamp>-<label>.md`:
+Write a structured summary to your auto memory `contexts/` subdirectory (`<timestamp>-<label>.md`):
 
 ### Structure
 
@@ -50,6 +50,6 @@ API quirks discovered, things that were tried and didn't work>
    - Run `git diff --stat` to see modified files
    - Summarize the conversation's key decisions and findings
 2. Generate the label from `$ARGUMENTS` or auto-generate from the task
-3. Create the directory if needed: `mkdir -p ~/.claude/projects/-Users-nick-Repos-minecraft-mega-knights/memory/contexts/`
+3. Create the directory if needed: `mkdir -p <your auto memory directory>/contexts/`
 4. Write the context file with timestamp prefix (e.g., `2026-02-20-siege-refactor.md`)
 5. Confirm to the user what was saved and how to load it later (`/load-context`)

@@ -14,7 +14,7 @@ Restore context from a previous session.
 
 ## Steps
 
-1. **List available contexts**: Read the directory `~/.claude/projects/-Users-nick-Repos-minecraft-mega-knights/memory/contexts/`
+1. **List available contexts**: Read the `contexts/` subdirectory inside your auto memory directory
    - Show each file's name (which includes date and label)
    - Show the first 3 lines of each for a quick preview
 

@@ -14,7 +14,6 @@ You manage the autonomous coding harness for Mega Knights. The harness enables C
 
 - **Feature list**: `.claude/feature_list.json` — source of truth for all tasks (v2 schema)
 - **Progress log**: `.claude/progress.txt` — append-only session history
-- **Session IDs**: `.claude/session_ids.txt` — captured session IDs for resume
 - **Prompts**: `.claude/prompts/initializer_prompt.md`, `.claude/prompts/coding_prompt.md`
 - **Analytics**: `.claude/analyze-harness.py` — post-run metrics and recommendations
 - **Harness script**: `harness.sh` — multi-session orchestrator
