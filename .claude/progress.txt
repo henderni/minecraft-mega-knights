@@ -157,3 +157,36 @@ Progress: 18/18 tasks complete
 --- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 16:05:42 ---
 Progress: 18/18 tasks complete
 ---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 16:06:57 ---
+Progress: 18/18 tasks complete
+---
+
+=== Initializer Session 2 — 2026-02-20 16:14 ===
+Deep codebase audit complete. Added 13 new tasks (IDs 19-31) to feature_list.json.
+
+Priority breakdown: 3 high, 8 medium, 2 low
+Category breakdown: 6 functional, 5 test, 1 performance, 1 polish
+Complexity: 6 small, 7 medium
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 48 files, 2220 tests, ALL PASSING
+- Previous 18/18 tasks: ALL COMPLETE
+
+Key bugs found:
+- setDay() clamps to 100 even in endless mode (DayCounterSystem line 154)
+- spawnEndlessWave() missing playerMap refresh after cap pause (SiegeSystem lines 462-464)
+- mk:reset doesn't clear player properties (kills, army_size, tier, bestiary)
+- Merchant never spawns in endless mode (MERCHANT_DAYS only [15,30,55,75,95])
+- QuestJournal hardcodes "30% recruit chance" regardless of difficulty
+- debugSpawnAllies uses hardcoded naming instead of generateAllyName()
+
+Task clusters:
+- Endless mode: #19, #20, #22, #29, #30 (setDay fix, merchants, wave refresh, tests)
+- Reset completeness: #21, #28 (clear player props + tests)
+- Code quality: #23, #24, #25, #31 (siege dedup, naming fix, dynamic journal, comment fix)
+- Test coverage: #26, #27 (QuestJournal + Difficulty tests)
+
+Next: Start with task #19 (fix setDay endless clamp), then #20, #21
+===

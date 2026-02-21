@@ -341,5 +341,252 @@
       { "type": "all_tests_pass" }
     ],
     "passes": true
+  },
+  {
+    "id": 19,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix setDay() to support endless mode days > 100. DayCounterSystem.setDay() clamps to MAX_DAY=100 unconditionally (line 154), preventing debug testing of endless mode at higher days. When endless mode is active (cachedEndless=true), allow days beyond 100. Change the clamp to use a higher max (e.g., 999) when endless mode is active. Also update the sendMessage in main.ts mk:setday handler which clamps independently to 100.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts",
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/setday-endless.test.ts",
+    "related_to": [29],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "Math.min(DayCounterSystem.MAX_DAY, day)" },
+      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "cachedEndless" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 20,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "M",
+    "description": "Add endless mode merchant spawning. MERCHANT_DAYS only contains [15, 30, 55, 75, 95], so the Wandering Merchant never appears in endless mode (day > 100). Add support for recurring merchant days in endless mode — e.g., every 25 days starting from day 125 (125, 150, 175, ...). Update MerchantSystem.onDayChanged() to check for endless-mode merchant days in addition to the static set. Consider making this a pure function so it's testable.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": "src/__tests__/merchant.test.ts",
+    "related_to": [30],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "endless" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 21,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "M",
+    "description": "Reset player properties on mk:reset. Currently mk:reset (main.ts) only calls dayCounter.reset() and difficulty.reset(), which clear world-level dynamic properties. Player-level properties are NOT cleared: mk:kills, mk:army_size, mk:current_tier, mk:army_bonus, mk:has_started, mk:tier_unlocked_*, and bestiary kills (mk:bestiary_kills_*). After reset, players keep their earned buffs, army bonuses, and tier progress. Add a resetAllPlayers() method that iterates all players and clears these properties.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": "src/__tests__/reset-completeness.test.ts",
+    "related_to": [28],
+    "verification": [
+      { "type": "source_contains", "file": "src/main.ts", "pattern": "mk:army_size" },
+      { "type": "source_contains", "file": "src/main.ts", "pattern": "mk:has_started" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 22,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix spawnEndlessWave missing playerMap refresh after entity cap pause. In SiegeSystem.spawnWave() (lines 373-381), after the `while (siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS)` yield loop, the playerMap is refreshed to get fresh player references. In spawnEndlessWave() (lines 462-464), the same yield loop exists but WITHOUT the post-pause refresh. Players may have disconnected/reconnected during the pause, making stale references cause spawn failures. Copy the refresh pattern from spawnWave().",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [23],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "Refresh player map after pause" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 23,
+    "category": "performance",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Refactor SiegeSystem to deduplicate spawn logic. spawnWave() and spawnEndlessWave() share ~90% identical code: building a spawn queue from player list with scaling, running a staggered system.runJob generator with playerMap management, mid-wave entity cap gating, and activeSpawnJobs tracking. Extract a shared private method like staggeredSpawn(spawnQueue, players) that both methods call. This eliminates the maintenance risk of one copy having a fix the other doesn't (like the missing playerMap refresh in task #22).",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [22],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "staggeredSpawn" },
+      { "type": "source_not_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "spawnEndlessWave" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 24,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix debugSpawnAllies to use generateAllyName(). ArmySystem.debugSpawnAllies() (line 364-365) uses a hardcoded format `${safeName}'s Knight` instead of the shared generateAllyName() utility that all other ally spawning paths use. This means debug allies get different-style names than real recruits. Update to use generateAllyName('mk:mk_ally_knight') for consistency.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "generateAllyName" },
+      { "type": "source_not_contains", "file": "src/systems/ArmySystem.ts", "pattern": "safeName}'s Knight" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 25,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Make QuestJournal recruit chance dynamic based on difficulty. JOURNAL_ARMY_BODY in Strings.ts hardcodes '30% chance to recruit them' but Hard difficulty uses 20% (RECRUIT_CHANCES in DifficultySystem). Pass DifficultySystem to QuestJournalSystem constructor and use the actual recruit chance in the army body text. Convert JOURNAL_ARMY_BODY from a constant to a function that takes the recruit percentage.",
+    "target_files": [
+      "src/data/Strings.ts",
+      "src/systems/QuestJournalSystem.ts",
+      "src/main.ts"
+    ],
+    "test_file": null,
+    "related_to": [26],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "DifficultySystem" },
+      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "JOURNAL_ARMY_BODY" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 26,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add QuestJournalSystem tests. Using source-as-text pattern (read QuestJournalSystem.ts as text), verify: (1) all JOURNAL_* string constants from Strings.ts are referenced, (2) endless mode button is conditionally added (isEndlessMode check), (3) bestiary display iterates all BESTIARY entries, (4) TOC button count matches switch case count, (5) DayCounterSystem is used for getCurrentDay (not direct getDynamicProperty), (6) DifficultySystem reference exists for dynamic recruit chance.",
+    "target_files": [
+      "src/systems/QuestJournalSystem.ts",
+      "src/data/Strings.ts"
+    ],
+    "test_file": "src/__tests__/quest-journal.test.ts",
+    "related_to": [25],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/quest-journal.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/quest-journal.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 27,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add DifficultySystem tests. Using source-as-text pattern, verify: (1) DIFFICULTY_NORMAL=0 and DIFFICULTY_HARD=1 constants exist, (2) RECRUIT_CHANCES maps both difficulties to reasonable values (0.2-0.5 range), (3) ENEMY_MULTIPLIERS maps both difficulties (1.0 and 1.5), (4) reset() clears cached value and calls setDynamicProperty with undefined, (5) getDifficulty() reads from cache when available, (6) dynamic property key is 'mk:difficulty'. Import the exported constants directly since DifficultySystem imports @minecraft/server.",
+    "target_files": [
+      "src/systems/DifficultySystem.ts"
+    ],
+    "test_file": "src/__tests__/difficulty-system.test.ts",
+    "related_to": [],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/difficulty-system.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/difficulty-system.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 28,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add mk:reset completeness tests. Using source-as-text pattern on main.ts, verify that the mk:reset handler: (1) calls dayCounter.reset(), (2) calls difficulty.reset(), (3) clears ALL player-level dynamic properties (mk:kills, mk:army_size, mk:current_tier, mk:army_bonus, mk:has_started, mk:tier_unlocked_*, mk:bestiary_kills_*), (4) sends DEBUG_QUEST_RESET message. Cross-reference against all dynamic property keys used in the codebase to ensure none are missed.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/DayCounterSystem.ts",
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": "src/__tests__/reset-completeness.test.ts",
+    "related_to": [21],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/reset-completeness.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/reset-completeness.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 29,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add setDay endless mode tests. Using source-as-text pattern on DayCounterSystem.ts, verify: (1) setDay() uses a higher clamp limit when endless mode is active (not always capped at 100), (2) milestones fire correctly for jumped days in setDay, (3) the staggered milestone execution via system.runJob is present, (4) endless mode day values (101-999) are not clamped to 100. Also test the main.ts mk:setday handler doesn't independently clamp to 100.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts",
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/setday-endless.test.ts",
+    "related_to": [19],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/setday-endless.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/setday-endless.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 30,
+    "category": "test",
+    "priority": "low",
+    "complexity": "M",
+    "description": "Add merchant endless mode tests. Verify: (1) MerchantSystem.onDayChanged() or a new helper function recognizes endless-mode merchant days (day > 100, recurring pattern), (2) the static MERCHANT_DAYS set still works for normal play (days 15-95), (3) no merchant spawns on non-merchant endless days, (4) merchant spawns on the correct recurring endless-mode days. Use source-as-text pattern since MerchantSystem imports @minecraft/server.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": "src/__tests__/merchant.test.ts",
+    "related_to": [20],
+    "verification": [
+      { "type": "test_passes", "file": "src/__tests__/merchant.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 31,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Fix HUD bitpacking comment to reflect actual bit usage. The comment on DayCounterSystem line 352 says 'Packs day(7), filled(5), armySize(6), armyCap(6), tier(3) = 27 bits' but in endless mode, day can exceed 127 (7-bit max), using 8-9 bits. The code works correctly (JS Numbers have 53-bit integer precision and fields don't overlap) but the comment is misleading. Update the comment to clarify that day uses variable width and total bits can exceed 27 in endless mode.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "27 bits" },
+      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "53-bit" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
   }
 ]
