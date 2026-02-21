@@ -250,3 +250,50 @@ Progress: 31/31 tasks complete — ALL DONE
 --- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 16:30:15 ---
 Progress: 31/31 tasks complete
 ---
+
+--- checkpoint 4989c8b8-8345-4c39-8cfd-ab33d6984307 @ 2026-02-20 16:30:51 ---
+Progress: 31/31 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 16:33:30 ---
+Progress: 31/31 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 16:36:43 ---
+Progress: 31/31 tasks complete
+---
+
+=== Initializer Session 3 — 2026-02-20 16:43 ===
+Deep codebase audit complete (all 12 system files, 9 data files, entity/item/RP JSON).
+Added 10 new tasks (IDs 32-41) to feature_list.json.
+
+Priority breakdown: 2 high, 5 medium, 3 low
+Category breakdown: 4 functional, 4 test, 1 performance, 1 polish
+Complexity: 6 small, 4 medium
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 52 files, 2,308 tests, ALL PASSING
+- Previous 31/31 tasks: ALL COMPLETE
+- Entity/item/RP content: ALL CLEAN (no issues found)
+- Data files: ALL CONSISTENT (no gaps, no orphans)
+
+Key bugs found:
+- Camp double-clear race condition: death listener + tick() recount can both fire campCleared() (EnemyCampSystem.ts lines 93-94, 126-127) — no guard flag
+- Siege mob cleanup missing: endSiege() never removes surviving mk_siege_mob entities, wasting entity budget (SiegeSystem.ts lines 400-448)
+- Duplicate TIER_NAMES constant in DayCounterSystem.ts (line 31) and QuestJournalSystem.ts (line 24)
+- Siege recount hardcodes overworld dimension (SiegeSystem.ts line 245)
+
+Code quality improvements:
+- BestiarySystem.getEntryForType() linear scan → Map cache
+- Magic number 40 in endless wave escalation → named constant
+- No friendly fire protection tests exist
+
+Task clusters:
+- Camp race condition: #32 (fix) + #39 (tests)
+- Siege cleanup: #33 (fix) + #40 (tests)
+- TIER_NAMES dedup: #34 (extract) + #41 (tests)
+- Standalone: #35 (siege dimension), #36 (bestiary cache), #37 (magic number), #38 (friendly fire tests)
+
+Next: Start with tasks #32 (camp race fix) and #33 (siege cleanup) — both HIGH priority
+===

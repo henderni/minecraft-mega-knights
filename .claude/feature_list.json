@@ -927,5 +927,195 @@
       }
     ],
     "passes": true
+  },
+  {
+    "id": 32,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix camp double-clear race condition. EnemyCampSystem has a race where both the death listener (line 93-94) and the safety recount tick() (line 126-127) can call campCleared() on the same camp. If the last guard dies and tick() runs before the camp entry is deleted from the Map iterator, rewards are dropped twice and the clear message is sent twice. Fix: add a `cleared` boolean to the CampState interface (default false), set it to true at the start of campCleared(), and check it before proceeding in both the death listener and tick() paths.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": "src/__tests__/camp-cleared-guard.test.ts",
+    "related_to": [39],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/EnemyCampSystem.ts", "pattern": "cleared" },
+      { "type": "source_contains", "file": "src/systems/EnemyCampSystem.ts", "pattern": "camp.cleared" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 33,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "M",
+    "description": "Add siege mob cleanup on endSiege. When a siege ends (victory or defeat), SiegeSystem.endSiege() sets siegeActive=false but never removes surviving mk_siege_mob entities. These entities continue wandering and consuming the entity budget. In endless mode, where mini-sieges happen every 20 days, residual mobs accumulate rapidly. Fix: in endSiege(), after setting siegeActive=false, query all mk_siege_mob tagged entities and remove them via system.runJob (staggered, 2 per tick for Switch performance). Reset siegeMobCount to 0 after cleanup.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/siege-cleanup.test.ts",
+    "related_to": [40],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "mk_siege_mob" },
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "cleanupSiegeMobs" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 34,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Extract duplicate TIER_NAMES constant to shared location. Both DayCounterSystem.ts (line 31) and QuestJournalSystem.ts (line 24) define the same hardcoded array ['Page', 'Squire', 'Knight', 'Champion', 'Mega Knight']. If tiers change, both files would need updating. Export TIER_NAMES from ArmorTiers.ts (which already defines ARMOR_TIERS with tier data) and import it in both system files, removing the local duplicates.",
+    "target_files": [
+      "src/data/ArmorTiers.ts",
+      "src/systems/DayCounterSystem.ts",
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": "src/__tests__/tier-names-shared.test.ts",
+    "related_to": [41],
+    "verification": [
+      { "type": "source_contains", "file": "src/data/ArmorTiers.ts", "pattern": "TIER_NAMES" },
+      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "const TIER_NAMES = [" },
+      { "type": "source_not_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "const TIER_NAMES = [" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 35,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix siege recount overworld dimension assumption. SiegeSystem tick() line 245 hardcodes world.getDimension('overworld') for the safety-net recount. If a player triggers mk:siege while in the Nether or End, all siege mobs spawn in that dimension but the recount always queries the overworld, missing them entirely. The siegeMobCount drifts to 0 from death events while the recount 'corrects' it to 0 too (no entities found in overworld), causing premature victory. Fix: store the dimension ID at siege start (startSiege/startEndlessSiege) and use it in the recount query.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "siegeDimensionId" },
+      { "type": "source_not_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "getDimension(\"overworld\")" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 36,
+    "category": "performance",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add BestiarySystem lookup cache. BestiarySystem.getEntryForType() (line 80-84) performs a linear scan through the BESTIARY array on every enemy kill. While only 5 entries, this is a hot path during combat with many enemies dying rapidly. Cache a Map<typeId, BestiaryEntry> built once in the constructor, and use it for O(1) lookups in getEntryForType().",
+    "target_files": [
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/BestiarySystem.ts", "pattern": "entryByType" },
+      { "type": "source_contains", "file": "src/systems/BestiarySystem.ts", "pattern": "new Map" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 37,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Extract endless wave escalation magic number. SiegeSystem.ts line 161 uses a hardcoded 40 in `Math.floor((day - 100) / 40)` for endless wave escalation without a named constant. Add `const ENDLESS_WAVE_ESCALATION_DAYS = 40` near the other constants at the top of SiegeSystem.ts and use it in the calculation. This improves readability and makes tuning easier.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "ENDLESS_WAVE_ESCALATION_DAYS" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 38,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add friendly fire protection tests. main.ts (lines 114-171) implements friendly fire heal-back, message throttling, and owner tag verification, but no dedicated test suite exists. Using source-as-text pattern on main.ts, verify: (1) entityHurt subscription exists with mk_army tag check, (2) owner tag verification via getOwnerTag, (3) heal-back uses health.setCurrentValue with clamped value, (4) throttle interval is 60 ticks between messages per player, (5) FRIENDLY_FIRE_BLOCKED string is imported and used, (6) system.run() defers heal-back mutation.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/friendly-fire.test.ts",
+    "related_to": [],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/friendly-fire.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/friendly-fire.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 39,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add camp cleared idempotency tests. After task #32 adds the `cleared` flag to CampState, verify via source-as-text on EnemyCampSystem.ts: (1) CampState interface includes `cleared: boolean`, (2) campCleared() checks camp.cleared before proceeding, (3) campCleared() sets camp.cleared = true, (4) death listener path checks cleared before calling campCleared, (5) tick() recount path checks cleared before calling campCleared, (6) new camps initialize with cleared: false.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": "src/__tests__/camp-cleared-guard.test.ts",
+    "related_to": [32],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/camp-cleared-guard.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/camp-cleared-guard.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 40,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add siege mob cleanup tests. After task #33 adds cleanup logic to endSiege(), verify via source-as-text on SiegeSystem.ts: (1) endSiege() calls a cleanup method (cleanupSiegeMobs or inline), (2) cleanup queries entities with mk_siege_mob tag, (3) cleanup uses staggered removal (system.runJob or batched system.run), (4) siegeMobCount is reset to 0 after cleanup, (5) both victory and defeat paths trigger cleanup, (6) endless mode endSiege also triggers cleanup.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/siege-cleanup.test.ts",
+    "related_to": [33],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/siege-cleanup.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/siege-cleanup.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 41,
+    "category": "test",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add TIER_NAMES shared constant tests. After task #34 extracts TIER_NAMES to ArmorTiers.ts, verify: (1) ArmorTiers.ts exports TIER_NAMES, (2) TIER_NAMES has exactly 5 entries matching ARMOR_TIERS count, (3) TIER_NAMES entries match ARMOR_TIERS[i].name or expected values, (4) DayCounterSystem.ts imports TIER_NAMES from ArmorTiers (not local const), (5) QuestJournalSystem.ts imports TIER_NAMES from ArmorTiers (not local const).",
+    "target_files": [
+      "src/data/ArmorTiers.ts",
+      "src/systems/DayCounterSystem.ts",
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": "src/__tests__/tier-names-shared.test.ts",
+    "related_to": [34],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/tier-names-shared.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/tier-names-shared.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
   }
 ]
