@@ -297,3 +297,52 @@ Task clusters:
 
 Next: Start with tasks #32 (camp race fix) and #33 (siege cleanup) — both HIGH priority
 ===
+
+--- checkpoint 97a1bd93-fc20-4d69-a620-3527f505f05d @ 2026-02-20 16:45:20 ---
+Progress: 31/41 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 16:55:44 ---
+Progress: 41/41 tasks complete
+---
+
+=== Initializer Session 4 — 2026-02-20 17:14 ===
+Deep codebase audit complete (all 12 system files, 9 data files, entity JSON, ESLint).
+Added 13 new tasks (IDs 42-54) to feature_list.json.
+
+Priority breakdown: 3 high, 5 medium, 3 low, 2 test-medium
+Category breakdown: 7 functional, 2 performance, 1 polish, 3 test
+Complexity: 11 small, 2 medium
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 56 files, 2,351 tests, ALL PASSING
+- Previous 41/41 tasks: ALL COMPLETE
+- ESLint: 1 error (curly brace) + 3 warnings (as any)
+
+Key bugs found:
+- CRITICAL: Armor initialization race — dayCounter.initializePlayer sets mk:has_started=true BEFORE armorTier.initializePlayer checks it, so Page armor is NEVER given (main.ts:176-177)
+- Bread quantity: 'give @s bread 1 0 8' gives 1 bread instead of 8 (DayCounterSystem.ts:111)
+- mk:reset incomplete: doesn't stop siege, remove entities, or clear camps
+- Boss despawn: Siege Lord has minecraft:despawn (128/96) — can vanish during climactic fight
+- Standard Bearer wasted AI: has nearest_attackable_target but no attack component
+- Late-joining players miss starter kit (sword, shield, bread, bed, journal)
+- JOURNAL_OVERVIEW_BODY says "100 days" even in endless mode
+- TUTORIAL_2_RECRUIT hardcodes "30%" regardless of difficulty
+- SiegeSystem.startSiege calls getAllPlayers() twice (lines 141, 148)
+
+Task clusters:
+- Armor + starter kit: #42, #46, #52 (init race, late join kit, init order test)
+- Reset completeness: #44, #53 (entity cleanup, tests)
+- Entity JSON: #47, #48, #54 (boss persist, standard bearer AI, entity tests)
+- Bread fix: #43, #56
+- Lint cleanup: #45
+- Strings/UI: #49, #51 (journal endless, tutorial hardcode)
+- Perf: #50 (double getAllPlayers)
+
+Next: Start with task #42 (armor init race), then #43, #44
+===
+
+--- checkpoint init-v4 @ 2026-02-20 ---
+Progress: 41/54 tasks complete
+---

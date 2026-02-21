@@ -938,14 +938,28 @@
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": "src/__tests__/camp-cleared-guard.test.ts",
-    "related_to": [39],
-    "verification": [
-      { "type": "source_contains", "file": "src/systems/EnemyCampSystem.ts", "pattern": "cleared" },
-      { "type": "source_contains", "file": "src/systems/EnemyCampSystem.ts", "pattern": "camp.cleared" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      39
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "cleared"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "camp.cleared"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 33,
@@ -957,14 +971,28 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": "src/__tests__/siege-cleanup.test.ts",
-    "related_to": [40],
-    "verification": [
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "mk_siege_mob" },
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "cleanupSiegeMobs" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      40
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "mk_siege_mob"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "cleanupSiegeMobs"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 34,
@@ -978,15 +1006,33 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": "src/__tests__/tier-names-shared.test.ts",
-    "related_to": [41],
-    "verification": [
-      { "type": "source_contains", "file": "src/data/ArmorTiers.ts", "pattern": "TIER_NAMES" },
-      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "const TIER_NAMES = [" },
-      { "type": "source_not_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "const TIER_NAMES = [" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      41
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/data/ArmorTiers.ts",
+        "pattern": "TIER_NAMES"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "const TIER_NAMES = ["
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "const TIER_NAMES = ["
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 35,
@@ -1000,12 +1046,24 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "siegeDimensionId" },
-      { "type": "source_not_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "getDimension(\"overworld\")" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "siegeDimensionId"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "getDimension(\"overworld\")"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 36,
@@ -1019,12 +1077,24 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/BestiarySystem.ts", "pattern": "entryByType" },
-      { "type": "source_contains", "file": "src/systems/BestiarySystem.ts", "pattern": "new Map" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "entryByType"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "new Map"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 37,
@@ -1038,11 +1108,19 @@
     "test_file": null,
     "related_to": [],
     "verification": [
-      { "type": "source_contains", "file": "src/systems/SiegeSystem.ts", "pattern": "ENDLESS_WAVE_ESCALATION_DAYS" },
-      { "type": "build_passes" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "ENDLESS_WAVE_ESCALATION_DAYS"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 38,
@@ -1056,11 +1134,19 @@
     "test_file": "src/__tests__/friendly-fire.test.ts",
     "related_to": [],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/friendly-fire.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/friendly-fire.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/friendly-fire.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/friendly-fire.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 39,
@@ -1072,13 +1158,23 @@
       "src/systems/EnemyCampSystem.ts"
     ],
     "test_file": "src/__tests__/camp-cleared-guard.test.ts",
-    "related_to": [32],
-    "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/camp-cleared-guard.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/camp-cleared-guard.test.ts" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      32
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/camp-cleared-guard.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/camp-cleared-guard.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 40,
@@ -1090,13 +1186,23 @@
       "src/systems/SiegeSystem.ts"
     ],
     "test_file": "src/__tests__/siege-cleanup.test.ts",
-    "related_to": [33],
-    "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/siege-cleanup.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/siege-cleanup.test.ts" },
-      { "type": "all_tests_pass" }
+    "related_to": [
+      33
     ],
-    "passes": false
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/siege-cleanup.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/siege-cleanup.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
   },
   {
     "id": 41,
@@ -1110,11 +1216,371 @@
       "src/systems/QuestJournalSystem.ts"
     ],
     "test_file": "src/__tests__/tier-names-shared.test.ts",
-    "related_to": [34],
+    "related_to": [
+      34
+    ],
     "verification": [
-      { "type": "test_file_exists", "file": "src/__tests__/tier-names-shared.test.ts" },
-      { "type": "test_passes", "file": "src/__tests__/tier-names-shared.test.ts" },
-      { "type": "all_tests_pass" }
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/tier-names-shared.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/tier-names-shared.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": true
+  },
+  {
+    "id": 42,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix armor initialization race condition. In main.ts playerSpawn handler (lines 176-177), dayCounter.initializePlayer() is called BEFORE armorTier.initializePlayer(). DayCounter sets mk:has_started=true, then ArmorTierSystem checks mk:has_started and sees true, SKIPPING Page armor entirely. Players NEVER receive starting armor. Fix: swap the call order so armorTier.initializePlayer() runs first (checks mk:has_started=false, gives 4 Page armor pieces), then dayCounter.initializePlayer() sets mk:has_started=true.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/system-wiring.test.ts",
+    "related_to": [53],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "armorTier.initializePlayer"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 43,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix bread quantity in starter kit. DayCounterSystem.ts line 111 uses 'give @s bread 1 0 8' which in Bedrock gives 1 bread (amount=1, data=0, the trailing 8 is an invalid components arg that is ignored). The intent is to give 8 bread. Fix: change to 'give @s bread 8'.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": "src/__tests__/day-counter.test.ts",
+    "related_to": [56],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "give @s bread 8"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "give @s bread 1 0 8"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 44,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "M",
+    "description": "Fix mk:reset to fully clean up game state. Currently (main.ts lines 241-260) mk:reset calls dayCounter.reset() and difficulty.reset() and clears player properties, but does NOT: (1) stop an active siege (siege continues running after reset), (2) remove army entities (mk_army tagged), (3) remove siege mob entities (mk_siege_mob tagged), (4) remove camp guard entities (mk_camp_guard tagged), (5) clear active camps from EnemyCampSystem. Fix: in the mk:reset handler, call siege.endSiege(false) if siege is active, kill all mk_army/mk_siege_mob/mk_camp_guard tagged entities, and call camps.resetAllCamps() or equivalent.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": "src/__tests__/reset-completeness.test.ts",
+    "related_to": [54],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "siege"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "mk_army"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 45,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix ESLint curly brace error and as-any warnings. main.ts line 150 has 'if (!entity.isValid) return;' without curly braces, which violates the curly ESLint rule and is the only lint ERROR in the entire project. Also add eslint-disable-next-line comments for the 3 'as any' type assertions (lines 143, 151 in main.ts and similar) that produce lint warnings, since the @minecraft/server types require explicit casting. Fix: add curly braces around the return statement and add appropriate eslint-disable comments.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_not_contains",
+        "file": "src/main.ts",
+        "pattern": "if (!entity.isValid) return;"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 46,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix late-joining player missing starter kit. DayCounterSystem.initializePlayer() only calls startQuest() if the quest is NOT active. A player joining an already-active quest gets their dynamic properties initialized but never receives the starter kit (iron_sword, shield, bread, bed, quest_journal). Fix: when a new player joins (mk:has_started is false) AND the quest IS already active, give them the starter kit items directly (without calling startQuest which would re-announce the quest to everyone).",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [42],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/DayCounterSystem.ts",
+        "pattern": "iron_sword"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 47,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add boss despawn protection during siege. The Siege Lord entity (mk_boss_siege_lord.se.json) has minecraft:despawn with max_distance:128, min_distance:96. During the climactic Day 100 siege, if a player retreats more than 128 blocks, the boss despawns and is lost forever — breaking the siege victory condition. Fix: add minecraft:persistent to the boss entity's base components, or remove the minecraft:despawn component from its active siege component group. The boss already has a scripted cleanup via endSiege().",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_boss_siege_lord.se.json",
+        "pattern": "persistent"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 48,
+    "category": "performance",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Remove wasted targeting AI from Standard Bearer ally. mk_ally_standard_bearer.se.json has minecraft:behavior.nearest_attackable_target (priority 2) which causes constant pathfinding target scans, but the entity has NO minecraft:attack or minecraft:behavior.melee_attack component. It can never actually attack, so the targeting AI wastes CPU cycles every scan_interval. Remove nearest_attackable_target from the Standard Bearer — it should only follow and buff, not waste cycles searching for targets it can never hit.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json",
+        "pattern": "nearest_attackable_target"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 49,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix JOURNAL_OVERVIEW_BODY for endless mode. Strings.ts line 106-107 JOURNAL_OVERVIEW_BODY hardcodes 'You have 100 days to build your army and survive the final siege' which is misleading in endless mode (quest continues indefinitely). Fix: either make JOURNAL_OVERVIEW_BODY accept an isEndless parameter and return a different text for endless mode (e.g. 'You have conquered the siege! Survive as long as you can in Endless Mode.'), or add a separate JOURNAL_OVERVIEW_BODY_ENDLESS variant. Update QuestJournalSystem to use the correct variant based on dayCounter.isEndlessMode().",
+    "target_files": [
+      "src/data/Strings.ts",
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [14],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "JOURNAL_OVERVIEW_BODY_ENDLESS"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "JOURNAL_OVERVIEW_BODY_ENDLESS"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 50,
+    "category": "performance",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Avoid double getAllPlayers() call in SiegeSystem.startSiege(). Lines 141 and 148 both call world.getAllPlayers() — the first to find a valid player for dimension ID, the second to play the wither sound to all players. The second call is redundant since startPlayers already contains the same player list. Fix: reuse the startPlayers variable on line 148 instead of calling world.getAllPlayers() again.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 51,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Fix TUTORIAL_2_RECRUIT hardcoded 30% recruit chance. Strings.ts line 90 TUTORIAL_2_RECRUIT hardcodes '30% chance' regardless of difficulty setting. On Hard difficulty, the recruit chance is 20%, making this tutorial tip incorrect. Fix: make TUTORIAL_2_RECRUIT a function accepting recruitPct (like JOURNAL_ARMY_BODY does), and update DayCounterSystem.startQuest() to pass the correct value from DifficultySystem.RECRUIT_CHANCES. This requires the DifficultySystem reference to be available during startQuest (already wired via setDifficultySystem).",
+    "target_files": [
+      "src/data/Strings.ts",
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_not_contains",
+        "file": "src/data/Strings.ts",
+        "pattern": "30% chance to recruit"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 52,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add armor initialization order test. Using source-as-text pattern on main.ts, verify that in the playerSpawn handler: (1) armorTier.initializePlayer is called BEFORE dayCounter.initializePlayer (or that the race condition from task #42 is fixed), (2) bestiary.onPlayerSpawn is called after both initializations, (3) initialSpawn guard is present. Cross-reference with ArmorTierSystem source to verify it checks mk:has_started.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/ArmorTierSystem.ts"
+    ],
+    "test_file": "src/__tests__/init-order.test.ts",
+    "related_to": [42],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/init-order.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/init-order.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 53,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add mk:reset entity cleanup tests. Using source-as-text pattern on main.ts, verify that the mk:reset handler: (1) stops the active siege (calls siege.endSiege or equivalent), (2) kills or removes mk_army tagged entities, (3) kills or removes mk_siege_mob tagged entities, (4) kills or removes mk_camp_guard tagged entities, (5) clears the camp system state. Cross-reference with EnemyCampSystem to verify a reset/clear method exists.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/EnemyCampSystem.ts",
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/reset-entity-cleanup.test.ts",
+    "related_to": [44],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/reset-entity-cleanup.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/reset-entity-cleanup.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 54,
+    "category": "test",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add boss entity persistence test. Using source-as-text pattern, read mk_boss_siege_lord.se.json and verify: (1) minecraft:persistent is present in the base components (after task #47 fix), (2) or minecraft:despawn is NOT present in the active siege components, (3) the boss has minecraft:boss component with should_darken_sky:false (Switch performance), (4) follow_range is 32 or less.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_boss_siege_lord.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [47],
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/entity-validation.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
     ],
     "passes": false
   }
