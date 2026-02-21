@@ -12,6 +12,15 @@ import { BESTIARY, BESTIARY_EFFECT_DURATION_TICKS, BestiaryEntry } from "../data
  * safety-net pass, not in the death event handler hot path.
  */
 export class BestiarySystem {
+  /** O(1) lookup cache for bestiary entries by enemy type ID */
+  private entryByType = new Map<string, BestiaryEntry>();
+
+  constructor() {
+    for (const entry of BESTIARY) {
+      this.entryByType.set(entry.enemyTypeId, entry);
+    }
+  }
+
   /**
    * Increment the kill counter for an enemy type and check for milestones.
    * Called from CombatSystem on every qualifying player kill.
@@ -78,9 +87,6 @@ export class BestiarySystem {
   }
 
   private getEntryForType(typeId: string): BestiaryEntry | undefined {
-    for (const entry of BESTIARY) {
-      if (entry.enemyTypeId === typeId) {return entry;}
-    }
-    return undefined;
+    return this.entryByType.get(typeId);
   }
 }

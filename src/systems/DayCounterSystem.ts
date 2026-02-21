@@ -1,5 +1,5 @@
 import { world, system, Player } from "@minecraft/server";
-import { ARMOR_TIERS } from "../data/ArmorTiers";
+import { ARMOR_TIERS, TIER_NAMES } from "../data/ArmorTiers";
 import { MILESTONES } from "../data/MilestoneEvents";
 import { ArmySystem } from "./ArmySystem";
 import { DifficultySystem } from "./DifficultySystem";
@@ -26,9 +26,6 @@ const PROGRESS_BARS: string[] = [];
 for (let i = 0; i <= BAR_LENGTH; i++) {
   PROGRESS_BARS.push("█".repeat(i) + "░".repeat(BAR_LENGTH - i));
 }
-
-/** Tier names indexed by tier number */
-const TIER_NAMES = ["Page", "Squire", "Knight", "Champion", "Mega Knight"];
 
 export class DayCounterSystem {
   private static readonly TICKS_PER_DAY = 24000;
@@ -111,7 +108,7 @@ export class DayCounterSystem {
       try {
         player.runCommand("give @s iron_sword");
         player.runCommand("give @s shield");
-        player.runCommand("give @s bread 1 0 8");
+        player.runCommand("give @s bread 8");
         player.runCommand("give @s bed");
         player.runCommand("give @s mk:mk_quest_journal");
         player.runCommand("kill @e[type=!player,family=monster,r=48]");
@@ -129,9 +126,10 @@ export class DayCounterSystem {
     }
 
     // Tutorial message sequence — staggered at ~5s intervals
+    const recruitPct = Math.round((this.difficultySystem?.getRecruitChance() ?? 0.3) * 100);
     const tutorials = [
       TUTORIAL_1_SURVIVE,
-      TUTORIAL_2_RECRUIT,
+      TUTORIAL_2_RECRUIT(recruitPct),
       TUTORIAL_3_ARMY,
       TUTORIAL_4_MILESTONES,
       TUTORIAL_5_TIP,
@@ -214,6 +212,19 @@ export class DayCounterSystem {
       player.setDynamicProperty("mk:kills", 0);
       player.setDynamicProperty("mk:army_size", 0);
       player.setDynamicProperty("mk:current_tier", 0);
+
+      // Late joiner — quest already running, give starter kit directly
+      if (this.isActive()) {
+        try {
+          player.runCommand("give @s iron_sword");
+          player.runCommand("give @s shield");
+          player.runCommand("give @s bread 8");
+          player.runCommand("give @s bed");
+          player.runCommand("give @s mk:mk_quest_journal");
+        } catch {
+          // Player may be in unloaded chunk
+        }
+      }
     }
 
     // Auto-start quest if not active

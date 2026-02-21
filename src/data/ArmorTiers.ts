@@ -9,6 +9,9 @@ export interface ArmorTier {
   tokenItem: string | null;
 }
 
+/** Tier names indexed by tier number — shared by DayCounterSystem HUD and QuestJournalSystem */
+export const TIER_NAMES = ["Page", "Squire", "Knight", "Champion", "Mega Knight"];
+
 export const ARMOR_TIERS: ArmorTier[] = [
   {
     name: "Page",

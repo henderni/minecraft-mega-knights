@@ -346,3 +346,36 @@ Next: Start with task #42 (armor init race), then #43, #44
 --- checkpoint init-v4 @ 2026-02-20 ---
 Progress: 41/54 tasks complete
 ---
+
+--- checkpoint c0b06762-9e21-4468-8c44-c1096dcdef17 @ 2026-02-20 17:15:19 ---
+Progress: 41/54 tasks complete
+---
+
+=== Session 2026-02-20 17:23 ===
+Tasks #42-54: Verify and mark complete (all implemented by prior session)
+Status: ALL COMPLETED
+
+Verified all 13 remaining tasks — prior session implemented them but didn't mark passes:true.
+
+Task #42 (HIGH S): Armor init race — armorTier.initializePlayer() now runs before dayCounter.initializePlayer()
+Task #43 (HIGH S): Bread quantity — changed to "give @s bread 8"
+Task #44 (HIGH M): Reset cleanup — siege.reset(), campSystem.clearAllCamps(), entity removal for all 3 tags
+Task #45 (MED S): ESLint curly — curly braces added to all single-line if-returns
+Task #46 (MED S): Late-join kit — initializePlayer gives starter items when quest already active
+Task #47 (MED S): Boss persistence — minecraft:persistent added, minecraft:despawn removed
+Task #48 (MED S): Standard Bearer AI — nearest_attackable_target removed (no attack component)
+Task #49 (MED S): Journal overview endless — JOURNAL_OVERVIEW_BODY_ENDLESS added and wired
+Task #50 (LOW S): Double getAllPlayers — startPlayers reused for sound playback
+Task #51 (LOW S): Tutorial recruit — TUTORIAL_2_RECRUIT now accepts recruitPct parameter
+Task #52 (MED M): Init order test — 20 tests in init-order.test.ts
+Task #53 (MED M): Reset entity cleanup test — 27 tests in reset-entity-cleanup.test.ts
+Task #54 (LOW S): Boss entity persistence test — entity-validation.test.ts covers it (243 tests)
+
+All 54/54 tasks COMPLETE.
+Full suite: 58 files, 2396 tests, ALL PASSING
+Build: tsc clean
+===
+
+--- checkpoint final-v4 @ 2026-02-20 ---
+Progress: 54/54 tasks complete — ALL DONE
+---

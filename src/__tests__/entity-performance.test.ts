@@ -243,28 +243,42 @@ describe("Rule 2: follow_range within tier budget", () => {
 
 // ─── 3. No minecraft:persistent — use despawn distances ──────────────────────
 
-describe("Rule 3: no minecraft:persistent on any entity", () => {
+describe("Rule 3: no minecraft:persistent on any entity (except boss)", () => {
   for (const ef of allBehaviorEntities) {
-    it(`${ef.filename}: does not use minecraft:persistent`, () => {
-      const raw = JSON.stringify(ef.json);
-      expect(raw).not.toContain("minecraft:persistent");
-    });
+    if (ef.filename.includes("boss")) {
+      it(`${ef.filename}: boss uses minecraft:persistent (must not despawn during siege)`, () => {
+        const raw = JSON.stringify(ef.json);
+        expect(raw).toContain("minecraft:persistent");
+      });
+    } else {
+      it(`${ef.filename}: does not use minecraft:persistent`, () => {
+        const raw = JSON.stringify(ef.json);
+        expect(raw).not.toContain("minecraft:persistent");
+      });
+    }
   }
 });
 
 // ─── 4. All entities have despawn mechanism ──────────────────────────────────
 
-describe("Rule 4: every entity has a despawn component", () => {
+describe("Rule 4: every entity has a despawn component (except boss)", () => {
   for (const ef of allBehaviorEntities) {
-    it(`${ef.filename}: has minecraft:despawn in base components`, () => {
-      // Every entity should have distance-based despawn in base components
-      // (not just in component_groups which require an event to activate)
-      const despawn = ef.components["minecraft:despawn"];
-      expect(despawn).toBeDefined();
-      expect(
-        despawn?.despawn_from_distance?.max_distance,
-      ).toBeGreaterThanOrEqual(54);
-    });
+    if (ef.filename.includes("boss")) {
+      it(`${ef.filename}: boss uses persistent instead of despawn`, () => {
+        const raw = JSON.stringify(ef.json);
+        expect(raw).toContain("minecraft:persistent");
+      });
+    } else {
+      it(`${ef.filename}: has minecraft:despawn in base components`, () => {
+        // Every entity should have distance-based despawn in base components
+        // (not just in component_groups which require an event to activate)
+        const despawn = ef.components["minecraft:despawn"];
+        expect(despawn).toBeDefined();
+        expect(
+          despawn?.despawn_from_distance?.max_distance,
+        ).toBeGreaterThanOrEqual(54);
+      });
+    }
 
     it(`${ef.filename}: has mk:despawn event for instant cleanup`, () => {
       expect(ef.events["mk:despawn"]).toBeDefined();

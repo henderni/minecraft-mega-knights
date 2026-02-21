@@ -116,7 +116,8 @@ describe("ENDLESS_WAVES array structure", () => {
 // ─── Wave index selection formula ───────────────────────────────────────────
 
 describe("Endless wave index selection", () => {
-  // Formula from source: Math.min(Math.floor((day - 100) / 40), ENDLESS_WAVES.length - 1)
+  // Formula from source: Math.min(Math.floor((day - 100) / ENDLESS_WAVE_ESCALATION_DAYS), ENDLESS_WAVES.length - 1)
+  // ENDLESS_WAVE_ESCALATION_DAYS = 40
   function waveIndex(day: number): number {
     return Math.min(Math.floor((day - 100) / 40), endlessWaves.length - 1);
   }
@@ -145,8 +146,8 @@ describe("Endless wave index selection", () => {
     expect(waveIndex(10000)).toBe(endlessWaves.length - 1);
   });
 
-  it("source uses Math.min for clamping", () => {
-    expect(siegeSrc).toContain("Math.min(Math.floor((day - 100) / 40)");
+  it("source uses Math.min for clamping with named constant", () => {
+    expect(siegeSrc).toContain("Math.min(Math.floor((day - 100) / ENDLESS_WAVE_ESCALATION_DAYS)");
   });
 
   it("source uses ENDLESS_WAVES.length - 1 as upper bound", () => {

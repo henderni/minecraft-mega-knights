@@ -29,6 +29,7 @@ interface CampState {
   guardCount: number;
   daySpawned: number;
   spawningComplete: boolean;
+  cleared: boolean;
   factionId: FactionId | undefined;
 }
 
@@ -47,6 +48,13 @@ export class EnemyCampSystem {
 
   private get enemyMultiplier(): number {
     return this.enemyMultiplierGetter?.() ?? 1.0;
+  }
+
+  /** Clear all active camps — used by mk:reset */
+  clearAllCamps(): void {
+    this.activeCamps.clear();
+    this.lastCampDay.clear();
+    this.cachedPlayerMap.clear();
   }
 
   /**
@@ -90,7 +98,7 @@ export class EnemyCampSystem {
       for (const [playerName, camp] of this.activeCamps) {
         if (dead.hasTag(`mk_camp_${camp.campId}`)) {
           camp.guardCount = Math.max(0, camp.guardCount - 1);
-          if (camp.guardCount <= 0 && camp.spawningComplete) {
+          if (camp.guardCount <= 0 && camp.spawningComplete && !camp.cleared) {
             this.campCleared(playerName, camp);
           }
           return;
@@ -123,7 +131,7 @@ export class EnemyCampSystem {
         });
         camp.guardCount = guards.length;
 
-        if (camp.guardCount <= 0) {
+        if (camp.guardCount <= 0 && !camp.cleared) {
           this.campCleared(playerName, camp);
         }
       } catch {
@@ -183,6 +191,7 @@ export class EnemyCampSystem {
       guardCount: 0,
       daySpawned: day,
       spawningComplete: false,
+      cleared: false,
       factionId: faction?.id,
     };
 
@@ -362,6 +371,7 @@ export class EnemyCampSystem {
   }
 
   private campCleared(playerName: string, camp: CampState): void {
+    camp.cleared = true;
     this.activeCamps.delete(playerName);
 
     const player = this.cachedPlayerMap.get(playerName);

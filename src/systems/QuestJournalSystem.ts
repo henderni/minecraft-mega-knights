@@ -1,7 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { ActionFormData, MessageFormData } from "@minecraft/server-ui";
 import { BESTIARY } from "../data/BestiaryDefinitions";
-import { ARMOR_TIERS } from "../data/ArmorTiers";
+import { ARMOR_TIERS, TIER_NAMES } from "../data/ArmorTiers";
 import { ArmySystem } from "./ArmySystem";
 import { DayCounterSystem } from "./DayCounterSystem";
 import { DifficultySystem } from "./DifficultySystem";
@@ -9,6 +9,7 @@ import {
   JOURNAL_TITLE,
   JOURNAL_OVERVIEW_TITLE,
   JOURNAL_OVERVIEW_BODY,
+  JOURNAL_OVERVIEW_BODY_ENDLESS,
   JOURNAL_ARMY_TITLE,
   JOURNAL_ARMY_BODY,
   JOURNAL_STANCES_TITLE,
@@ -19,9 +20,6 @@ import {
   JOURNAL_ENDLESS_TITLE,
   JOURNAL_ENDLESS_BODY,
 } from "../data/Strings";
-
-/** Tier names indexed by tier number — matches DayCounterSystem */
-const TIER_NAMES = ["Page", "Squire", "Knight", "Champion", "Mega Knight"];
 
 export class QuestJournalSystem {
   private dayCounter: DayCounterSystem;
@@ -76,7 +74,8 @@ export class QuestJournalSystem {
     switch (response.selection) {
       case 0: {
         const pct = Math.round(this.difficulty.getRecruitChance() * 100);
-        await this.showPage(player, JOURNAL_OVERVIEW_TITLE, JOURNAL_OVERVIEW_BODY(pct));
+        const overviewBody = endless ? JOURNAL_OVERVIEW_BODY_ENDLESS(pct) : JOURNAL_OVERVIEW_BODY(pct);
+        await this.showPage(player, JOURNAL_OVERVIEW_TITLE, overviewBody);
         break;
       }
       case 1: {

@@ -147,7 +147,7 @@ world.afterEvents.entityHurt.subscribe((event) => {
   // Heal back the damage
   system.run(() => {
     try {
-      if (!entity.isValid) return;
+      if (!entity.isValid) { return; }
       const health = entity.getComponent("health") as import("@minecraft/server").EntityHealthComponent;
       if (health) {
         const newHp = Math.min(health.currentValue + event.damage, health.effectiveMax);
@@ -173,8 +173,8 @@ world.afterEvents.entityHurt.subscribe((event) => {
 // Player spawn
 world.afterEvents.playerSpawn.subscribe((event) => {
   if (event.initialSpawn) {
+    armorTier.initializePlayer(event.player); // Must run before dayCounter (which sets mk:has_started=true)
     dayCounter.initializePlayer(event.player);
-    armorTier.initializePlayer(event.player);
     bestiary.onPlayerSpawn(event.player); // Reapply earned bestiary effects on join
   }
 });
@@ -239,8 +239,19 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     dayCounter.startQuest();
     world.sendMessage(DEBUG_QUEST_STARTED);
   } else if (event.id === "mk:reset") {
+    siege.reset();
     dayCounter.reset();
     difficulty.reset();
+    campSystem.clearAllCamps();
+    // Remove all custom entities (army, siege mobs, camp guards)
+    try {
+      const dim = world.getDimension("overworld");
+      for (const tag of ["mk_army", "mk_siege_mob", "mk_camp_guard"]) {
+        for (const e of dim.getEntities({ tags: [tag] })) {
+          try { e.remove(); } catch { /* already despawned */ }
+        }
+      }
+    } catch { /* dimension not loaded */ }
     // Clear all player-specific properties
     for (const player of world.getAllPlayers()) {
       try {

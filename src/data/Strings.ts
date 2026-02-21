@@ -87,7 +87,7 @@ export const STANDARD_BEARER_JOINED =
 
 // --- Tutorial ---
 export const TUTORIAL_1_SURVIVE = "§e1. Survive the night! Sleep in your bed to set respawn.";
-export const TUTORIAL_2_RECRUIT = "§e2. Kill enemies — 30% chance to recruit them!";
+export const TUTORIAL_2_RECRUIT = (recruitPct: number) => `§e2. Kill enemies — ${recruitPct}% chance to recruit them!`;
 export const TUTORIAL_3_ARMY = "§e3. Recruits follow you. Sneak + interact to change stance.";
 export const TUTORIAL_4_MILESTONES = "§e4. Milestones unlock blueprints, gear, and new army tiers.";
 export const TUTORIAL_5_TIP = "§e5. Build castles to increase your army capacity!";
@@ -105,6 +105,8 @@ export const JOURNAL_TITLE = "Quest Journal";
 export const JOURNAL_OVERVIEW_TITLE = "Quest Overview";
 export const JOURNAL_OVERVIEW_BODY = (recruitPct: number) =>
   `You have 100 days to build your army and survive the final siege.\n\n- Kill enemies for a ${recruitPct}% chance to recruit them\n- Build castles to increase army capacity\n- Unlock better armor at milestones\n- Survive the Day 100 siege to become a Mega Knight!`;
+export const JOURNAL_OVERVIEW_BODY_ENDLESS = (recruitPct: number) =>
+  `You conquered the siege and entered Endless Mode!\n\n- Kill enemies for a ${recruitPct}% chance to recruit them\n- Mini-sieges strike every 20 days\n- Enemy camps continue spawning\n- How long can your legend last?`;
 export const JOURNAL_ARMY_TITLE = "Army & Recruitment";
 export const JOURNAL_ARMY_BODY = (recruitPct: number) =>
   `Kill any enemy for a ${recruitPct}% chance to recruit them. Recruited units follow and fight for you.\n\nBase army capacity: 15\nCastle bonuses: Tower +5, Gate +7, Hall +8\nMax capacity: 35 (singleplayer)\n\nIn multiplayer, the cap is shared equally.`;

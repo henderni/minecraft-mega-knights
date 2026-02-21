@@ -41,6 +41,12 @@ const RECOUNT_INTERVAL = 600;
 /** Maximum active siege mobs before delaying next wave — keeps total custom entities under 60 on Switch */
 const MAX_ACTIVE_SIEGE_MOBS = 25;
 
+/** How many days between endless wave escalation tiers (wave set 0 → 1 → 2) */
+const ENDLESS_WAVE_ESCALATION_DAYS = 40;
+
+/** How many siege mobs to remove per tick during post-siege cleanup */
+const CLEANUP_PER_TICK = 2;
+
 /** Endless mode mini-siege wave definitions — escalate with day count */
 const ENDLESS_WAVES: { entityId: string; count: number }[][] = [
   // Wave set 0: light (day 120)
@@ -99,6 +105,9 @@ export class SiegeSystem {
   /** Whether this is an endless mode mini-siege (no boss, simpler victory) */
   private isEndlessSiege = false;
 
+  /** Dimension ID where the siege started — used for recount queries instead of hardcoding overworld */
+  private siegeDimensionId = "overworld";
+
   /** Callback fired on siege victory — used to enable endless mode */
   private onVictoryCallback: (() => void) | null = null;
 
@@ -110,6 +119,13 @@ export class SiegeSystem {
   /** Check if siege is currently active — used by camp system to avoid spawning during siege */
   isActive(): boolean {
     return this.siegeActive;
+  }
+
+  /** Force-stop the siege and clean up — used by mk:reset */
+  reset(): void {
+    if (this.siegeActive) {
+      this.endSiege(false);
+    }
   }
 
   startSiege(): void {
@@ -128,10 +144,15 @@ export class SiegeSystem {
     this.siegePhase = 0;
     this.isEndlessSiege = false;
 
+    // Store dimension from first valid player — used for recount queries
+    const startPlayers = world.getAllPlayers();
+    const firstValid = startPlayers.find((p) => p.isValid);
+    this.siegeDimensionId = firstValid?.dimension.id ?? "overworld";
+
     world.sendMessage(SIEGE_BEGIN);
     world.sendMessage(SIEGE_DEFEND);
     // Ominous horn for siege start
-    for (const p of world.getAllPlayers()) {
+    for (const p of startPlayers) {
       try { p.runCommand("playsound mob.wither.spawn @s ~ ~ ~ 0.5 0.5"); } catch { /* */ }
     }
 
@@ -155,10 +176,15 @@ export class SiegeSystem {
     this.bossEntity = null;
     this.siegePhase = 0;
 
+    // Store dimension from first valid player — used for recount queries
+    const startPlayers = world.getAllPlayers();
+    const firstValid = startPlayers.find((p) => p.isValid);
+    this.siegeDimensionId = firstValid?.dimension.id ?? "overworld";
+
     world.sendMessage(ENDLESS_WAVE(day));
 
     // Select wave set based on day — escalates over time
-    const waveIndex = Math.min(Math.floor((day - 100) / 40), ENDLESS_WAVES.length - 1);
+    const waveIndex = Math.min(Math.floor((day - 100) / ENDLESS_WAVE_ESCALATION_DAYS), ENDLESS_WAVES.length - 1);
     const spawns = ENDLESS_WAVES[waveIndex];
 
     this.staggeredSpawn(spawns, false);
@@ -240,10 +266,9 @@ export class SiegeSystem {
     if (this.ticksSinceRecount >= RECOUNT_INTERVAL) {
       this.ticksSinceRecount = 0;
       try {
-        // Query overworld without location constraint for global accuracy
-        // Siege always happens in the overworld; no distance filter avoids missing despawned-far mobs
-        const overworld = world.getDimension("overworld");
-        const actual = overworld.getEntities({ tags: ["mk_siege_mob"] });
+        // Query siege dimension without location constraint for global accuracy
+        const dim = world.getDimension(this.siegeDimensionId);
+        const actual = dim.getEntities({ tags: ["mk_siege_mob"] });
         this.siegeMobCount = actual.length;
       } catch {
         // Dimension query may fail during world load
@@ -404,6 +429,9 @@ export class SiegeSystem {
     this.siegeActive = false;
     this.isEndlessSiege = false;
 
+    // Remove surviving siege mobs to free entity budget
+    this.cleanupSiegeMobs();
+
     if (wasEndless) {
       if (victory) {
         world.sendMessage(ENDLESS_WAVE_CLEARED);
@@ -445,6 +473,36 @@ export class SiegeSystem {
       world.sendMessage(SIEGE_DEFEAT_2);
       world.sendMessage(SIEGE_DEFEAT_3);
     }
+  }
+
+  /** Remove all surviving mk_siege_mob entities — staggered for Switch performance */
+  private cleanupSiegeMobs(): void {
+    this.siegeMobCount = 0;
+    const dimId = this.siegeDimensionId;
+    system.runJob(
+      (function* () {
+        let removed = 0;
+        try {
+          const dim = world.getDimension(dimId);
+          const mobs = dim.getEntities({ tags: ["mk_siege_mob"] });
+          for (const mob of mobs) {
+            try {
+              if (mob.isValid) {
+                mob.remove();
+              }
+            } catch {
+              // Entity may already be invalid
+            }
+            removed++;
+            if (removed % CLEANUP_PER_TICK === 0) {
+              yield;
+            }
+          }
+        } catch {
+          // Dimension query failed — skip cleanup
+        }
+      })(),
+    );
   }
 
   private checkBossPhase(): void {

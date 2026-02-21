@@ -27,7 +27,7 @@ import {
 } from "../data/CampDefinitions";
 import { BESTIARY, BESTIARY_EFFECT_DURATION_TICKS } from "../data/BestiaryDefinitions";
 import { CASTLE_BLUEPRINTS } from "../data/CastleBlueprints";
-import { ARMOR_TIERS } from "../data/ArmorTiers";
+import { ARMOR_TIERS, TIER_NAMES } from "../data/ArmorTiers";
 import {
   FACTIONS,
   FACTION_GUARD_WEIGHTS,
@@ -373,17 +373,12 @@ describe("Progress bar precomputation", () => {
   });
 
   it("TIER_NAMES has exactly 5 entries matching ARMOR_TIERS count", () => {
-    const tierNamesMatch = daySrc.match(/TIER_NAMES\s*=\s*\[([^\]]+)\]/);
-    expect(tierNamesMatch).not.toBeNull();
-    const names = tierNamesMatch![1].split(",").map((s) => s.trim().replace(/"/g, ""));
-    expect(names).toHaveLength(ARMOR_TIERS.length);
+    expect(TIER_NAMES).toHaveLength(ARMOR_TIERS.length);
   });
 
   it("TIER_NAMES matches ARMOR_TIERS names in order", () => {
-    const tierNamesMatch = daySrc.match(/TIER_NAMES\s*=\s*\[([^\]]+)\]/);
-    const names = tierNamesMatch![1].split(",").map((s) => s.trim().replace(/"/g, ""));
-    for (let i = 0; i < names.length; i++) {
-      expect(names[i]).toBe(ARMOR_TIERS[i].name);
+    for (let i = 0; i < TIER_NAMES.length; i++) {
+      expect(TIER_NAMES[i]).toBe(ARMOR_TIERS[i].name);
     }
   });
 });
