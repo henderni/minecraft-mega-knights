@@ -180,16 +180,16 @@ describe("Generator lifecycle safety", () => {
     expect(siegeSrc).toMatch(/while\s*\(siegeRef\.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS\)[\s\S]*?playerMap\.clear\(\)/);
   });
 
-  it("currentWave++ happens AFTER system.runJob launch", () => {
+  it("currentWave++ happens AFTER staggeredSpawn call", () => {
     const spawnWave = siegeSrc.slice(
       siegeSrc.indexOf("private spawnWave()"),
-      siegeSrc.indexOf("private endSiege("),
+      siegeSrc.indexOf("private staggeredSpawn("),
     );
-    const runJobIdx = spawnWave.indexOf("system.runJob");
+    const staggeredIdx = spawnWave.indexOf("this.staggeredSpawn(");
     const waveIncIdx = spawnWave.indexOf("this.currentWave++");
-    expect(runJobIdx).toBeGreaterThan(-1);
+    expect(staggeredIdx).toBeGreaterThan(-1);
     expect(waveIncIdx).toBeGreaterThan(-1);
-    expect(waveIncIdx).toBeGreaterThan(runJobIdx);
+    expect(waveIncIdx).toBeGreaterThan(staggeredIdx);
   });
 
   it("spawnWave guards against currentWave >= WAVE_DEFINITIONS.length", () => {

@@ -435,7 +435,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 24,

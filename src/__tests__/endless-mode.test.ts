@@ -221,8 +221,8 @@ describe("Endless mode source patterns", () => {
     expect(siegeSrc).toContain("this.isEndlessSiege = true");
   });
 
-  it("endless siege uses spawnEndlessWave (not multi-wave progression)", () => {
-    expect(siegeSrc).toContain("this.spawnEndlessWave(spawns)");
+  it("endless siege uses staggeredSpawn (not multi-wave progression)", () => {
+    expect(siegeSrc).toContain("this.staggeredSpawn(spawns, false)");
   });
 
   it("endSiege handles both victory and defeat for endless mode", () => {

@@ -157,11 +157,9 @@ describe("Difficulty multiplier wiring (source analysis)", () => {
     expect(siegeSrc).toContain("this.enemyMultiplier");
   });
 
-  it("spawnEndlessWave also uses enemyMultiplier", () => {
-    // Both spawnWave and spawnEndlessWave apply the multiplier
-    const matches = siegeSrc.match(/this\.enemyMultiplier/g);
-    expect(matches).toBeTruthy();
-    expect(matches!.length).toBeGreaterThanOrEqual(2);
+  it("staggeredSpawn (shared by siege + endless) uses enemyMultiplier", () => {
+    expect(siegeSrc).toContain("staggeredSpawn");
+    expect(siegeSrc).toContain("this.enemyMultiplier");
   });
 
   it("MAX_SPAWNS_PER_PLAYER caps per-player spawns", () => {

@@ -161,7 +161,9 @@ export class SiegeSystem {
     const waveIndex = Math.min(Math.floor((day - 100) / 40), ENDLESS_WAVES.length - 1);
     const spawns = ENDLESS_WAVES[waveIndex];
 
-    this.spawnEndlessWave(spawns);
+    this.staggeredSpawn(spawns, false);
+    // Mark that we've used one "wave" so victory check doesn't wait for more
+    this.currentWave = WAVE_DEFINITIONS.length;
   }
 
   /** Subscribe to entity death events to decrement siege mob counter
@@ -279,6 +281,14 @@ export class SiegeSystem {
       try { p.runCommand("playsound note.bd @s ~ ~ ~ 1 0.6"); } catch { /* */ }
     }
 
+    this.staggeredSpawn(wave.spawns, true);
+    this.currentWave++;
+  }
+
+  /** Shared staggered spawn generator — used by both siege waves and endless mini-sieges.
+   *  Builds a per-player spawn queue with difficulty scaling, then spawns entities
+   *  across ticks via system.runJob with mid-wave entity cap gating. */
+  private staggeredSpawn(spawns: { entityId: string; count: number }[], captureBoss: boolean): void {
     const players = world.getAllPlayers();
     const playerCount = players.length;
 
@@ -293,7 +303,7 @@ export class SiegeSystem {
         continue;
       }
       let playerSpawns = 0;
-      for (const spawn of wave.spawns) {
+      for (const spawn of spawns) {
         const scaledCount = Math.max(1, Math.round(spawn.count * this.enemyMultiplier * mpScale));
         for (let i = 0; i < scaledCount; i++) {
           if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
@@ -344,7 +354,7 @@ export class SiegeSystem {
               siegeRef.siegeMobCount++;
 
               // Capture boss entity reference for phase tracking
-              if (entry.entityId === "mk:mk_boss_siege_lord") {
+              if (captureBoss && entry.entityId === "mk:mk_boss_siege_lord") {
                 siegeRef.bossEntity = entity;
               }
             } catch {
@@ -370,13 +380,11 @@ export class SiegeSystem {
               while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
                 yield;
               }
-              // Refresh player map after pause
-              if (siegeRef.siegeMobCount < MAX_ACTIVE_SIEGE_MOBS) {
-                playerMap.clear();
-                for (const p of world.getAllPlayers()) {
-                  if (p.isValid) {
-                    playerMap.set(p.name, p);
-                  }
+              // Refresh player map after pause — players may have moved/disconnected
+              playerMap.clear();
+              for (const p of world.getAllPlayers()) {
+                if (p.isValid) {
+                  playerMap.set(p.name, p);
                 }
               }
             }
@@ -387,97 +395,6 @@ export class SiegeSystem {
         siegeRef.activeSpawnJobs = Math.max(0, siegeRef.activeSpawnJobs - 1);
       })(),
     );
-
-    this.currentWave++;
-  }
-
-  /** Spawn a single endless wave (no multi-wave progression) */
-  private spawnEndlessWave(spawns: { entityId: string; count: number }[]): void {
-    const players = world.getAllPlayers();
-    const playerCount = players.length;
-    const scaleFactor = playerCount <= 1 ? 1.0 : playerCount <= 2 ? 0.75 : 0.6;
-
-    const spawnQueue: { entityId: string; playerName: string }[] = [];
-    for (const player of players) {
-      if (!player.isValid) {
-        continue;
-      }
-      let playerSpawns = 0;
-      for (const spawn of spawns) {
-        const scaledCount = Math.max(1, Math.round(spawn.count * this.enemyMultiplier * scaleFactor));
-        for (let i = 0; i < scaledCount; i++) {
-          if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
-            break;
-          }
-          spawnQueue.push({ entityId: spawn.entityId, playerName: player.name });
-          playerSpawns++;
-        }
-        if (playerSpawns >= MAX_SPAWNS_PER_PLAYER) {
-          break;
-        }
-      }
-    }
-
-    const siegeRef = this;
-    const initialPlayers = players;
-    this.activeSpawnJobs++;
-    system.runJob(
-      (function* () {
-        let spawned = 0;
-        const playerMap = new Map<string, Player>();
-        for (const p of initialPlayers) {
-          if (p.isValid) {
-            playerMap.set(p.name, p);
-          }
-        }
-        for (const entry of spawnQueue) {
-          const cachedPlayer = playerMap.get(entry.playerName);
-          if (cachedPlayer?.isValid) {
-            try {
-              const loc = cachedPlayer.location;
-              const angle = Math.random() * Math.PI * 2;
-              const dist = 20 + Math.random() * 15;
-              const spawnLoc = {
-                x: loc.x + Math.cos(angle) * dist,
-                y: loc.y,
-                z: loc.z + Math.sin(angle) * dist,
-              };
-              const entity = cachedPlayer.dimension.spawnEntity(entry.entityId, spawnLoc);
-              entity.addTag("mk_siege_mob");
-              siegeRef.siegeMobCount++;
-            } catch {
-              // Chunk not loaded or entity limit reached
-            }
-          }
-          spawned++;
-          if (spawned % SPAWNS_PER_TICK === 0) {
-            yield;
-            if (spawned % 5 === 0) {
-              playerMap.clear();
-              for (const p of world.getAllPlayers()) {
-                if (p.isValid) {
-                  playerMap.set(p.name, p);
-                }
-              }
-              while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
-                yield;
-              }
-              // Refresh player map after cap pause — players may have moved/disconnected
-              playerMap.clear();
-              for (const p of world.getAllPlayers()) {
-                if (p.isValid) {
-                  playerMap.set(p.name, p);
-                }
-              }
-            }
-          }
-        }
-        siegeRef.activeSpawnJobs = Math.max(0, siegeRef.activeSpawnJobs - 1);
-      })(),
-    );
-
-    // Mark that we've used one "wave" so victory check doesn't wait for more
-    this.currentWave = WAVE_DEFINITIONS.length;
   }
 
   private endSiege(victory: boolean): void {
