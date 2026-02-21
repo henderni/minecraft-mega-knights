@@ -447,9 +447,10 @@ describe("Input validation and debug commands", () => {
     expect(mainSrc).toMatch(/!isNaN\(day\)/);
   });
 
-  it("mk:setday clamps to [0, MAX_DAY] via setDay()", () => {
-    // setDay internally clamps: Math.max(0, Math.min(MAX_DAY, day))
-    expect(daySrc).toMatch(/Math\.max\(\s*0\s*,\s*Math\.min\(\s*DayCounterSystem\.MAX_DAY\s*,\s*day\s*\)/);
+  it("mk:setday clamps to [0, maxDay] via setDay()", () => {
+    // setDay computes maxDay based on endless mode, then clamps
+    expect(daySrc).toMatch(/maxDay\s*=\s*this\.cachedEndless\s*\?\s*999\s*:\s*DayCounterSystem\.MAX_DAY/);
+    expect(daySrc).toMatch(/Math\.max\(\s*0\s*,\s*Math\.min\(\s*maxDay\s*,\s*day\s*\)/);
   });
 
   it("mk:army rejects count=0", () => {

@@ -486,9 +486,10 @@ describe("setDay milestone stagger", () => {
     expect(setDay).toContain("cb(d)");
   });
 
-  it("setDay clamps to [0, MAX_DAY] before processing", () => {
+  it("setDay clamps to [0, maxDay] before processing (endless-aware)", () => {
+    expect(daySrc).toMatch(/maxDay\s*=\s*this\.cachedEndless\s*\?\s*999\s*:\s*DayCounterSystem\.MAX_DAY/);
     expect(daySrc).toMatch(
-      /day\s*=\s*Math\.max\(\s*0\s*,\s*Math\.min\(\s*DayCounterSystem\.MAX_DAY\s*,\s*day\s*\)/,
+      /day\s*=\s*Math\.max\(\s*0\s*,\s*Math\.min\(\s*maxDay\s*,\s*day\s*\)/,
     );
   });
 

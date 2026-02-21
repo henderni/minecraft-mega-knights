@@ -151,7 +151,8 @@ export class DayCounterSystem {
    * many days at once (e.g. setday 0 → 100).
    */
   setDay(day: number): void {
-    day = Math.max(0, Math.min(DayCounterSystem.MAX_DAY, day));
+    const maxDay = this.cachedEndless ? 999 : DayCounterSystem.MAX_DAY;
+    day = Math.max(0, Math.min(maxDay, day));
     const previousDay = this.cachedDay;
     world.setDynamicProperty(DayCounterSystem.KEY_DAY, day);
     world.setDynamicProperty(DayCounterSystem.KEY_TICK, 0);

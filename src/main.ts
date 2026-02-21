@@ -230,8 +230,8 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
   if (event.id === "mk:setday") {
     const day = parseInt(event.message);
     if (!isNaN(day)) {
-      dayCounter.setDay(day); // setDay() clamps internally to [0, MAX_DAY]
-      world.sendMessage(DEBUG_DAY_SET(Math.max(0, Math.min(100, day))));
+      dayCounter.setDay(day); // setDay() clamps internally
+      world.sendMessage(DEBUG_DAY_SET(dayCounter.getCurrentDay()));
     }
   } else if (event.id === "mk:start") {
     dayCounter.startQuest();
