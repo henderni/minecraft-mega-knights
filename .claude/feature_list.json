@@ -3156,5 +3156,192 @@
       { "type": "all_tests_pass" }
     ],
     "passes": true
+  },
+  {
+    "id": 119,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Bestiary effects not reapplied on death-respawn. In main.ts, the playerSpawn handler calls bestiary.onPlayerSpawn() only when event.initialSpawn is true. Players who die and respawn do not have their earned bestiary effects (e.g. Health Boost, Speed) reapplied. Fix by also calling bestiary.onPlayerSpawn() on non-initial spawns (every respawn), since BestiarySystem.onPlayerSpawn() already guards against reapplying effects unnecessarily by checking kill counts.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [125],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/main.ts", "pattern": "if (event.initialSpawn)" },
+      { "type": "source_contains", "file": "src/main.ts", "pattern": "bestiary.onPlayerSpawn" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 120,
+    "category": "polish",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Suppress ESLint no-explicit-any warnings from form.show() calls. The Bedrock server-ui ActionFormData.show() method requires a Player but the TypeScript type definition accepts Entity, so casting with `player as any` generates 3 lint warnings. Add `// eslint-disable-next-line @typescript-eslint/no-explicit-any` comments before each form.show() call in DifficultySystem.ts (line 74) and QuestJournalSystem.ts (lines 72 and 113). Verify npm run lint passes with 0 warnings.",
+    "target_files": [
+      "src/systems/DifficultySystem.ts",
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/DifficultySystem.ts", "pattern": "eslint-disable-next-line" },
+      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "eslint-disable-next-line" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 121,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Fix confusing bestiary multi-milestone display in quest journal. QuestJournalSystem.showBestiary() builds milestone strings that produce output like 'Knight: 5/10 → Health Boost I, /25 → Health Boost II' — the second milestone shows '/25' without the current kill count, making it look broken. Fix by prepending the current kill count to each subsequent milestone part so output reads '5/10 → Health Boost I, 5/25 → Health Boost II', giving players clear progress context for all milestones.",
+    "target_files": [
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": "src/__tests__/quest-journal.test.ts",
+    "related_to": [126],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "kills/" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 122,
+    "category": "functional",
+    "priority": "low",
+    "complexity": "S",
+    "description": "MerchantSystem.spawnMerchantNear() silently fails when findGroundLevel() returns null (player is underground or in the void). Add a fallback: if findGroundLevel() returns null, use Math.floor(player.location.y) as the spawn Y coordinate so the merchant still spawns near the player instead of failing silently with no feedback. Also log a console.warn so the fallback is visible in BDS logs.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": "src/__tests__/merchant-system.test.ts",
+    "related_to": [127],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/MerchantSystem.ts", "pattern": "player.location.y" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 123,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "ALLY_RECRUITED message does not include the unit class. When an enemy is recruited via CombatSystem, the player sees something like 'A Sir Marcus joined your army!' but there is no indication of what type of unit it is (Knight, Archer, etc.). Update the ALLY_RECRUITED call in CombatSystem.onEntityDie() to pass the unit class name derived from the entity typeId (e.g. 'mk:mk_ally_knight' → 'Knight') alongside the ally name, and update the ALLY_RECRUITED string in Strings.ts to include the class.",
+    "target_files": [
+      "src/systems/CombatSystem.ts",
+      "src/data/Strings.ts"
+    ],
+    "test_file": "src/__tests__/combat-system.test.ts",
+    "related_to": [128],
+    "verification": [
+      { "type": "source_contains", "file": "src/data/Strings.ts", "pattern": "unitClass" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 124,
+    "category": "performance",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Standard Bearer aura in ArmySystem applies Strength effect to the bearer itself unnecessarily. The aura tick iterates all mk_army allies within 8 blocks of each bearer and applies Strength, including the bearer. Add a guard to skip the bearer entity in the inner loop (if ally === bearer, continue) to avoid a wasted effect application per bearer per aura tick. Minor CPU saving on Switch where every bridge call counts.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "ally === bearer" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 125,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add test verifying bestiary effects are reapplied on non-initial player respawn (covers fix in task #119). Using source-as-text pattern on main.ts, verify that the playerSpawn handler does NOT gate bestiary.onPlayerSpawn() behind initialSpawn — i.e., the pattern 'bestiary.onPlayerSpawn' should appear outside of (or independent from) an 'initialSpawn' conditional. Also add a BestiarySystem unit test verifying that calling onPlayerSpawn() twice for a player with kills already tracked correctly reapplies effects without doubling them.",
+    "target_files": [
+      "src/main.ts",
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": "src/__tests__/bestiary.test.ts",
+    "related_to": [119],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/bestiary.test.ts", "pattern": "respawn" },
+      { "type": "test_passes", "file": "src/__tests__/bestiary.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 126,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add test for bestiary multi-milestone display format fix (covers task #121). Using source-as-text pattern on QuestJournalSystem.ts, verify that the milestone string building logic produces output where each milestone part includes the current kill count prefix (e.g. matches pattern like '5/25' not just '/25'). Add a unit test that parses the relevant section of QuestJournalSystem.ts source and confirms the formatting logic includes kills in each milestone segment.",
+    "target_files": [
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": "src/__tests__/quest-journal.test.ts",
+    "related_to": [121],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/quest-journal.test.ts", "pattern": "multi-milestone" },
+      { "type": "test_passes", "file": "src/__tests__/quest-journal.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 127,
+    "category": "test",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add test for MerchantSystem findGroundLevel null fallback (covers task #122). Using source-as-text pattern on MerchantSystem.ts, verify that spawnMerchantNear() contains a null-check branch for findGroundLevel() that falls back to player location Y. The test should grep the source for the pattern 'player.location.y' within the spawnMerchantNear function body and confirm it exists as a fallback path.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": "src/__tests__/merchant-system.test.ts",
+    "related_to": [122],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/merchant-system.test.ts", "pattern": "findGroundLevel" },
+      { "type": "test_passes", "file": "src/__tests__/merchant-system.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 128,
+    "category": "test",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add test verifying ALLY_RECRUITED message format includes unit class name (covers task #123). Using source-as-text pattern on Strings.ts and CombatSystem.ts, verify: (1) ALLY_RECRUITED in Strings.ts accepts a unit class parameter (pattern contains 'unitClass' or similar), (2) CombatSystem.onEntityDie() derives a class name from the entity typeId before passing to ALLY_RECRUITED. The test should parse the source text and assert these patterns are present.",
+    "target_files": [
+      "src/data/Strings.ts",
+      "src/systems/CombatSystem.ts"
+    ],
+    "test_file": "src/__tests__/combat-system.test.ts",
+    "related_to": [123],
+    "verification": [
+      { "type": "source_contains", "file": "src/__tests__/combat-system.test.ts", "pattern": "unitClass" },
+      { "type": "test_passes", "file": "src/__tests__/combat-system.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
   }
 ]

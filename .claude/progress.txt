@@ -890,3 +890,45 @@ Build: tsc clean
 --- checkpoint final-v10 @ 2026-02-21 ---
 Progress: 118/118 tasks complete — ALL DONE
 ---
+
+--- checkpoint d389af4d-9c1b-4daf-9d4f-8d85dc2b39b2 @ 2026-02-21 10:25:16 ---
+Progress: 118/118 tasks complete
+---
+
+--- checkpoint 8c4c27cd-36fa-4dd1-b67d-04b27394cd7c @ 2026-02-21 10:35:19 ---
+Progress: 118/118 tasks complete
+---
+
+--- checkpoint 8c4c27cd-36fa-4dd1-b67d-04b27394cd7c @ 2026-02-21 10:37:57 ---
+Progress: 118/118 tasks complete
+---
+
+=== Initializer Session — 2026-02-21 ===
+Tasks before: 118 (all passing)
+Tasks added: 10 (IDs 119–128)
+Tasks after: 128 (118 passing, 10 pending)
+
+## Audit Findings
+
+### Bugs Fixed (pending work)
+- #119 [Hi/S] Bestiary effects not reapplied on death-respawn — main.ts gates onPlayerSpawn behind initialSpawn
+- #122 [Lo/S] MerchantSystem.spawnMerchantNear() silently fails when findGroundLevel() returns null (underground players)
+- #124 [Lo/S] Standard Bearer aura applies Strength to bearer itself unnecessarily (wasted bridge call per tick)
+
+### Polish (pending work)
+- #120 [Md/S] 3 ESLint no-explicit-any warnings from form.show(player as any) in DifficultySystem and QuestJournalSystem
+- #121 [Lo/S] Bestiary multi-milestone display shows '/25 → Boost II' without kill count prefix — confusing UX
+- #123 [Lo/S] ALLY_RECRUITED message omits unit class name ('A Sir Marcus joined!' vs 'A Knight named Sir Marcus joined!')
+
+### Tests (pending work)
+- #125 [Md/S] Test: bestiary respawn reapplication (covers #119)
+- #126 [Md/S] Test: bestiary multi-milestone display format (covers #121)
+- #127 [Lo/S] Test: MerchantSystem findGroundLevel null fallback (covers #122)
+- #128 [Lo/S] Test: ALLY_RECRUITED includes unit class (covers #123)
+
+## Codebase Health
+- Build: passing
+- Tests: 74 files, 2785 tests, all passing
+- Lint: 3 no-explicit-any warnings (tracked as #120)
+- No unused exports, no orphaned files found
+=== END ===
