@@ -37,7 +37,8 @@ export class MerchantSystem {
   private merchantedThisDay = new Set<string>();
 
   onDayChanged(day: number): void {
-    if (!MERCHANT_DAYS.has(day)) {return;}
+    const isMerchantDay = MERCHANT_DAYS.has(day) || (day > 100 && (day - 100) % 25 === 0);
+    if (!isMerchantDay) {return;}
     this.merchantedThisDay.clear();
     this.spawnMerchantsForDay();
   }
