@@ -617,3 +617,42 @@ Final state:
 - Tests: 67 files, 2603 tests, ALL PASSING
 - All 88/88 tasks: COMPLETE
 ===
+
+--- checkpoint 470e2c03-d2fb-447d-bab2-ca82fca92096 @ 2026-02-21 00:45:28 ---
+Progress: 88/88 tasks complete
+---
+
+=== Initializer Session 8 — 2026-02-21 ===
+Deep codebase audit complete (all 11 system files, 9 data files, entity/item JSON, 67 test files).
+Added 10 new tasks (IDs 89-98) to feature_list.json.
+
+Priority breakdown: 2 high, 6 medium, 2 low
+Category breakdown: 2 functional, 1 content, 4 test, 3 polish
+Complexity: 9 small, 1 medium
+Related task clusters: [89,96], [90,95], [92,93], [97,98]
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 67 files, 2,603 tests, ALL PASSING
+- Previous 88/88 tasks: ALL COMPLETE
+- Entity/item/RP content: ALL CLEAN
+
+Key bugs found:
+- Dark knight follow_range=24 but max_dist=20 in both ally and enemy .se.json — 4-block dead zone (task #82 fixed wizards but missed dark knights)
+- QuestJournalSystem effect name formatting: "health_boost" → "Health_boost" instead of "Health Boost" (underscore not replaced)
+
+Code quality improvements:
+- ArmySystem.getArmySize() is dead code (never called anywhere) — remove
+- LRUTickCache is pure class in main.ts — extract to utility module for testability
+- sanitizePlayerTag/getOwnerTag are pure exported functions with zero behavioral tests
+- numProp helper duplicated identically in 6 system files — extract to shared utility
+
+Task clusters:
+- Dark knight entity: #89 (fix) + #96 (cross-entity consistency test)
+- Effect names: #90 (fix) + #95 (formatting tests)
+- LRU extraction: #92 (extract) + #93 (unit tests)
+- numProp dedup: #97 (extract) + #98 (add boolProp companion)
+- Standalone: #91 (dead code removal), #94 (pure function tests)
+
+Next: Start with task #89 (dark knight max_dist fix) and #90 (effect name formatting)
+===

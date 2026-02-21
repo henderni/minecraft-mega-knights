@@ -2591,5 +2591,202 @@
       }
     ],
     "passes": true
+  },
+  {
+    "id": 89,
+    "category": "content",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix dark knight follow_range vs max_dist mismatch. Both mk_ally_dark_knight.se.json and mk_enemy_dark_knight.se.json have follow_range=24 but nearest_attackable_target max_dist=20, creating a 4-block dead zone where they pathfind to targets but can't engage them. Change max_dist from 20 to 24 in both files to match follow_range. Task #82 fixed wizards (12\u219216) but missed dark knights.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_dark_knight.se.json",
+      "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json"
+    ],
+    "test_file": null,
+    "related_to": [96],
+    "verification": [
+      { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_ally_dark_knight.se.json", "pattern": "\"max_dist\": 24" },
+      { "type": "source_contains", "file": "MegaKnights_BP/entities/mk_enemy_dark_knight.se.json", "pattern": "\"max_dist\": 24" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 90,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix bestiary effect name display showing underscores. QuestJournalSystem.ts line 131 formats effectId with charAt(0).toUpperCase() + slice(1), but 'health_boost' renders as 'Health_boost' instead of 'Health Boost'. Fix: replace underscores with spaces and capitalize each word so multi-word effect names display correctly. Currently affects the Siege Lord bestiary entry (health_boost effect).",
+    "target_files": [
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": "src/__tests__/quest-journal.test.ts",
+    "related_to": [95],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/QuestJournalSystem.ts", "pattern": "replace(/_/g" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 91,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Remove dead code: ArmySystem.getArmySize() method at line 326-329 is never called anywhere in the codebase. Grep confirms zero external callers. The method reads mk:army_size dynamic property and clamps it, but all actual army size reads use the cached value from tick() or direct getDynamicProperty calls. Remove the method to reduce API surface confusion.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      { "type": "source_not_contains", "file": "src/systems/ArmySystem.ts", "pattern": "getArmySize(player: Player): number" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 92,
+    "category": "polish",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Extract LRUTickCache from main.ts to a shared utility module. The class at main.ts lines 114-131 is a pure data structure with no @minecraft/server dependencies. Move it to src/utils/LRUTickCache.ts, export it, and update main.ts to import from the new location. This enables direct unit testing (task #93) and potential reuse.",
+    "target_files": [
+      "src/main.ts",
+      "src/utils/LRUTickCache.ts"
+    ],
+    "test_file": null,
+    "related_to": [93],
+    "verification": [
+      { "type": "source_contains", "file": "src/utils/LRUTickCache.ts", "pattern": "class LRUTickCache" },
+      { "type": "source_contains", "file": "src/main.ts", "pattern": "LRUTickCache" },
+      { "type": "source_not_contains", "file": "src/main.ts", "pattern": "class LRUTickCache" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 93,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add LRUTickCache unit tests. After extraction (task #92), directly import LRUTickCache and test: (1) get() returns undefined for missing keys, (2) set()/get() stores and retrieves values, (3) LRU eviction \u2014 when exceeding maxSize, oldest entries are removed, (4) re-setting an existing key moves it to end of eviction order, (5) boundary: maxSize=1 correctly evicts on second set, (6) order array stays in sync with map size.",
+    "target_files": [
+      "src/utils/LRUTickCache.ts"
+    ],
+    "test_file": "src/__tests__/lru-cache.test.ts",
+    "related_to": [92],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/lru-cache.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/lru-cache.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 94,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add sanitizePlayerTag and getOwnerTag tests. Using source-as-text pattern on ArmySystem.ts, verify: (1) sanitizePlayerTag regex replaces non-alphanumeric characters (except _ and -) with underscores, (2) getOwnerTag prepends 'mk_owner_' to sanitized name, (3) MAX_TAG_CACHE constant exists (prevents unbounded cache growth), (4) both functions are exported for external use, (5) cache clear happens when size >= MAX_TAG_CACHE. These are critical tag-building functions with zero behavioral tests.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": "src/__tests__/player-tag-utils.test.ts",
+    "related_to": [],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/player-tag-utils.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/player-tag-utils.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 95,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add bestiary effect name formatting tests. Import BestiaryDefinitions directly (safe \u2014 no @minecraft/server imports) and verify: (1) all BESTIARY entries have non-empty effectId strings, (2) no effectId contains uppercase letters (convention check), (3) applying the formatting logic (replace underscores with spaces, capitalize each word) produces clean display names for all effectIds including 'health_boost', (4) all milestones have amplifier 0 or 1 (no higher), (5) 'health_boost' specifically formats to 'Health Boost' not 'Health_boost'.",
+    "target_files": [
+      "src/data/BestiaryDefinitions.ts",
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": "src/__tests__/bestiary-effect-names.test.ts",
+    "related_to": [90],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/bestiary-effect-names.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/bestiary-effect-names.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 96,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add entity follow_range vs max_dist consistency test. Read all .se.json files in MegaKnights_BP/entities/ and verify that for every entity with both follow_range and nearest_attackable_target max_dist, the max_dist value equals follow_range (no dead zones). This prevents regressions like the dark knight mismatch (task #89) and the wizard mismatch fixed in task #82. Should cover all 11 entity files.",
+    "target_files": [
+      "MegaKnights_BP/entities/"
+    ],
+    "test_file": "src/__tests__/entity-range-consistency.test.ts",
+    "related_to": [89],
+    "verification": [
+      { "type": "test_file_exists", "file": "src/__tests__/entity-range-consistency.test.ts" },
+      { "type": "test_passes", "file": "src/__tests__/entity-range-consistency.test.ts" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 97,
+    "category": "polish",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Extract numProp helper to shared utility module. The identical one-liner `const numProp = (v: unknown, d = 0): number => typeof v === 'number' ? v : d;` is duplicated in 6 system files: ArmySystem, BestiarySystem, CombatSystem, DayCounterSystem, MerchantSystem, QuestJournalSystem. Create src/utils/numProp.ts with the exported function, then update all 6 files to import from it instead of declaring locally. This is the most duplicated code in the project.",
+    "target_files": [
+      "src/utils/numProp.ts",
+      "src/systems/ArmySystem.ts",
+      "src/systems/BestiarySystem.ts",
+      "src/systems/CombatSystem.ts",
+      "src/systems/DayCounterSystem.ts",
+      "src/systems/MerchantSystem.ts",
+      "src/systems/QuestJournalSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [98],
+    "verification": [
+      { "type": "source_contains", "file": "src/utils/numProp.ts", "pattern": "numProp" },
+      { "type": "source_not_contains", "file": "src/systems/ArmySystem.ts", "pattern": "const numProp" },
+      { "type": "source_not_contains", "file": "src/systems/BestiarySystem.ts", "pattern": "const numProp" },
+      { "type": "source_not_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "const numProp" },
+      { "type": "source_contains", "file": "src/systems/ArmySystem.ts", "pattern": "import" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
+  },
+  {
+    "id": 98,
+    "category": "functional",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Add boolProp guard for boolean dynamic property reads. DayCounterSystem.ensureInitialized() (lines 81, 84) and ArmorTierSystem (lines 15, 77) use `as boolean` casts on getDynamicProperty(), which are compile-time only \u2014 if the property is corrupted to a non-boolean, the cast silently passes through. Add a boolProp helper (analogous to numProp): `export const boolProp = (v: unknown, d = false): boolean => typeof v === 'boolean' ? v : d;` in the shared utility module (from task #97, or standalone). Update DayCounterSystem and ArmorTierSystem to use it.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts",
+      "src/systems/ArmorTierSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [97],
+    "verification": [
+      { "type": "source_contains", "file": "src/systems/DayCounterSystem.ts", "pattern": "boolProp" },
+      { "type": "source_contains", "file": "src/systems/ArmorTierSystem.ts", "pattern": "boolProp" },
+      { "type": "build_passes" },
+      { "type": "all_tests_pass" }
+    ],
+    "passes": false
   }
 ]
