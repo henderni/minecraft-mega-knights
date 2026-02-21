@@ -457,3 +457,59 @@ Build: tsc clean
 --- checkpoint final-v5 @ 2026-02-20 ---
 Progress: 66/66 tasks complete — ALL DONE
 ---
+
+--- checkpoint 0e1567b9-a577-4a11-9d54-70f8114b356a @ 2026-02-20 17:45:41 ---
+Progress: 66/66 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 17:51:30 ---
+Progress: 66/66 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 17:54:55 ---
+Progress: 66/66 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 17:56:02 ---
+Progress: 66/66 tasks complete
+---
+
+=== Initializer Session 6 — 2026-02-20 18:05 ===
+Deep codebase audit complete (all 11 system files, 9 data files, main.ts, entity/item JSON).
+Added 11 new tasks (IDs 67-77) to feature_list.json.
+
+Priority breakdown: 2 high, 8 medium, 1 low
+Category breakdown: 5 functional, 5 test, 1 performance
+Complexity: 9 small, 2 medium
+Related task clusters: [67,74], [68,75], [69,76], [70,77]
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 61 files, 2,429 tests, ALL PASSING
+- Previous 66/66 tasks: ALL COMPLETE
+- Entity/item/RP content: ALL CLEAN
+
+Key bugs found:
+- mk:reset only cleans overworld entities (main.ts:248) — nether/end entities stranded on reset
+- ArmorTierSystem.initializePlayer has no try-catch — give commands can fail silently, skipping subsequent gives + message
+- MerchantSystem.onScrollUse reads mk:army_size twice (lines 103 + 126) — redundant bridge call + potential race
+- EnemyCampSystem activeCamps entries never expire for disconnected players — unbounded Map growth
+- 20+ dynamic property reads use `as number) ?? 0` without typeof guard — NaN propagation risk (same class as stance bug fixed in #55)
+
+Code quality:
+- Duplicate LRU cache pattern in main.ts (friendlyFireInsertionOrder + playerNameInsertionOrder)
+
+Test coverage gaps:
+- DayCounterSystem: most complex system (~390 lines), no dedicated behavioral tests
+- Multi-dimension reset: no test verifies nether/end cleanup
+- MerchantSystem scroll-use: no behavioral tests for onScrollUse path
+
+Task clusters:
+- Reset dimension fix: #67 (fix) + #74 (test)
+- Armor init safety: #68 (fix) + #75 (test)
+- Merchant scroll: #69 (fix) + #76 (test)
+- Camp expiration: #70 (fix) + #77 (test)
+- Cross-system: #71 (typeof guards, 6 files), #72 (LRU dedup), #73 (DayCounter tests)
+
+Next: Start with task #67 (reset dimension fix) and #68 (armor init try-catch), then #69-#71
+===

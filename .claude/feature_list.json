@@ -1904,5 +1904,305 @@
       }
     ],
     "passes": true
+  },
+  {
+    "id": 67,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Fix mk:reset to clean entities across all loaded dimensions, not just overworld. Currently main.ts line 248 hardcodes `world.getDimension(\"overworld\")` for entity cleanup, so mk_army, mk_siege_mob, and mk_camp_guard entities in the nether or the_end are never removed on reset. Fix: iterate all three standard dimensions (overworld, nether, the_end) in the reset handler, wrapping each in its own try-catch so a failed dimension query doesn't block the others.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": null,
+    "related_to": [74],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "nether"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/main.ts",
+        "pattern": "the_end"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 68,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Wrap ArmorTierSystem.initializePlayer give commands in try-catch. Lines 18-21 have four consecutive player.runCommand(\"give @s mk:mk_page_*\") calls with no error handling. If any give fails (item not loaded, inventory full, player transitioning), all subsequent gives and the ARMOR_GIVEN message are skipped — the player gets partial or no armor silently. Fix: wrap the four give commands + message in a single try-catch block so failures are handled gracefully.",
+    "target_files": [
+      "src/systems/ArmorTierSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [75],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmorTierSystem.ts",
+        "pattern": "catch"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 69,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix MerchantSystem.onScrollUse redundant army_size re-read. Line 103 reads mk:army_size into `currentSize` for the capacity check, then line 126 reads it again into `size` before incrementing. The second read is an unnecessary dynamic property bridge call and could return a different value if another system modifies it between the two reads (race condition). Fix: replace the second read on line 126 with `currentSize` — use `player.setDynamicProperty(\"mk:army_size\", currentSize + 1)` instead of re-reading.",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [76],
+    "verification": [
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/MerchantSystem.ts",
+        "pattern": "const size = (player.getDynamicProperty(\"mk:army_size\")"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 70,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add camp expiration for disconnected players in EnemyCampSystem. The `activeCamps` Map entries persist indefinitely if a player disconnects — there is no TTL or cleanup. Over time on a long-running server, this leaks memory and leaves invisible camp state. Fix: in the tick() or onDayChanged() method, check each active camp's playerName against cachedPlayerMap. If the player has been absent for more than N days (e.g., 3), remove the camp entry. This prevents unbounded growth of the activeCamps Map.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [77],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/EnemyCampSystem.ts",
+        "pattern": "stale"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 71,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add typeof guards to dynamic property numeric reads across all systems. Task #55 fixed NaN propagation for mk:stance with a typeof guard, but 20+ other `(player.getDynamicProperty(key) as number) ?? 0` patterns remain unguarded across 6 system files. The `?? 0` nullish coalescing only catches `undefined`/`null`, not NaN or string values — if a property is corrupted to a non-number type, NaN propagates through Math.max/Math.min and displays as 'NaN' in the HUD. Fix: apply `typeof raw === \"number\" ? raw : defaultVal` pattern consistently in QuestJournalSystem (4), DayCounterSystem (5), CombatSystem (1), ArmySystem (5), BestiarySystem (2), MerchantSystem (3).",
+    "target_files": [
+      "src/systems/QuestJournalSystem.ts",
+      "src/systems/DayCounterSystem.ts",
+      "src/systems/ArmySystem.ts",
+      "src/systems/MerchantSystem.ts",
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/QuestJournalSystem.ts",
+        "pattern": "typeof"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmySystem.ts",
+        "pattern": "typeof"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 72,
+    "category": "performance",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Extract duplicate LRU rate-limit cache pattern in main.ts to a shared helper. Lines 115-132 (friendlyFireInsertionOrder) and lines 205-229 (playerNameInsertionOrder) implement identical Map+Array LRU eviction logic for throttled messages. Extract a reusable `LRUTickCache` class or factory function within main.ts (no new file needed — src/utils/ was intentionally removed). Both rate limiters should use the shared implementation to reduce duplication and prevent future drift.",
+    "target_files": [
+      "src/main.ts"
+    ],
+    "test_file": null,
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_not_contains",
+        "file": "src/main.ts",
+        "pattern": "friendlyFireInsertionOrder"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/main.ts",
+        "pattern": "playerNameInsertionOrder"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 73,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add DayCounterSystem behavioral tests. DayCounterSystem is the most complex system (~390 lines) with tick counting, day transitions, HUD formatting, starter kit logic, and crash recovery — but has no dedicated behavioral test file. Create src/__tests__/day-counter-system.test.ts using the source-as-text pattern. Cover: day transition math (tick accumulation → day increment), HUD string format (normal vs endless), starter kit items list, crash recovery tick persistence interval, throttled HUD update cadence (every 4th call), and the late-joiner kit logic.",
+    "target_files": [
+      "src/systems/DayCounterSystem.ts"
+    ],
+    "test_file": "src/__tests__/day-counter-system.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/day-counter-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/day-counter-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 74,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add multi-dimension reset cleanup tests. Extend src/__tests__/reset-entity-cleanup.test.ts (or create new test) to verify that mk:reset entity cleanup logic references all three dimensions (overworld, nether, the_end). Use source-as-text pattern to read main.ts reset handler and verify it iterates multiple dimensions for each entity tag (mk_army, mk_siege_mob, mk_camp_guard). This test prevents regression of the dimension-hardcoding bug fixed in task #67.",
+    "target_files": [
+      "src/__tests__/reset-entity-cleanup.test.ts",
+      "src/main.ts"
+    ],
+    "test_file": "src/__tests__/reset-entity-cleanup.test.ts",
+    "related_to": [67],
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/reset-entity-cleanup.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 75,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add ArmorTierSystem initializePlayer error-handling tests. Extend src/__tests__/armor-tier-system.test.ts to verify that initializePlayer() has try-catch error handling around the give commands. Use source-as-text pattern to read ArmorTierSystem.ts and verify: (1) initializePlayer method body contains try-catch, (2) all four armor piece identifiers (page_helmet, page_chestplate, page_leggings, page_boots) are present, (3) ARMOR_GIVEN message is sent after the gives.",
+    "target_files": [
+      "src/__tests__/armor-tier-system.test.ts",
+      "src/systems/ArmorTierSystem.ts"
+    ],
+    "test_file": "src/__tests__/armor-tier-system.test.ts",
+    "related_to": [68],
+    "verification": [
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/armor-tier-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 76,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add MerchantSystem scroll-use behavioral tests. Create src/__tests__/merchant-scroll.test.ts using source-as-text pattern. Cover: (1) onScrollUse reads army capacity before spawning, (2) no redundant dynamic property re-reads for army_size (regression test for task #69), (3) Standard Bearer entity spawned with correct tags (mk_army, owner tag), (4) scroll is cleared from inventory after spawn, (5) army full message sent when at capacity, (6) findGroundLevel utility correctness (scan range, null on no ground).",
+    "target_files": [
+      "src/systems/MerchantSystem.ts"
+    ],
+    "test_file": "src/__tests__/merchant-scroll.test.ts",
+    "related_to": [69],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/merchant-scroll.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/merchant-scroll.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 77,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add camp expiration/stale-player cleanup tests. Create src/__tests__/camp-expiration.test.ts or extend camp-system.test.ts to verify: (1) EnemyCampSystem source contains stale camp cleanup logic, (2) camps are removed when player has been absent for the configured threshold, (3) active camps for present players are NOT removed, (4) clearAllCamps() still works as before. Use source-as-text pattern to read EnemyCampSystem.ts and verify the expiration logic exists and follows expected patterns.",
+    "target_files": [
+      "src/systems/EnemyCampSystem.ts",
+      "src/__tests__/camp-system.test.ts"
+    ],
+    "test_file": "src/__tests__/camp-expiration.test.ts",
+    "related_to": [70],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/camp-expiration.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/camp-expiration.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
   }
 ]
