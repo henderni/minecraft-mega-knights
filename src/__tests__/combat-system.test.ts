@@ -83,15 +83,10 @@ describe("CombatSystem: deferred recruitment", () => {
 });
 
 describe("CombatSystem: recruit failure", () => {
-  it("sends RECRUIT_FAILED message on failed roll", () => {
-    expect(combatSrc).toContain("RECRUIT_FAILED");
-    // Import check
-    expect(combatSrc).toContain('import');
-    expect(combatSrc).toContain("RECRUIT_FAILED");
-  });
-
-  it("plays bass note on failure", () => {
-    expect(combatSrc).toContain("note.bass");
+  it("does not spam chat on failed recruit rolls", () => {
+    // RECRUIT_FAILED message was removed — silence on failure is correct UX
+    expect(combatSrc).not.toContain("RECRUIT_FAILED");
+    expect(combatSrc).not.toContain("note.bass");
   });
 });
 

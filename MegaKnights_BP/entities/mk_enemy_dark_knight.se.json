@@ -92,7 +92,7 @@
                 }
               ]
             },
-            "max_dist": 20
+            "max_dist": 24
           }
         ],
         "must_see": true,

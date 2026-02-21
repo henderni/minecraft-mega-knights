@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { BESTIARY, BESTIARY_EFFECT_DURATION_TICKS } from "../data/BestiaryDefinitions";
+import { ENEMY_SPAWN_DAY } from "../data/WaveDefinitions";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -118,5 +119,40 @@ describe("BestiarySystem: wiring", () => {
 
   it("bestiary.onPlayerSpawn is called on player join", () => {
     expect(mainSrc).toContain("bestiary.onPlayerSpawn");
+  });
+});
+
+describe("BestiaryDefinitions: ENEMY_SPAWN_DAY cross-reference", () => {
+  const spawnDayKeys = Object.keys(ENEMY_SPAWN_DAY);
+
+  it("every non-boss bestiary enemyTypeId has a matching ENEMY_SPAWN_DAY entry", () => {
+    const regularEnemies = BESTIARY.filter((e) => !e.enemyTypeId.startsWith("mk:mk_boss_"));
+    expect(regularEnemies.length).toBeGreaterThan(0);
+
+    for (const entry of regularEnemies) {
+      expect(
+        spawnDayKeys,
+        `Bestiary enemy "${entry.enemyTypeId}" (${entry.displayName}) has no ENEMY_SPAWN_DAY entry`,
+      ).toContain(entry.enemyTypeId);
+    }
+  });
+
+  it("boss entries are intentionally excluded from ENEMY_SPAWN_DAY (script-spawned only)", () => {
+    const bossEntries = BESTIARY.filter((e) => e.enemyTypeId.startsWith("mk:mk_boss_"));
+    expect(bossEntries.length).toBeGreaterThan(0);
+
+    for (const entry of bossEntries) {
+      expect(spawnDayKeys).not.toContain(entry.enemyTypeId);
+    }
+  });
+
+  it("every ENEMY_SPAWN_DAY key appears in the bestiary", () => {
+    const bestiaryTypeIds = BESTIARY.map((e) => e.enemyTypeId);
+    for (const key of spawnDayKeys) {
+      expect(
+        bestiaryTypeIds,
+        `ENEMY_SPAWN_DAY has "${key}" but it has no bestiary entry — kills won't be tracked`,
+      ).toContain(key);
+    }
   });
 });

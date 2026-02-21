@@ -2989,7 +2989,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 110,
@@ -3007,7 +3007,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 111,
@@ -3025,7 +3025,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 112,
@@ -3044,7 +3044,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 113,
@@ -3062,7 +3062,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 114,
@@ -3080,7 +3080,7 @@
       { "type": "test_passes", "file": "src/__tests__/numProp.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 115,
@@ -3099,7 +3099,7 @@
       { "type": "test_passes", "file": "src/__tests__/cross-reference.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 116,
@@ -3118,7 +3118,7 @@
       { "type": "test_passes", "file": "src/__tests__/bestiary.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 117,
@@ -3136,7 +3136,7 @@
       { "type": "test_passes", "file": "src/__tests__/siege-system.test.ts" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 118,
@@ -3155,6 +3155,6 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   }
 ]

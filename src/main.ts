@@ -132,7 +132,7 @@ world.afterEvents.entityHurt.subscribe((event) => {
   system.run(() => {
     try {
       if (!entity.isValid) { return; }
-      const health = entity.getComponent("health") as import("@minecraft/server").EntityHealthComponent;
+      const health = entity.getComponent("minecraft:health") as import("@minecraft/server").EntityHealthComponent;
       if (health) {
         const newHp = Math.min(health.currentValue + event.damage, health.effectiveMax);
         health.setCurrentValue(newHp);

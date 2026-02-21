@@ -20,8 +20,7 @@ import {
 } from "../data/Strings";
 import { generateAllyName } from "../data/AllyNames";
 
-/** Safe numeric dynamic property read — guards against non-number corruption */
-const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+import { numProp } from "../utils/numProp";
 
 /** Max castle troop bonus a player can accumulate (+20 = all 3 structures) */
 const MAX_ARMY_BONUS = 20;
@@ -196,20 +195,24 @@ export class ArmySystem {
         return;
       }
 
-      const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
-      if (!ownerName) {
-        return;
-      }
-
-      // Find the owner player by name — O(1) lookup from cached Map (refreshed every recount tick)
-      const player = this.cachedPlayerMap.get(ownerName);
-      if (player?.isValid) {
-        const current = numProp(player.getDynamicProperty("mk:army_size"));
-        if (current > 0) {
-          player.setDynamicProperty("mk:army_size", current - 1);
+      try {
+        const ownerName = dead.getDynamicProperty("mk:owner_name") as string;
+        if (!ownerName) {
+          return;
         }
-        const allyName = (dead.getDynamicProperty("mk:ally_name") as string) ?? ArmySystem.allyDisplayName(dead.typeId);
-        player.sendMessage(ALLY_DIED(allyName));
+
+        // Find the owner player by name — O(1) lookup from cached Map (refreshed every recount tick)
+        const player = this.cachedPlayerMap.get(ownerName);
+        if (player?.isValid) {
+          const current = numProp(player.getDynamicProperty("mk:army_size"));
+          if (current > 0) {
+            player.setDynamicProperty("mk:army_size", current - 1);
+          }
+          const allyName = (dead.getDynamicProperty("mk:ally_name") as string) ?? ArmySystem.allyDisplayName(dead.typeId);
+          player.sendMessage(ALLY_DIED(allyName));
+        }
+      } catch {
+        // Dead entity may be in unloaded chunk — recount tick will correct army size
       }
     });
   }
@@ -321,11 +324,6 @@ export class ArmySystem {
     } catch {
       return [];
     }
-  }
-
-  getArmySize(player: Player): number {
-    const raw = numProp(player.getDynamicProperty("mk:army_size"));
-    return Math.max(0, Math.min(GLOBAL_ARMY_CAP, Math.floor(raw)));
   }
 
   /** Debug spawn allies — staggered across ticks to avoid freezing Switch */

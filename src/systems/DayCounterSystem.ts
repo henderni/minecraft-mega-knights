@@ -20,8 +20,7 @@ import {
   TUTORIAL_6_BESTIARY,
 } from "../data/Strings";
 
-/** Safe numeric dynamic property read — guards against non-number corruption */
-const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+import { numProp, boolProp } from "../utils/numProp";
 
 /** Pre-built progress bar strings to avoid string allocations every HUD tick */
 const BAR_LENGTH = 20;
@@ -60,7 +59,7 @@ export class DayCounterSystem {
 
   /** Cached player list for HUD — refreshed every 4th call (~2s) to reduce getAllPlayers calls */
   private cachedHudPlayers: Player[] = [];
-  private hudPlayerRefreshCounter = 0;
+  private hudPlayerRefreshCounter = 3; // Start at 3 so first updateHUD() call triggers player refresh
 
   /** Register a callback that fires whenever the day changes */
   onDayChanged(callback: (day: number) => void): void {
@@ -78,10 +77,10 @@ export class DayCounterSystem {
       return;
     }
     this.initialized = true;
-    this.cachedActive = (world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE) as boolean) ?? false;
+    this.cachedActive = boolProp(world.getDynamicProperty(DayCounterSystem.KEY_ACTIVE));
     this.cachedDay = numProp(world.getDynamicProperty(DayCounterSystem.KEY_DAY));
     this.cachedTickCounter = numProp(world.getDynamicProperty(DayCounterSystem.KEY_TICK));
-    this.cachedEndless = (world.getDynamicProperty("mk:endless_mode") as boolean) ?? false;
+    this.cachedEndless = boolProp(world.getDynamicProperty("mk:endless_mode"));
   }
 
   getCurrentDay(): number {
@@ -209,7 +208,7 @@ export class DayCounterSystem {
   }
 
   initializePlayer(player: Player): void {
-    const hasStarted = player.getDynamicProperty("mk:has_started") as boolean;
+    const hasStarted = boolProp(player.getDynamicProperty("mk:has_started"));
     if (!hasStarted) {
       player.setDynamicProperty("mk:has_started", true);
       player.setDynamicProperty("mk:kills", 0);

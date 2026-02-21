@@ -69,6 +69,7 @@ Each task has typed verification objects. Execute them as follows:
 - **ALWAYS** commit working code before moving to the next task
 - If a task is blocked or too complex, skip it and note the blocker in progress.txt
 - If you discover new issues while working, add them as new tasks to feature_list.json (using the v2 schema with all fields)
+- If you add a new system, entity, item, or dynamic property, update CLAUDE.md to reflect the change (systems table, data file list, dynamic properties list, checklists, etc.)
 
 ## Progress Log Format
 
@@ -88,12 +89,6 @@ Next: [what to work on next, including related_to suggestions]
 
 ## Context
 
-- TypeScript in `src/` compiles to `MegaKnights_BP/scripts/` via `npm run build`
-- Tests: `npm run test:run` (vitest, source-as-text pattern)
-- Tests CANNOT import modules that pull in `@minecraft/server`
+See CLAUDE.md for full project conventions, entity budgets, and Bedrock patterns. Key reminders:
+- Tests CANNOT import modules that pull in `@minecraft/server` — use source-as-text pattern
 - Safe test imports: ArmorTiers, BestiaryDefinitions, CampDefinitions, CastleBlueprints, FactionDefinitions, Strings, WaveDefinitions
-- Primary target: Nintendo Switch (30 FPS, <60 custom entities during siege)
-- Entity namespace: `mk:mk_<name>`, tags: `mk_army`, `mk_owner_<name>`, `mk_siege_mob`
-- Logging: `console.warn()` not `console.log()`
-- World mutations in event handlers must be deferred with `system.run()`
-- Entity access must be wrapped in try-catch (unloaded/despawned entities)

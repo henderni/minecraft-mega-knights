@@ -858,3 +858,35 @@ Task clusters:
 
 Next: Start with task #109 (recruit spam) and #110 (death listener safety)
 ===
+
+--- checkpoint d389af4d-9c1b-4daf-9d4f-8d85dc2b39b2 @ 2026-02-21 10:17:18 ---
+Progress: 108/118 tasks complete
+---
+
+=== Coding Session 10 — 2026-02-21 ===
+Completed all 10 tasks (#109-#118) in v10 harness round.
+
+Bug fixes (4):
+- #109 (HIGH S): Removed RECRUIT_FAILED message spam + failure sound from CombatSystem — silence on failed rolls is correct UX
+- #110 (MED S): Added try-catch around dead entity property reads in ArmySystem death listener — prevents crash in unloaded chunks
+- #111 (MED S): Fixed HUD not showing for first 2 seconds — changed hudPlayerRefreshCounter init from 0 to 3
+- #112 (MED S): Standardized health component ID to "minecraft:health" in main.ts friendly-fire handler
+
+Polish (2):
+- #113 (LOW S): Removed stale JSDoc comment in CombatSystem referencing removed failure path
+- #118 (MED S): Cleaned up unused RECRUIT_FAILED import from CombatSystem + removed constant from Strings.ts
+
+Test suites (4):
+- #114 (MED S): numProp.test.ts — 16 tests for numProp() and boolProp() utility functions
+- #115 (MED S): cross-reference.test.ts — enemy-to-ally entity pair cross-reference validation
+- #116 (MED S): bestiary.test.ts — BESTIARY↔ENEMY_SPAWN_DAY cross-reference validation
+- #117 (MED S): siege-system.test.ts — siege defeat path coverage (victory gating, defeat detection)
+
+All 118/118 tasks COMPLETE.
+Full suite: 74 files, 2785 tests, ALL PASSING
+Build: tsc clean
+===
+
+--- checkpoint final-v10 @ 2026-02-21 ---
+Progress: 118/118 tasks complete — ALL DONE
+---

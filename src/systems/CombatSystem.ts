@@ -2,10 +2,7 @@ import { EntityDieAfterEvent, Player, system } from "@minecraft/server";
 import { ArmySystem } from "./ArmySystem";
 import { BestiarySystem } from "./BestiarySystem";
 import { DifficultySystem } from "./DifficultySystem";
-import { RECRUIT_FAILED } from "../data/Strings";
-
-/** Safe numeric dynamic property read — guards against non-number corruption */
-const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+import { numProp } from "../utils/numProp";
 
 export class CombatSystem {
   private army: ArmySystem;
@@ -63,12 +60,6 @@ export class CombatSystem {
       } catch {
         // Entity was removed from world before spawn data could be captured
       }
-    } else {
-      player.sendMessage(RECRUIT_FAILED);
-      // Subtle failure sound — lower pitch, quieter
-      try {
-        player.runCommand("playsound note.bass @s ~ ~ ~ 0.5 0.5");
-      } catch { /* player may have disconnected */ }
     }
   }
 }

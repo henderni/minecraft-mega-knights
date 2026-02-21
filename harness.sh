@@ -143,6 +143,23 @@ if [ "$NEED_INIT" = true ]; then
     TOTAL=$(jq length "$FEATURE_FILE")
     success "Initializer complete. Created $TOTAL tasks."
     echo ""
+
+    # Print task summary
+    log "Task list:"
+    jq -r '.[] | "  #\(.id) [\(.priority[0:1] | ascii_upcase)] \(.description[0:80])"' "$FEATURE_FILE"
+    echo ""
+
+    # Show category/complexity breakdown
+    HIGH=$(jq '[.[] | select(.priority == "high")] | length' "$FEATURE_FILE")
+    MED=$(jq '[.[] | select(.priority == "medium")] | length' "$FEATURE_FILE")
+    LOW=$(jq '[.[] | select(.priority == "low")] | length' "$FEATURE_FILE")
+    log "Priority: $HIGH high, $MED medium, $LOW low"
+
+    SMALL=$(jq '[.[] | select(.complexity == "S")] | length' "$FEATURE_FILE")
+    MEDIUM=$(jq '[.[] | select(.complexity == "M")] | length' "$FEATURE_FILE")
+    LARGE=$(jq '[.[] | select(.complexity == "L")] | length' "$FEATURE_FILE")
+    log "Complexity: $SMALL small, $MEDIUM medium, $LARGE large"
+    echo ""
 fi
 
 # Continue last session if requested

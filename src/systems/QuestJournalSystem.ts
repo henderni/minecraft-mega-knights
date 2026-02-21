@@ -7,7 +7,7 @@ import { DayCounterSystem } from "./DayCounterSystem";
 import { DifficultySystem } from "./DifficultySystem";
 
 /** Safe numeric dynamic property read — guards against non-number corruption */
-const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+import { numProp } from "../utils/numProp";
 import {
   JOURNAL_TITLE,
   JOURNAL_OVERVIEW_TITLE,
@@ -128,7 +128,7 @@ export class QuestJournalSystem {
       const parts: string[] = [];
       for (const m of entry.milestones) {
         const effectLevel = m.amplifier === 0 ? "I" : "II";
-        const effectName = m.effectId.charAt(0).toUpperCase() + m.effectId.slice(1);
+        const effectName = m.effectId.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         parts.push(`/${m.kills} → ${effectName} ${effectLevel}`);
       }
       lines.push(`${entry.displayName}: ${kills}${parts.join(", ")}`);

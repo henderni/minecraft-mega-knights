@@ -458,6 +458,32 @@ describe("SiegeSystem: defeat handler", () => {
     expect(STRINGS_SRC).toContain("SIEGE_DEFEAT_2");
     expect(STRINGS_SRC).toContain("SIEGE_DEFEAT_3");
   });
+
+  it("victory callback is gated behind if(victory) — not reachable from defeat", () => {
+    const endSiegeBlock = SIEGE_SRC.slice(
+      SIEGE_SRC.indexOf("private endSiege("),
+      SIEGE_SRC.indexOf("private cleanupSiegeMobs()"),
+    );
+    // onVictoryCallback must appear inside the if(victory) branch only
+    expect(endSiegeBlock).toContain("if (victory)");
+    const victoryBranch = endSiegeBlock.slice(
+      endSiegeBlock.indexOf("if (victory)"),
+    );
+    expect(victoryBranch).toContain("onVictoryCallback");
+    // Victory title display is also gated
+    expect(victoryBranch).toContain("setTitle");
+  });
+
+  it("player death detection checks all players' health in system.run()", () => {
+    const deathBlock = SIEGE_SRC.slice(
+      SIEGE_SRC.indexOf("setupDeathListener"),
+      SIEGE_SRC.indexOf("tick(): void"),
+    );
+    // The death check loops through all players and checks health
+    expect(deathBlock).toContain("minecraft:health");
+    expect(deathBlock).toContain("anyAlive");
+    expect(deathBlock).toContain("this.endSiege(false)");
+  });
 });
 
 // ─── endSiege and cleanupSiegeMobs ───────────────────────────────────────────

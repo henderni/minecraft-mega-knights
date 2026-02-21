@@ -94,7 +94,6 @@ export const TUTORIAL_5_TIP = "§e5. Build castles to increase your army capacit
 export const TUTORIAL_6_BESTIARY = "§e6. Track enemy kills to unlock passive buffs!";
 
 // --- Feedback ---
-export const RECRUIT_FAILED = "§7No recruit this time.";
 export const ALLY_DIED = (displayName: string) => `§c✗ Your ${displayName} has fallen!`;
 
 // --- Friendly Fire ---

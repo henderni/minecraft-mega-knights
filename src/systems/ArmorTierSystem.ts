@@ -1,6 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
 import { ARMOR_GIVEN, TIER_UNLOCKED, TIER_UP_TITLE, TIER_UP_SUBTITLE, TIER_UP_MEGA_SUBTITLE } from "../data/Strings";
+import { boolProp } from "../utils/numProp";
 
 /** Hardcoded token give commands by tier index — avoids string interpolation in runCommand */
 const TOKEN_COMMANDS: Record<number, string> = {
@@ -12,7 +13,7 @@ const TOKEN_COMMANDS: Record<number, string> = {
 
 export class ArmorTierSystem {
   initializePlayer(player: Player): void {
-    const hasStarted = player.getDynamicProperty("mk:has_started") as boolean;
+    const hasStarted = boolProp(player.getDynamicProperty("mk:has_started"));
     if (!hasStarted) {
       // Give starting Page armor
       try {
@@ -74,6 +75,6 @@ export class ArmorTierSystem {
     if (tierIndex === 0) {
       return true;
     } // Page is always available
-    return (player.getDynamicProperty(`mk:tier_unlocked_${tierIndex}`) as boolean) ?? false;
+    return boolProp(player.getDynamicProperty(`mk:tier_unlocked_${tierIndex}`));
   }
 }

@@ -77,9 +77,30 @@ for line in sys.stdin:
     elif msg_type == "result":
         cost = obj.get("cost_usd", 0)
         duration_s = obj.get("duration_ms", 0) / 1000
+        duration_m = duration_s / 60
         turns = obj.get("num_turns", 0)
+        in_tokens = obj.get("total_input_tokens", 0)
+        out_tokens = obj.get("total_output_tokens", 0)
+
+        # Format duration as minutes if > 60s
+        if duration_s >= 60:
+            time_str = f"{duration_m:.1f}m"
+        else:
+            time_str = f"{duration_s:.0f}s"
+
+        # Format cost — note $0.00 on Max plan
+        if cost > 0:
+            cost_str = f"${cost:.2f}"
+        else:
+            cost_str = "$0.00 (Max plan)"
+
+        # Token summary
+        token_str = ""
+        if in_tokens or out_tokens:
+            token_str = f", {in_tokens + out_tokens:,} tokens"
+
         print(
-            f"  {GREEN}Done: {turns} turns, ${cost:.2f}, {duration_s:.0f}s{NC}",
+            f"  {GREEN}Done: {turns} turns, {cost_str}, {time_str}{token_str}{NC}",
             file=sys.stderr,
             flush=True,
         )

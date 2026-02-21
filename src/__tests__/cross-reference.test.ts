@@ -298,3 +298,36 @@ describe("Item texture atlas cross-reference", () => {
     });
   });
 });
+
+describe("Enemy-to-ally entity pair cross-reference", () => {
+  it("every mk_enemy_ entity file has a corresponding mk_ally_ entity file", () => {
+    const entityFiles = fs.readdirSync(entitiesDir).filter((f: string) => f.endsWith(".se.json"));
+    const enemyFiles = entityFiles.filter((f: string) => f.startsWith("mk_enemy_"));
+    expect(enemyFiles.length).toBeGreaterThan(0);
+
+    for (const enemyFile of enemyFiles) {
+      const allyFile = enemyFile.replace("mk_enemy_", "mk_ally_");
+      expect(
+        entityFiles.includes(allyFile),
+        `Enemy "${enemyFile}" has no matching ally "${allyFile}" — CombatSystem recruit swap will fail`,
+      ).toBe(true);
+    }
+  });
+
+  it("enemy→ally type ID swap produces valid entity identifiers", () => {
+    const entityFiles = fs.readdirSync(entitiesDir).filter((f: string) => f.endsWith(".se.json"));
+    const enemyFiles = entityFiles.filter((f: string) => f.startsWith("mk_enemy_"));
+
+    for (const enemyFile of enemyFiles) {
+      const enemyJson = JSON.parse(fs.readFileSync(path.join(entitiesDir, enemyFile), "utf-8"));
+      const enemyId: string = enemyJson["minecraft:entity"]?.description?.identifier;
+      expect(enemyId).toBeDefined();
+      const allyId = enemyId.replace("_enemy_", "_ally_");
+
+      const allyFile = enemyFile.replace("mk_enemy_", "mk_ally_");
+      const allyJson = JSON.parse(fs.readFileSync(path.join(entitiesDir, allyFile), "utf-8"));
+      const actualAllyId: string = allyJson["minecraft:entity"]?.description?.identifier;
+      expect(actualAllyId).toBe(allyId);
+    }
+  });
+});

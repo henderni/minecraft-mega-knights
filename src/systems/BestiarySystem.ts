@@ -1,8 +1,7 @@
 import { world, Player } from "@minecraft/server";
 import { BESTIARY, BESTIARY_EFFECT_DURATION_TICKS, BestiaryEntry } from "../data/BestiaryDefinitions";
 
-/** Safe numeric dynamic property read — guards against non-number corruption */
-const numProp = (v: unknown, d = 0): number => typeof v === "number" ? v : d;
+import { numProp } from "../utils/numProp";
 
 /** Maximum tracked kills per enemy type in the bestiary */
 const MAX_BESTIARY_KILLS = 9999;
