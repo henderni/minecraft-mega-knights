@@ -462,6 +462,13 @@ export class SiegeSystem {
               while (siegeRef.siegeMobCount >= MAX_ACTIVE_SIEGE_MOBS) {
                 yield;
               }
+              // Refresh player map after cap pause — players may have moved/disconnected
+              playerMap.clear();
+              for (const p of world.getAllPlayers()) {
+                if (p.isValid) {
+                  playerMap.set(p.name, p);
+                }
+              }
             }
           }
         }
