@@ -959,3 +959,11 @@ Build: passing | Lint: 0 warnings | Tests: 75 files, 2804 tests
 - #127 merchant-system.test.ts: NEW file — covers findGroundLevel null fallback + merchant scheduling/tagging
 - #128 combat-system.test.ts: ALLY_RECRUITED unitClass parameter and call-site format verified
 === END ===
+
+--- checkpoint 8c4c27cd-36fa-4dd1-b67d-04b27394cd7c @ 2026-02-21 11:01:17 ---
+Progress: 128/128 tasks complete
+---
+
+--- checkpoint 8c4c27cd-36fa-4dd1-b67d-04b27394cd7c @ 2026-02-21 11:04:31 ---
+Progress: 128/128 tasks complete
+---
