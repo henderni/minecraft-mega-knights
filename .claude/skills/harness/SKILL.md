@@ -32,14 +32,26 @@ Analyze the codebase and generate (or regenerate) `.claude/feature_list.json`:
 
 ### `/harness status`
 
-Show current progress:
+Run the status renderer script, then append the last session entry from the progress log:
 
-1. Read `.claude/feature_list.json` and count completed vs remaining
-2. Show breakdown by category, priority, and complexity
-3. Show related task clusters (groups connected by `related_to`)
-4. Show last 5 entries from `.claude/progress.txt`
-5. Report any blocked or skipped tasks
-6. Estimate remaining sessions based on complexity (S=0.3, M=0.5, L=1.0 sessions each)
+```bash
+python3 .claude/harness-status.py
+```
+
+The script renders a fully ANSI-colored status display with:
+- Bold-cyan section headers (no text cut-off — description column auto-fits to terminal width)
+- Overall progress bar + breakdown bars by priority and category
+- Task table with these columns:
+  - `#` — task ID (right-aligned with `#` prefix)
+  - Status icon — `✓` (green) = done, `○` (yellow) = todo
+  - **Pri** — `Hi` bold-red / `Md` bold-yellow / `Lo` green
+  - **Sz** — `S` green / `M` yellow / `L` red / `XL` bold-red
+  - **Cat** — `func` / `test` / `perf` / `cont` / `pol`
+  - Description — truncated to fit terminal width with `…` suffix; done rows are dimmed
+- Session estimate for remaining work (S=0.3, M=0.5, L=1.0, XL=1.5 sessions)
+- Next task highlighted at bottom
+
+After running the script, print the last session block from `.claude/progress.txt` (the text after the last `=== Session` or `=== Initializer` header through the next `===` closing line).
 
 ### `/harness add <description>`
 
