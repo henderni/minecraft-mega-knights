@@ -2252,5 +2252,344 @@
       }
     ],
     "passes": true
+  },
+  {
+    "id": 78,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Guard against division by zero in SiegeSystem boss phase check. In checkBossPhase() (line ~517), the ratio calculation `hp.currentValue / hp.effectiveMax` has no guard against effectiveMax being 0. If the health component reports effectiveMax=0 (e.g. during entity removal or corruption), this produces Infinity, and phase transitions never trigger. Add `if (hp.effectiveMax <= 0) return;` after the health component retrieval.",
+    "target_files": [
+      "src/systems/SiegeSystem.ts"
+    ],
+    "test_file": "src/__tests__/boss-phases.test.ts",
+    "related_to": [
+      83
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "effectiveMax"
+      },
+      {
+        "type": "source_contains",
+        "file": "src/systems/SiegeSystem.ts",
+        "pattern": "<= 0"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 79,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Add player.isValid guard and dimension try-catch to CastleSystem.onItemUse(). Currently onItemUse() accesses player.getBlockFromViewDirection() and player.dimension without checking isValid first. If the player disconnects between event dispatch and handler execution, these calls throw. Add `if (!player.isValid) return;` at the start, and wrap the structureManager.place() + dimension access in try-catch.",
+    "target_files": [
+      "src/systems/CastleSystem.ts"
+    ],
+    "test_file": "src/__tests__/castle-commands.test.ts",
+    "related_to": [
+      87
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/CastleSystem.ts",
+        "pattern": "isValid"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 80,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Add player.isValid guard to BestiarySystem.onKill(). The onKill() method calls player.getDynamicProperty() and player.setDynamicProperty() without checking player.isValid first. If the player becomes invalid between event dispatch and method execution (e.g. disconnect), these calls throw. Add `if (!player.isValid) return;` at the start of onKill(). Note: tick() already correctly guards with isValid checks.",
+    "target_files": [
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": "src/__tests__/bestiary.test.ts",
+    "related_to": [
+      86
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "isValid"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 81,
+    "category": "functional",
+    "priority": "high",
+    "complexity": "S",
+    "description": "Add typeof guard to DifficultySystem.getDifficulty(). Line 44 uses `as number | undefined` cast on getDynamicProperty() without runtime validation. If corrupted data stores a string or boolean, the cast silently succeeds and propagates wrong type. Replace with numProp() pattern or inline typeof check: `const raw = world.getDynamicProperty(KEY); const stored = typeof raw === 'number' ? raw : undefined;`",
+    "target_files": [
+      "src/systems/DifficultySystem.ts"
+    ],
+    "test_file": "src/__tests__/difficulty-system.test.ts",
+    "related_to": [
+      88
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/DifficultySystem.ts",
+        "pattern": "typeof"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/DifficultySystem.ts",
+        "pattern": "as number | undefined"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 82,
+    "category": "content",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Fix wizard max_dist mismatch in both ally and enemy entity definitions. Both mk_ally_wizard.se.json and mk_enemy_wizard.se.json have nearest_attackable_target max_dist=12 but follow_range=16, creating a 4-block dead zone where the wizard follows a target but won't attack. Change max_dist from 12 to 16 in both files to match follow_range. This lets wizards engage targets at their full detection range.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_wizard.se.json",
+      "MegaKnights_BP/entities/mk_enemy_wizard.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [
+      83
+    ],
+    "verification": [
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_wizard.se.json",
+        "pattern": "\"max_dist\": 12"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_wizard.se.json",
+        "pattern": "\"max_dist\": 16"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_wizard.se.json",
+        "pattern": "\"max_dist\": 12"
+      },
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_enemy_wizard.se.json",
+        "pattern": "\"max_dist\": 16"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 83,
+    "category": "content",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add knockback_resistance to mk_ally_standard_bearer.se.json. All other melee-range allies (knight: 0.2, dark_knight: 0.5) have knockback_resistance, but the Standard Bearer lacks it entirely. This makes the support unit disproportionately fragile to knockback, undermining its battlefield aura role. Add `\"minecraft:knockback_resistance\": { \"value\": 0.2 }` to the components section.",
+    "target_files": [
+      "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json"
+    ],
+    "test_file": "src/__tests__/entity-validation.test.ts",
+    "related_to": [
+      82
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "MegaKnights_BP/entities/mk_ally_standard_bearer.se.json",
+        "pattern": "knockback_resistance"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 84,
+    "category": "polish",
+    "priority": "low",
+    "complexity": "S",
+    "description": "Extract hardcoded kill cap 9999 in BestiarySystem to a named constant. Line 36 in BestiarySystem.ts uses `Math.min(9999, current + 1)` with a magic number. Extract to `const MAX_BESTIARY_KILLS = 9999;` at the top of the file for maintainability and consistency with the codebase's pattern of using named constants.",
+    "target_files": [
+      "src/systems/BestiarySystem.ts"
+    ],
+    "test_file": null,
+    "related_to": [
+      80
+    ],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "MAX_BESTIARY_KILLS"
+      },
+      {
+        "type": "source_not_contains",
+        "file": "src/systems/BestiarySystem.ts",
+        "pattern": "Math.min(9999"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 85,
+    "category": "functional",
+    "priority": "medium",
+    "complexity": "S",
+    "description": "Add console.warn logging to ArmorTierSystem.unlockTier() for invalid tier indices. Currently if unlockTier() receives an out-of-bounds tierIndex (e.g. 5 or -1), it silently returns with no indication. Add `console.warn('[MegaKnights] unlockTier: invalid tier index', tierIndex)` before the early return so developers can detect broken milestone configurations in BDS logs.",
+    "target_files": [
+      "src/systems/ArmorTierSystem.ts"
+    ],
+    "test_file": "src/__tests__/armor-tier-system.test.ts",
+    "related_to": [],
+    "verification": [
+      {
+        "type": "source_contains",
+        "file": "src/systems/ArmorTierSystem.ts",
+        "pattern": "console.warn"
+      },
+      {
+        "type": "build_passes"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 86,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add ArmySystem behavioral tests. Create src/__tests__/army-system.test.ts using source-as-text pattern to validate: (1) recruitAlly checks army cap before spawning, (2) recruitAlly maps enemy type to ally type via string replace, (3) getMaxArmySize returns BASE_ARMY_SIZE + min(bonus, MAX_ARMY_BONUS), (4) ALLY_DISPLAY_NAMES covers all 5 ally types including Standard Bearer, (5) generateAllyName picks from correct name pool, (6) sanitizePlayerTag removes invalid characters, (7) death listener recount logic exists. Read ArmySystem.ts source and verify patterns.",
+    "target_files": [
+      "src/systems/ArmySystem.ts"
+    ],
+    "test_file": "src/__tests__/army-system.test.ts",
+    "related_to": [
+      80,
+      87
+    ],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/army-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/army-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 87,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add CastleSystem behavioral tests. Create src/__tests__/castle-system.test.ts using source-as-text pattern to validate: (1) onItemUse checks for mk:mk_blueprint_ prefix, (2) all 3 CASTLE_BLUEPRINTS have structureId, bonus, and buildCommands, (3) isValid guard exists before player access, (4) structureManager.place() is called inside try-catch, (5) buildFallbackStaggered uses system.runJob for staggered execution, (6) army bonus is applied after placement, (7) blueprint item is consumed on success. Read CastleSystem.ts source and verify patterns.",
+    "target_files": [
+      "src/systems/CastleSystem.ts"
+    ],
+    "test_file": "src/__tests__/castle-system.test.ts",
+    "related_to": [
+      79,
+      86
+    ],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/castle-system.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/castle-system.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
+  },
+  {
+    "id": 88,
+    "category": "test",
+    "priority": "medium",
+    "complexity": "M",
+    "description": "Add DifficultySystem behavioral tests. Create src/__tests__/difficulty-behavior.test.ts using source-as-text pattern to validate: (1) getDifficulty uses typeof guard (not raw cast) on getDynamicProperty, (2) DIFFICULTY_NORMAL=0 and DIFFICULTY_HARD=1 constants exist, (3) getRecruitChance returns different values per difficulty, (4) getEnemyMultiplier returns different values per difficulty, (5) showDifficultySelect creates ActionFormData with 2 buttons, (6) reset() clears cachedDifficulty and world property, (7) getDifficulty defaults to DIFFICULTY_NORMAL when property is unset. Read DifficultySystem.ts source and verify patterns.",
+    "target_files": [
+      "src/systems/DifficultySystem.ts"
+    ],
+    "test_file": "src/__tests__/difficulty-behavior.test.ts",
+    "related_to": [
+      81
+    ],
+    "verification": [
+      {
+        "type": "test_file_exists",
+        "file": "src/__tests__/difficulty-behavior.test.ts"
+      },
+      {
+        "type": "test_passes",
+        "file": "src/__tests__/difficulty-behavior.test.ts"
+      },
+      {
+        "type": "all_tests_pass"
+      }
+    ],
+    "passes": false
   }
 ]

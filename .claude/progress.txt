@@ -548,3 +548,44 @@ Build: tsc clean
 --- checkpoint final-v6 @ 2026-02-20 ---
 Progress: 77/77 tasks complete — ALL DONE
 ---
+
+--- checkpoint 652fae37-66e2-4348-bf7f-79d5fb57d86c @ 2026-02-20 18:23:59 ---
+Progress: 77/77 tasks complete
+---
+
+--- checkpoint 590fccac-d782-4910-82b3-00b12a878a70 @ 2026-02-20 18:30:04 ---
+Progress: 77/77 tasks complete
+---
+
+=== Initializer Session 7 — 2026-02-21 ===
+Deep codebase audit complete (all 11 system files, 9 data files, 11 entity JSON, 29 item JSON, 64 test files).
+Added 11 new tasks (IDs 78-88) to feature_list.json.
+
+Priority breakdown: 4 high, 6 medium, 1 low
+Category breakdown: 5 functional, 2 content, 1 polish, 3 test
+Complexity: 8 small, 3 medium
+Related task clusters: [78,83], [79,87], [80,84,86], [81,88], [82,83]
+
+Codebase state:
+- Build: PASSES (tsc clean)
+- Tests: 64 files, 2,510 tests, ALL PASSING
+- Previous 77/77 tasks: ALL COMPLETE
+- Entity/item/RP content: ALL CLEAN (minor wizard max_dist + standard bearer knockback gaps)
+
+Key bugs found:
+- CRITICAL: SiegeSystem.checkBossPhase() divides hp.currentValue/hp.effectiveMax with no guard against effectiveMax=0 → Infinity breaks phase transitions
+- CastleSystem.onItemUse() has no player.isValid check and dimension access is not try-caught — crash risk on disconnect
+- BestiarySystem.onKill() has no player.isValid check before setDynamicProperty — crash risk on disconnect
+- DifficultySystem.getDifficulty() uses `as number` cast instead of typeof guard — NaN propagation if property corrupted
+
+Content fixes:
+- Both wizard entities (ally + enemy) have max_dist=12 but follow_range=16, creating 4-block dead zone
+- Standard Bearer missing knockback_resistance (all other melee allies have it)
+
+Test coverage gaps addressed:
+- ArmySystem: no behavioral tests for recruitAlly, getMaxArmySize, generateAllyName
+- CastleSystem: no behavioral tests for onItemUse flow, blueprint detection, placement
+- DifficultySystem: no behavioral tests for getDifficulty typeof guard, recruit chance, multiplier
+
+Next: Start with task #78 (boss phase guard), then #79-#81 (validity/safety fixes)
+===
