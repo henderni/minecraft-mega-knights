@@ -124,6 +124,7 @@ if [ "$NEED_INIT" = true ]; then
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
         --max-budget-usd "$INIT_BUDGET" \
+        --verbose \
         --output-format stream-json \
         | python3 "$PROGRESS_FILTER" || true
 
@@ -146,6 +147,7 @@ if [ "$CONTINUE_LAST" = true ]; then
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
         --max-budget-usd "$BUDGET_PER_SESSION" \
+        --verbose \
         --output-format stream-json \
         | python3 "$PROGRESS_FILTER" || true
 
@@ -179,6 +181,7 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
         --max-budget-usd "$BUDGET_PER_SESSION" \
+        --verbose \
         --output-format stream-json \
         | python3 "$PROGRESS_FILTER" || true
 
