@@ -108,6 +108,12 @@ done
 NEED_INIT=false
 if [ "$FORCE_INIT" = true ] || [ ! -f "$FEATURE_FILE" ]; then
     NEED_INIT=true
+elif [ -f "$FEATURE_FILE" ]; then
+    REMAINING=$(( $(jq length "$FEATURE_FILE") - $(jq '[.[] | select(.passes == true)] | length' "$FEATURE_FILE") ))
+    if [ "$REMAINING" -eq 0 ]; then
+        log "All tasks complete — re-initializing to find new work..."
+        NEED_INIT=true
+    fi
 fi
 
 # Initialize if needed
