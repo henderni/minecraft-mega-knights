@@ -101,12 +101,10 @@ export class MerchantSystem {
         // Re-check army capacity inside system.run() to prevent race condition
         // when two scrolls are used in the same tick
         const currentSize = (player.getDynamicProperty("mk:army_size") as number) ?? 0;
+        const armyBonus = (player.getDynamicProperty("mk:army_bonus") as number) ?? 0;
         const maxSize = this.army.getMaxArmySize(player);
         const playerCount = world.getAllPlayers().length;
-        const effectiveCap = ArmySystem.getEffectiveCap(
-          (player.getDynamicProperty("mk:army_bonus") as number) ?? 0,
-          playerCount,
-        );
+        const effectiveCap = ArmySystem.getEffectiveCap(armyBonus, playerCount);
 
         if (currentSize >= effectiveCap) {
           if (effectiveCap < maxSize && playerCount > 1) {

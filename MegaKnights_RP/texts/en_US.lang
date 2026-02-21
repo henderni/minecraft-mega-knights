@@ -38,15 +38,19 @@ item.mk:mk_blueprint_great_hall.name=Great Hall Blueprint
 item.mk:mk_standard_bearer_scroll.name=Standard Bearer Scroll
 item.mk:mk_quest_journal.name=Quest Journal
 
-## Entities
-entity.mk:mk_enemy_knight.name=Enemy Knight
-entity.mk:mk_enemy_archer.name=Enemy Archer
-entity.mk:mk_enemy_wizard.name=Dark Wizard
-entity.mk:mk_enemy_dark_knight.name=Dark Knight
-entity.mk:mk_ally_knight.name=Allied Knight
+## Entities — Allies
 entity.mk:mk_ally_archer.name=Allied Archer
-entity.mk:mk_ally_wizard.name=Allied Wizard
 entity.mk:mk_ally_dark_knight.name=Allied Dark Knight
+entity.mk:mk_ally_knight.name=Allied Knight
 entity.mk:mk_ally_standard_bearer.name=Standard Bearer
-entity.mk:mk_wandering_merchant.name=Wandering Merchant
+entity.mk:mk_ally_wizard.name=Allied Wizard
+
+## Entities — Enemies
+entity.mk:mk_enemy_archer.name=Enemy Archer
+entity.mk:mk_enemy_dark_knight.name=Dark Knight
+entity.mk:mk_enemy_knight.name=Enemy Knight
+entity.mk:mk_enemy_wizard.name=Dark Wizard
+
+## Entities — Special
 entity.mk:mk_boss_siege_lord.name=The Siege Lord
+entity.mk:mk_wandering_merchant.name=Wandering Merchant

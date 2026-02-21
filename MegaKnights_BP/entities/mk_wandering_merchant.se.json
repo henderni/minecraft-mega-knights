@@ -65,7 +65,7 @@
         "speed_multiplier": 0.5
       },
       "minecraft:timer": {
-        "time": [600, 600],
+        "time": [6000, 6000],
         "time_down_event": {
           "event": "mk:despawn"
         }

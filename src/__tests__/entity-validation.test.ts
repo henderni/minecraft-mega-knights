@@ -250,6 +250,43 @@ describe("BP entities: scan_interval on targeting", () => {
   }
 });
 
+// ─── Merchant timer validation ───────────────────────────────────────────────
+
+describe("Merchant entity: timer configuration", () => {
+  const merchantFile = "mk_wandering_merchant.se.json";
+  const raw = readBPEntity(merchantFile);
+  const entity = raw["minecraft:entity"];
+  const components = entity?.components ?? {};
+
+  it("timer values >= 6000 ticks (5 minutes minimum)", () => {
+    const timer = components["minecraft:timer"];
+    expect(timer).toBeDefined();
+    const [min, max] = timer.time;
+    expect(min).toBeGreaterThanOrEqual(6000);
+    expect(max).toBeGreaterThanOrEqual(6000);
+  });
+
+  it("timer event triggers mk:despawn", () => {
+    const timer = components["minecraft:timer"];
+    expect(timer.time_down_event.event).toBe("mk:despawn");
+  });
+
+  it("mk:despawn component group has instant_despawn", () => {
+    const despawnGroup = entity?.component_groups?.["mk:despawn"];
+    expect(despawnGroup).toBeDefined();
+    expect(despawnGroup["minecraft:instant_despawn"]).toBeDefined();
+  });
+
+  it("has minecraft:despawn with reasonable max_distance", () => {
+    const despawn = components["minecraft:despawn"];
+    expect(despawn).toBeDefined();
+    const maxDist = despawn.despawn_from_distance?.max_distance;
+    expect(maxDist).toBeDefined();
+    expect(maxDist).toBeGreaterThanOrEqual(96);
+    expect(maxDist).toBeLessThanOrEqual(256);
+  });
+});
+
 // ─── GPU budget: opaque materials ────────────────────────────────────────────
 
 describe("RP entities: opaque materials preferred", () => {

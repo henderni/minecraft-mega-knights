@@ -423,3 +423,37 @@ Next: Start with task #55 (stance NaN fix), then #56 (merchant timer)
 --- checkpoint init-v5 @ 2026-02-20 ---
 Progress: 54/66 tasks complete
 ---
+
+--- checkpoint 0e1567b9-a577-4a11-9d54-70f8114b356a @ 2026-02-20 17:36:48 ---
+Progress: 54/66 tasks complete
+---
+
+=== Session 2026-02-20 17:40 ===
+Tasks #55-66: Implement all 12 v5 tasks
+
+Code fixes (7 tasks):
+- #55 (HIGH S): Stance NaN fix — typeof guard on getDynamicProperty("mk:stance") in ArmySystem.ts
+- #56 (HIGH S): Merchant timer — [600,600] → [6000,6000] in mk_wandering_merchant.se.json
+- #57 (MED S): dropRewards getDimension guard — try-catch with early return in EnemyCampSystem.ts
+- #58 (MED S): Standard Bearer in ALLY_DISPLAY_NAMES — added to Map in ArmySystem.ts
+- #59 (MED S): MerchantSystem army bonus cache — eliminated redundant getDynamicProperty call
+- #64 (LOW S): BestiarySystem milestone reverse loop — break on first match
+- #65 (LOW S): spawnGuards getDimension guard — try-catch with flag pattern in EnemyCampSystem.ts
+
+Tests (4 tasks):
+- #60 (MED M): ArmorTierSystem behavioral tests — src/__tests__/armor-tier-system.test.ts (12 tests)
+- #61 (MED M): CombatSystem recruitment tests — src/__tests__/combat-system.test.ts (12 tests)
+- #62 (MED S): Merchant entity timer validation — added to entity-validation.test.ts (4 tests)
+- #63 (MED S): Stance type safety tests — src/__tests__/stance-safety.test.ts (6 tests)
+
+Polish (1 task):
+- #66 (LOW S): Lang file entity key ordering — synced BP/RP to allies→enemies→special (alphabetical)
+
+All 66/66 tasks COMPLETE.
+Full suite: 61 files, 2429 tests, ALL PASSING
+Build: tsc clean
+===
+
+--- checkpoint final-v5 @ 2026-02-20 ---
+Progress: 66/66 tasks complete — ALL DONE
+---

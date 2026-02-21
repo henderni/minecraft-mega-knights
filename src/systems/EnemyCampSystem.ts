@@ -338,30 +338,37 @@ export class EnemyCampSystem {
     system.runJob(
       (function* () {
         let spawned = 0;
-        const dimension = world.getDimension(dimId);
+        let dimension;
+        try {
+          dimension = world.getDimension(dimId);
+        } catch (e) {
+          console.warn(`[MegaKnights] Camp guard spawn failed — invalid dimension ${dimId}: ${e}`);
+        }
 
-        for (const entityId of spawnQueue) {
-          const offsetX = (Math.random() - 0.5) * 6;
-          const offsetZ = (Math.random() - 0.5) * 6;
-          const spawnLoc = { x: loc.x + offsetX, y: loc.y, z: loc.z + offsetZ };
+        if (dimension) {
+          for (const entityId of spawnQueue) {
+            const offsetX = (Math.random() - 0.5) * 6;
+            const offsetZ = (Math.random() - 0.5) * 6;
+            const spawnLoc = { x: loc.x + offsetX, y: loc.y, z: loc.z + offsetZ };
 
-          try {
-            const entity = dimension.spawnEntity(entityId, spawnLoc);
-            entity.addTag("mk_camp_guard");
-            entity.addTag(`mk_camp_${campRef.campId}`);
             try {
-              entity.triggerEvent("mk:become_camp_guard");
-            } catch {
-              // Event not yet present — entity still functional with default despawn
+              const entity = dimension.spawnEntity(entityId, spawnLoc);
+              entity.addTag("mk_camp_guard");
+              entity.addTag(`mk_camp_${campRef.campId}`);
+              try {
+                entity.triggerEvent("mk:become_camp_guard");
+              } catch {
+                // Event not yet present — entity still functional with default despawn
+              }
+              campRef.guardCount++;
+            } catch (e) {
+              console.warn(`[MegaKnights] Camp guard spawn failed: ${e}`);
             }
-            campRef.guardCount++;
-          } catch (e) {
-            console.warn(`[MegaKnights] Camp guard spawn failed: ${e}`);
-          }
 
-          spawned++;
-          if (spawned % SPAWNS_PER_TICK === 0) {
-            yield;
+            spawned++;
+            if (spawned % SPAWNS_PER_TICK === 0) {
+              yield;
+            }
           }
         }
 
@@ -389,7 +396,13 @@ export class EnemyCampSystem {
 
     system.runJob(
       (function* () {
-        const dimension = world.getDimension(dimId);
+        let dimension;
+        try {
+          dimension = world.getDimension(dimId);
+        } catch (e) {
+          console.warn(`[MegaKnights] Camp reward drop failed — invalid dimension ${dimId}: ${e}`);
+          return;
+        }
         let executed = 0;
 
         for (const reward of rewards) {

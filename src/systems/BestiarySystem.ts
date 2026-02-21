@@ -64,11 +64,12 @@ export class BestiarySystem {
     for (const entry of BESTIARY) {
       const kills = Math.max(0, (player.getDynamicProperty(entry.killKey) as number) ?? 0);
 
-      // Find the highest earned milestone
+      // Find the highest earned milestone (reverse scan — milestones sorted ascending)
       let highestMilestone = -1;
-      for (let i = 0; i < entry.milestones.length; i++) {
+      for (let i = entry.milestones.length - 1; i >= 0; i--) {
         if (kills >= entry.milestones[i].kills) {
           highestMilestone = i;
+          break;
         }
       }
 

@@ -70,6 +70,7 @@ const ALLY_DISPLAY_NAMES = new Map<string, string>([
   ["mk:mk_ally_archer", "Archer"],
   ["mk:mk_ally_wizard", "Wizard"],
   ["mk:mk_ally_dark_knight", "Dark Knight"],
+  ["mk:mk_ally_standard_bearer", "Standard Bearer"],
 ]);
 
 export class ArmySystem {
@@ -270,7 +271,8 @@ export class ArmySystem {
         event.player.sendMessage(ALLY_NOT_YOURS(ownerName));
         return;
       }
-      const currentStance = Math.max(0, Math.min(2, (entity.getDynamicProperty("mk:stance") as number) ?? 0));
+      const rawStance = entity.getDynamicProperty("mk:stance");
+      const currentStance = Math.max(0, Math.min(2, typeof rawStance === "number" ? rawStance : 0));
       const nextStance = (currentStance + 1) % 3;
       entity.setDynamicProperty("mk:stance", nextStance);
       const [eventName, modeName] = nextStance === 0
