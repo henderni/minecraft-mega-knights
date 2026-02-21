@@ -16,6 +16,7 @@ You manage the autonomous coding harness for Mega Knights. The harness enables C
 - **Progress log**: `.claude/progress.txt` — append-only session history
 - **Prompts**: `.claude/prompts/initializer_prompt.md`, `.claude/prompts/coding_prompt.md`
 - **Analytics**: `.claude/analyze-harness.py` — post-run metrics and recommendations
+- **Progress filter**: `.claude/harness-progress.py` — stream-json to stderr progress display
 - **Harness script**: `harness.sh` — multi-session orchestrator
 
 ## Commands

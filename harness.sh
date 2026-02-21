@@ -18,6 +18,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FEATURE_FILE="$PROJECT_DIR/.claude/feature_list.json"
 PROGRESS_FILE="$PROJECT_DIR/.claude/progress.txt"
 PROMPTS_DIR="$PROJECT_DIR/.claude/prompts"
+PROGRESS_FILTER="$PROJECT_DIR/.claude/harness-progress.py"
 
 # Defaults
 MAX_SESSIONS=10
@@ -114,12 +115,14 @@ if [ "$NEED_INIT" = true ]; then
 
     INIT_PROMPT=$(cat "$PROMPTS_DIR/initializer_prompt.md")
 
-    # Run claude without output capture — streams live to terminal
+    # Stream progress to stderr via filter
     claude -p "$INIT_PROMPT" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --max-budget-usd "$BUDGET_PER_SESSION" || true
+        --max-budget-usd "$BUDGET_PER_SESSION" \
+        --output-format stream-json \
+        | python3 "$PROGRESS_FILTER" || true
 
     echo ""
     if [ ! -f "$FEATURE_FILE" ]; then
@@ -139,7 +142,9 @@ if [ "$CONTINUE_LAST" = true ]; then
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --max-budget-usd "$BUDGET_PER_SESSION" || true
+        --max-budget-usd "$BUDGET_PER_SESSION" \
+        --output-format stream-json \
+        | python3 "$PROGRESS_FILTER" || true
 
     echo ""
     success "Continue session complete."
@@ -164,13 +169,15 @@ for i in $(seq 1 "$MAX_SESSIONS"); do
         fi
     fi
 
-    # Run coding session — streams live to terminal
+    # Stream progress to stderr via filter
     CODING_PROMPT=$(cat "$PROMPTS_DIR/coding_prompt.md")
     claude -p "$CODING_PROMPT" \
         "${TOOLS_ARGS[@]}" \
         --model "$MODEL" \
         --max-turns "$MAX_TURNS" \
-        --max-budget-usd "$BUDGET_PER_SESSION" || true
+        --max-budget-usd "$BUDGET_PER_SESSION" \
+        --output-format stream-json \
+        | python3 "$PROGRESS_FILTER" || true
 
     echo ""
 
