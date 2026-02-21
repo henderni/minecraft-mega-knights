@@ -571,9 +571,9 @@ describe("Nameplate formatting safety", () => {
     expect(merchantSrc).toContain('§6Wandering Merchant');
   });
 
-  it("debug spawn also strips § codes", () => {
+  it("debug spawn uses generateAllyName for naming", () => {
     const armySrc = readSource("systems/ArmySystem.ts");
     const debugSection = armySrc.slice(armySrc.indexOf("debugSpawnAllies"));
-    expect(debugSection).toContain('playerName.replace(/§./g, "")');
+    expect(debugSection).toContain("generateAllyName");
   });
 });

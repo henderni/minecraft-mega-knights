@@ -4,6 +4,7 @@ import { BESTIARY } from "../data/BestiaryDefinitions";
 import { ARMOR_TIERS } from "../data/ArmorTiers";
 import { ArmySystem } from "./ArmySystem";
 import { DayCounterSystem } from "./DayCounterSystem";
+import { DifficultySystem } from "./DifficultySystem";
 import {
   JOURNAL_TITLE,
   JOURNAL_OVERVIEW_TITLE,
@@ -24,9 +25,11 @@ const TIER_NAMES = ["Page", "Squire", "Knight", "Champion", "Mega Knight"];
 
 export class QuestJournalSystem {
   private dayCounter: DayCounterSystem;
+  private difficulty: DifficultySystem;
 
-  constructor(dayCounter: DayCounterSystem) {
+  constructor(dayCounter: DayCounterSystem, difficulty: DifficultySystem) {
     this.dayCounter = dayCounter;
+    this.difficulty = difficulty;
   }
 
   async onItemUse(player: Player): Promise<void> {
@@ -71,11 +74,15 @@ export class QuestJournalSystem {
     }
 
     switch (response.selection) {
-      case 0:
-        await this.showPage(player, JOURNAL_OVERVIEW_TITLE, JOURNAL_OVERVIEW_BODY);
+      case 0: {
+        const pct = Math.round(this.difficulty.getRecruitChance() * 100);
+        await this.showPage(player, JOURNAL_OVERVIEW_TITLE, JOURNAL_OVERVIEW_BODY(pct));
         break;
-      case 1:
-        await this.showPage(player, JOURNAL_ARMY_TITLE, JOURNAL_ARMY_BODY);
+      }
+      case 1: {
+        const pct = Math.round(this.difficulty.getRecruitChance() * 100);
+        await this.showPage(player, JOURNAL_ARMY_TITLE, JOURNAL_ARMY_BODY(pct));
+      }
         break;
       case 2:
         await this.showPage(player, JOURNAL_STANCES_TITLE, JOURNAL_STANCES_BODY);

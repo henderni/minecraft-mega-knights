@@ -103,11 +103,11 @@ export const FRIENDLY_FIRE_BLOCKED = "§cYour allies are immune to your attacks!
 // --- Journal ---
 export const JOURNAL_TITLE = "Quest Journal";
 export const JOURNAL_OVERVIEW_TITLE = "Quest Overview";
-export const JOURNAL_OVERVIEW_BODY =
-  "You have 100 days to build your army and survive the final siege.\n\n- Kill enemies for a 30% chance to recruit them\n- Build castles to increase army capacity\n- Unlock better armor at milestones\n- Survive the Day 100 siege to become a Mega Knight!";
+export const JOURNAL_OVERVIEW_BODY = (recruitPct: number) =>
+  `You have 100 days to build your army and survive the final siege.\n\n- Kill enemies for a ${recruitPct}% chance to recruit them\n- Build castles to increase army capacity\n- Unlock better armor at milestones\n- Survive the Day 100 siege to become a Mega Knight!`;
 export const JOURNAL_ARMY_TITLE = "Army & Recruitment";
-export const JOURNAL_ARMY_BODY =
-  "Kill any enemy for a 30% chance to recruit them. Recruited units follow and fight for you.\n\nBase army capacity: 15\nCastle bonuses: Tower +5, Gate +7, Hall +8\nMax capacity: 35 (singleplayer)\n\nIn multiplayer, the cap is shared equally.";
+export const JOURNAL_ARMY_BODY = (recruitPct: number) =>
+  `Kill any enemy for a ${recruitPct}% chance to recruit them. Recruited units follow and fight for you.\n\nBase army capacity: 15\nCastle bonuses: Tower +5, Gate +7, Hall +8\nMax capacity: 35 (singleplayer)\n\nIn multiplayer, the cap is shared equally.`;
 export const JOURNAL_STANCES_TITLE = "Unit Stances";
 export const JOURNAL_STANCES_BODY =
   "Sneak + interact with an ally to cycle stances:\n\nFollow - Ally follows you everywhere\nGuard - Ally patrols near its current position\nHold - Ally stays exactly where it is\n\nTap an ally (without sneaking) to check its health.";

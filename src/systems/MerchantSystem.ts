@@ -37,6 +37,7 @@ export class MerchantSystem {
   private merchantedThisDay = new Set<string>();
 
   onDayChanged(day: number): void {
+    // Normal merchant days + endless mode recurring every 25 days past day 100
     const isMerchantDay = MERCHANT_DAYS.has(day) || (day > 100 && (day - 100) % 25 === 0);
     if (!isMerchantDay) {return;}
     this.merchantedThisDay.clear();

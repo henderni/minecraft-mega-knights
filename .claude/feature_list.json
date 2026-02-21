@@ -360,7 +360,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 20,
@@ -378,7 +378,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 21,
@@ -398,7 +398,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 22,
@@ -416,7 +416,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 23,
@@ -454,7 +454,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 25,
@@ -475,7 +475,7 @@
       { "type": "build_passes" },
       { "type": "all_tests_pass" }
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 26,

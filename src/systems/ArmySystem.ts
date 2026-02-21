@@ -361,8 +361,9 @@ export class ArmySystem {
             ally.addTag("mk_army");
             ally.addTag(ownerTag);
             ally.setDynamicProperty("mk:owner_name", playerName);
-            const safeName = playerName.replace(/§./g, "").slice(0, 16);
-            ally.nameTag = `§a${safeName}'s Knight`;
+            const allyName = generateAllyName("mk:mk_ally_knight");
+            ally.nameTag = `§a${allyName} §7(Knight)`;
+            ally.setDynamicProperty("mk:ally_name", allyName);
           } catch (e) {
             console.warn(`[MegaKnights] Failed to spawn debug ally: ${e}`);
           }
