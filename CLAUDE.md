@@ -169,38 +169,9 @@ tools/
 
 ## Compaction Instructions
 
-When context is compacted, ALWAYS preserve:
-- The full list of files modified in this session with their absolute paths
-- Current task list state (in-progress tasks, next steps, blockers)
-- Key architectural decisions made during this session and their rationale
-- Any test commands run and their pass/fail results
-- Error patterns encountered and their solutions
-- The current feature/bug being worked on and what remains to be done
-- Any entity budget or performance findings from this session
-
-Do NOT stop work early due to context budget concerns. Save progress to task state and memory files, then continue. Be as persistent and autonomous as possible.
+On compaction, preserve: modified files list, task state, architectural decisions, test results, error patterns, current WIP. Do not stop early — save state and continue.
 
 ## Autonomous Harness
 
-For long-running autonomous work across multiple sessions:
-
-```bash
-./harness.sh                        # Default: 10 sessions, opus model
-./harness.sh --init                 # Force regenerate feature_list.json
-./harness.sh --sessions 20          # Run up to 20 sessions
-./harness.sh --init-budget 15       # Set init session budget (default: $10)
-./harness.sh --turns 120            # Max agentic turns per session (default: 80)
-./harness.sh --model sonnet         # Faster/cheaper model
-./harness.sh --continue             # Continue last session
-```
-
-**Files:**
-- `.claude/feature_list.json` — prioritized task list (only `passes` field is mutable)
-- `.claude/progress.txt` — append-only session log
-- `.claude/prompts/initializer_prompt.md` — first-session prompt (generates feature list)
-- `.claude/prompts/coding_prompt.md` — continuation prompt (works through tasks)
-
-**How it works:** The harness runs `claude -p` in a loop. Each session reads progress.txt and feature_list.json, works on the next incomplete task, verifies it, marks it done, commits, and moves on. Sessions chain automatically — each fresh context picks up where the last left off via the progress file. When all tasks are complete, the harness auto-reinitializes to find new work.
-
-**In-session usage:** Use `/harness init` to generate a feature list, `/harness status` to check progress, or `/harness add <description>` to add tasks.
+`./harness.sh [--init] [--sessions N] [--model sonnet] [--continue]` — long-running multi-session work. Use `/harness` skill in-session. Files: `.claude/feature_list.json`, `.claude/progress.txt`.
 
