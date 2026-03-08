@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build verification hook for Mega Knights
-# Runs on session stop to ensure TypeScript build is valid
+# Runs on session stop to ensure TypeScript build and tests are valid
 
 set -e
 
@@ -13,11 +13,20 @@ cd "$PROJECT_DIR"
 
 echo "🔍 Verifying TypeScript build..."
 
-# Check npm run build
 if ! npm run build > /dev/null 2>&1; then
   echo "❌ TypeScript build failed"
   exit 1
 fi
 
 echo "✓ Build valid"
+
+echo "🧪 Running tests..."
+
+if ! npx vitest run > /dev/null 2>&1; then
+  echo "❌ Tests failed"
+  npx vitest run 2>&1 | tail -20
+  exit 1
+fi
+
+echo "✓ Tests passed"
 exit 0
